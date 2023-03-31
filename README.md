@@ -1,2 +1,2 @@
 # bncmatmul
-Optimized multiple-precision Basic Linear Computation Subprograms (BLAS) 
+Basic Numerical Computation based on optimized multiple-precision MATrix MULtiplication and other basic linear computation subprograms 
