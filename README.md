@@ -3,3 +3,5 @@ Basic Numerical Computation based on optimized multiple-precision MATrix MULtipl
 
 All sources are included in bncmatmul-0.xx.tar.bz2. Please download it to your home directory on Linux box, and compile it.
 
+--
+Copyright (c) 2023 Tomonori Kouya
