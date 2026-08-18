@@ -50,7 +50,7 @@
 
 /* ftwo_sum / fquick_two_sum / ftwo_prod (float) come from c_ds_qs.h
    (header-only static inline). */
-#include "c_ds_qs.h"
+#include "rds.h"       /* c_ds_qs.h was absorbed into rds.h */
 
 /* ==============================================================================
  *  Single-precision base (DS / TS / QS): identical netlists on binary32.

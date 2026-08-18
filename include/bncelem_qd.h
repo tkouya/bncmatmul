@@ -19,7 +19,7 @@
 #include <stdio.h>
 #include <stdlib.h>	/* rand(), used by c_dd_qd.h (c_dd_rand etc.) */
 
-#include "c_dd_qd.h"
+#include "rdd.h"       /* c_dd_qd.h was absorbed into rdd.h */
 #include "bncfma_d.h"
 #include "bncelem_tables.h"
 #include "bncelem_dd.h"	/* bnc_dd_log seeds the quad-double Newton log */

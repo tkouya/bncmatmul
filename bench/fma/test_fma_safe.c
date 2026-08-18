@@ -22,7 +22,7 @@
 
 #include <mpfr.h>
 
-#include "c_dd_qd.h"	/* pulls in bncfma_d.h and bncelem_*.h */
+#include "rdd.h"       /* c_dd_qd.h was absorbed into rdd.h */	/* pulls in bncfma_d.h and bncelem_*.h */
 
 #define NTRIAL 100000
 #define DD_EPS 4.93038065763132e-32

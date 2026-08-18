@@ -20,7 +20,7 @@
 
 #include <mpfr.h>
 
-#include "c_dd_qd.h"	/* pulls in bncelem.h (bnc_dd_* / bnc_td_* / bnc_qd_*) */
+#include "rdd.h"       /* c_dd_qd.h was absorbed into rdd.h */	/* pulls in bncelem.h (bnc_dd_* / bnc_td_* / bnc_qd_*) */
 
 #define REF_PREC 512
 #define NSAMPLE 4096

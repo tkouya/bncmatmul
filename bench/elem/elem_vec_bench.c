@@ -18,7 +18,7 @@
 
 #include <mpfr.h>
 
-#include "c_dd_qd.h"
+#include "rdd.h"       /* c_dd_qd.h was absorbed into rdd.h */
 #include "bncelem_vector.h"
 
 #define N 100000L

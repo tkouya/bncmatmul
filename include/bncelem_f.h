@@ -16,7 +16,7 @@
 
 #include <math.h>
 
-#include "c_ds_qs.h"	/* float EFTs (ftwo_sum, fquick_two_sum, ...) */
+#include "rds.h"       /* c_ds_qs.h was absorbed into rds.h */	/* float EFTs (ftwo_sum, fquick_two_sum, ...) */
 #include "bncelem.h"	/* bnc_dd_* / bnc_td_* / bnc_qd_* */
 #include "bncfma_f.h"	/* bnc_dwfmaf_safe / bnc_twfmaf_safe / bnc_qwfmaf_safe */
 

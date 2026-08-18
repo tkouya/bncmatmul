@@ -360,7 +360,6 @@ nobase_include_HEADERS = \
 	bncelem.h bncelem_tables.h bncelem_vector.h rdtq_func.h \
 	bncelem_dd.h bncelem_td.h bncelem_qd.h bncelem_f.h \
 	bncfma.h bncfma_d.h bncfma_f.h \
-	c_dd_qd.h c_ds_qs.h \
 	cddlinear.h cdlinear.h \
 	cdslinear.h ctslinear.h cqslinear.h \
 	clinear.h \

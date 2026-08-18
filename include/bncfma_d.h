@@ -50,7 +50,7 @@
 
 /* two_sum / quick_two_sum / two_prod (double) come from c_dd_qd.h
    (header-only static inline). */
-#include "c_dd_qd.h"
+#include "rdd.h"       /* c_dd_qd.h was absorbed into rdd.h */
 
 /* ==============================================================================
  *  DW-FMA : z = x*y + c   (K = 2, 17 flops, Algorithm 1)

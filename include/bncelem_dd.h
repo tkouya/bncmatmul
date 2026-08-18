@@ -18,7 +18,7 @@
 #include <math.h>
 #include <stdio.h>
 
-#include "c_dd_qd.h"
+#include "rdd.h"       /* c_dd_qd.h was absorbed into rdd.h */
 #include "bncfma_d.h"
 #include "bncelem_tables.h"
 

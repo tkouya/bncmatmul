@@ -34,7 +34,7 @@ static inline void bnc_td_sin(const double *a, double *ret);
 static inline void bnc_td_cos(const double *a, double *ret);
 static inline void bnc_td_sincos(const double *a, double *sin_a, double *cos_a);
 
-#include "c_dd_qd.h"
+#include "rdd.h"       /* c_dd_qd.h was absorbed into rdd.h */
 #include "bncfma_d.h"
 #include "bncelem_tables.h"
 
