@@ -1,0 +1,171 @@
+ACC,dd,neon,block,128,3.877183e-32
+ACC,dd,neon,strassen,128,2.633845e-31
+ACC,dd,neon,triple,128,1.009327e-31
+ACC,dd,neon,winograd,128,8.535513e-32
+ACC,dd,serial,block,128,3.877183e-32
+ACC,dd,serial,strassen,128,2.633845e-31
+ACC,dd,serial,triple,128,1.009327e-31
+ACC,dd,serial,winograd,128,9.185814e-32
+ACC,dd,sve2,block,128,3.872008e-32
+ACC,dd,sve2,strassen,128,2.633845e-31
+ACC,dd,sve2,triple,128,1.009327e-31
+ACC,dd,sve2,winograd,128,8.029491e-32
+ACC,double,neon,block,128,3.236688e-16
+ACC,double,neon,strassen,128,2.062051e-15
+ACC,double,neon,triple,128,5.771792e-16
+ACC,double,neon,winograd,128,6.615068e-16
+ACC,double,serial,block,128,4.246789e-16
+ACC,double,serial,strassen,128,3.022037e-15
+ACC,double,serial,triple,128,1.227781e-15
+ACC,double,serial,winograd,128,1.025773e-15
+ACC,double,sve2,block,128,3.236688e-16
+ACC,double,sve2,strassen,128,2.062051e-15
+ACC,double,sve2,triple,128,5.771792e-16
+ACC,double,sve2,winograd,128,6.615068e-16
+ACC,ds,neon,block,128,1.064860e-14
+ACC,ds,neon,strassen,128,6.884113e-14
+ACC,ds,neon,triple,128,2.978273e-14
+ACC,ds,neon,winograd,128,2.365150e-14
+ACC,ds,serial,block,128,1.064860e-14
+ACC,ds,serial,strassen,128,6.663532e-14
+ACC,ds,serial,triple,128,2.978273e-14
+ACC,ds,serial,winograd,128,2.365150e-14
+ACC,ds,sve2,block,128,1.048831e-14
+ACC,ds,sve2,strassen,128,7.709340e-14
+ACC,ds,sve2,triple,128,2.978273e-14
+ACC,ds,sve2,winograd,128,2.220818e-14
+ACC,float,neon,block,128,6.052119e-07
+ACC,float,neon,strassen,128,1.551694e-06
+ACC,float,neon,triple,128,6.052119e-07
+ACC,float,neon,winograd,128,2.550144e-07
+ACC,float,serial,block,128,6.052119e-07
+ACC,float,serial,strassen,128,1.551694e-06
+ACC,float,serial,triple,128,6.052119e-07
+ACC,float,serial,winograd,128,2.550144e-07
+ACC,float,sve2,block,128,6.052119e-07
+ACC,float,sve2,strassen,128,1.551694e-06
+ACC,float,sve2,triple,128,6.052119e-07
+ACC,float,sve2,winograd,128,2.550144e-07
+ACC,qd,neon,block,128,1.080251e-64
+ACC,qd,neon,strassen,128,5.684004e-64
+ACC,qd,neon,triple,128,1.695837e-64
+ACC,qd,neon,winograd,128,1.942745e-64
+ACC,qd,serial,block,128,1.196545e-64
+ACC,qd,serial,strassen,128,7.237565e-64
+ACC,qd,serial,triple,128,2.819215e-64
+ACC,qd,serial,winograd,128,2.430537e-64
+ACC,qd,sve2,block,128,1.196545e-64
+ACC,qd,sve2,strassen,128,7.237565e-64
+ACC,qd,sve2,triple,128,2.819215e-64
+ACC,qd,sve2,winograd,128,2.430537e-64
+ACC,qs,neon,block,128,1.075135e-29
+ACC,qs,neon,strassen,128,6.282608e-29
+ACC,qs,neon,triple,128,2.627901e-29
+ACC,qs,neon,winograd,128,1.847191e-29
+ACC,qs,serial,block,128,4.818738e-30
+ACC,qs,serial,strassen,128,2.003675e-29
+ACC,qs,serial,triple,128,7.835225e-30
+ACC,qs,serial,winograd,128,6.283400e-30
+ACC,qs,sve2,block,128,1.075135e-29
+ACC,qs,sve2,strassen,128,6.282608e-29
+ACC,qs,sve2,triple,128,2.627901e-29
+ACC,qs,sve2,winograd,128,1.847191e-29
+ACC,td,neon,block,128,1.400102e-48
+ACC,td,neon,strassen,128,1.121981e-47
+ACC,td,neon,triple,128,5.426156e-48
+ACC,td,neon,winograd,128,4.145772e-48
+ACC,td,serial,block,128,1.400102e-48
+ACC,td,serial,strassen,128,1.121981e-47
+ACC,td,serial,triple,128,5.426156e-48
+ACC,td,serial,winograd,128,3.751217e-48
+ACC,td,sve2,block,128,1.400102e-48
+ACC,td,sve2,strassen,128,1.121981e-47
+ACC,td,sve2,triple,128,5.426156e-48
+ACC,td,sve2,winograd,128,4.145772e-48
+ACC,ts,neon,block,128,2.603517e-22
+ACC,ts,neon,strassen,128,1.873478e-21
+ACC,ts,neon,triple,128,6.391321e-22
+ACC,ts,neon,winograd,128,5.855783e-22
+ACC,ts,serial,block,128,1.122479e-22
+ACC,ts,serial,strassen,128,8.981898e-22
+ACC,ts,serial,triple,128,3.407385e-22
+ACC,ts,serial,winograd,128,2.911307e-22
+ACC,ts,sve2,block,128,2.603517e-22
+ACC,ts,sve2,strassen,128,1.873478e-21
+ACC,ts,sve2,triple,128,6.391321e-22
+ACC,ts,sve2,winograd,128,5.855783e-22
+LU,dd,neon,fma,128,0.000000e+00
+LU,dd,neon,nofma,128,0.000000e+00
+LU,dd,serial,fma,128,0.000000e+00
+LU,dd,serial,nofma,128,0.000000e+00
+LU,dd,sve2,fma,128,0.000000e+00
+LU,dd,sve2,nofma,128,0.000000e+00
+LU,ds,neon,fma,128,2.842171e-14
+LU,ds,neon,nofma,128,8.526513e-14
+LU,ds,serial,fma,128,2.652693e-14
+LU,ds,serial,nofma,128,8.526513e-14
+LU,ds,sve2,fma,128,2.842171e-14
+LU,ds,sve2,nofma,128,8.526513e-14
+LU,qd,neon,fma,128,0.000000e+00
+LU,qd,neon,nofma,128,0.000000e+00
+LU,qd,serial,fma,128,0.000000e+00
+LU,qd,serial,nofma,128,0.000000e+00
+LU,qd,sve2,fma,128,0.000000e+00
+LU,qd,sve2,nofma,128,0.000000e+00
+LU,qs,neon,fma,128,0.000000e+00
+LU,qs,neon,nofma,128,0.000000e+00
+LU,qs,serial,fma,128,0.000000e+00
+LU,qs,serial,nofma,128,0.000000e+00
+LU,qs,sve2,fma,128,0.000000e+00
+LU,qs,sve2,nofma,128,0.000000e+00
+LU,td,neon,fma,128,0.000000e+00
+LU,td,neon,nofma,128,0.000000e+00
+LU,td,serial,fma,128,0.000000e+00
+LU,td,serial,nofma,128,0.000000e+00
+LU,td,sve2,fma,128,0.000000e+00
+LU,td,sve2,nofma,128,0.000000e+00
+LU,ts,neon,fma,128,0.000000e+00
+LU,ts,neon,nofma,128,0.000000e+00
+LU,ts,serial,fma,128,0.000000e+00
+LU,ts,serial,nofma,128,0.000000e+00
+LU,ts,sve2,fma,128,0.000000e+00
+LU,ts,sve2,nofma,128,0.000000e+00
+REG,cdd,neon,96,1.147642e-15,7.865485e-16,1.905657e-31,1.11701152078749854e+07
+REG,cdd,serial,96,1.147642e-15,7.865485e-16,3.145686e-31,1.11701152078749854e+07
+REG,cdd,sve2,96,1.147642e-15,7.865485e-16,1.905657e-31,1.11701152078749854e+07
+REG,cds,neon,96,3.634631e-08,3.396938e-08,6.446456e-14,1.11701152011126243e+07
+REG,cds,serial,96,3.634631e-08,3.396938e-08,1.234198e-13,1.11701152011126261e+07
+REG,cds,sve2,96,3.634631e-08,3.396938e-08,6.446456e-14,1.11701152011126243e+07
+REG,cqd,neon,96,1.147642e-15,7.865485e-16,4.496129e-64,1.11701152078749854e+07
+REG,cqd,serial,96,1.147642e-15,7.865485e-16,4.790582e-64,1.11701152078749854e+07
+REG,cqd,sve2,96,1.147642e-15,7.865485e-16,4.496129e-64,1.11701152078749854e+07
+REG,cqs,neon,96,3.634630e-08,3.396937e-08,3.664054e-29,1.11701152011126205e+07
+REG,cqs,serial,96,3.634630e-08,3.396937e-08,3.664054e-29,1.11701152011126205e+07
+REG,cqs,sve2,96,3.634630e-08,3.396937e-08,3.664054e-29,1.11701152011126205e+07
+REG,ctd,neon,96,1.147642e-15,7.865485e-16,5.998101e-48,1.11701152078749854e+07
+REG,ctd,serial,96,1.147642e-15,7.865485e-16,4.704066e-48,1.11701152078749854e+07
+REG,ctd,sve2,96,1.147642e-15,7.865485e-16,5.998101e-48,1.11701152078749854e+07
+REG,cts,neon,96,3.634630e-08,3.396937e-08,8.354524e-22,1.11701152011126205e+07
+REG,cts,serial,96,3.634630e-08,3.396937e-08,8.354524e-22,1.11701152011126205e+07
+REG,cts,sve2,96,3.634630e-08,3.396937e-08,8.354524e-22,1.11701152011126205e+07
+VERIFY,cds,neon,n=137,Ax_maxrelerr=7.064e-15,nnz=5631 -> OK
+VERIFY,cds,serial,n=137,Ax_maxrelerr=0.000e+00,nnz=5631 -> OK
+VERIFY,cds,sve2,n=137,Ax_maxrelerr=8.035e-15,nnz=5631 -> OK
+VERIFY,cqs,neon,n=137,Ax_maxrelerr=0.000e+00,nnz=5631 -> OK
+VERIFY,cqs,serial,n=137,Ax_maxrelerr=0.000e+00,nnz=5631 -> OK
+VERIFY,cqs,sve2,n=137,Ax_maxrelerr=0.000e+00,nnz=5631 -> OK
+VERIFY,cts,neon,n=137,Ax_maxrelerr=0.000e+00,nnz=5631 -> OK
+VERIFY,cts,serial,n=137,Ax_maxrelerr=0.000e+00,nnz=5631 -> OK
+VERIFY,cts,sve2,n=137,Ax_maxrelerr=0.000e+00,nnz=5631 -> OK
+VERIFY,ds,neon,n=137,Ax_maxrelerr=6.438e-15,Atx_maxrelerr=1.307e-14,nnz=5631 -> OK
+VERIFY,ds,serial,n=137,Ax_maxrelerr=0.000e+00,Atx_maxrelerr=1.307e-14,nnz=5631 -> OK
+VERIFY,ds,sve2,n=137,Ax_maxrelerr=6.438e-15,Atx_maxrelerr=1.307e-14,nnz=5631 -> OK
+VERIFY,neon,n=137,Ax_maxrelerr=1.342e-07,Atx_maxrelerr=0.000e+00,nnz=5631 -> OK
+VERIFY,qs,neon,n=137,Ax_maxrelerr=0.000e+00,Atx_maxrelerr=1.503e-15,nnz=5631 -> OK
+VERIFY,qs,serial,n=137,Ax_maxrelerr=0.000e+00,Atx_maxrelerr=1.503e-15,nnz=5631 -> OK
+VERIFY,qs,sve2,n=137,Ax_maxrelerr=0.000e+00,Atx_maxrelerr=1.503e-15,nnz=5631 -> OK
+VERIFY,serial,n=137,Ax_maxrelerr=0.000e+00,Atx_maxrelerr=0.000e+00,nnz=5631 -> OK
+VERIFY,sve2,n=137,Ax_maxrelerr=1.621e-07,Atx_maxrelerr=0.000e+00,nnz=5631 -> OK
+VERIFY,ts,neon,n=137,Ax_maxrelerr=0.000e+00,Atx_maxrelerr=1.503e-15,nnz=5631 -> OK
+VERIFY,ts,serial,n=137,Ax_maxrelerr=0.000e+00,Atx_maxrelerr=1.503e-15,nnz=5631 -> OK
+VERIFY,ts,sve2,n=137,Ax_maxrelerr=0.000e+00,Atx_maxrelerr=1.503e-15,nnz=5631 -> OK

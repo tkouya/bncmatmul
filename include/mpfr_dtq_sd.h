@@ -231,6 +231,11 @@ void rdd_sqrt_d_mpfr(double ret[DDSIZE], double x);
 void rtd_sqrt_d_mpfr(double ret[TDSIZE], double x);
 void rqd_sqrt_d_mpfr(double ret[QDSIZE], double x);
 
+// single-based family (used by norm2_c[dtq]svector under USE_GMP)
+void rds_sqrt_mpfr(float ret[DSSIZE], float x[DSSIZE]);
+void rts_sqrt_mpfr(float ret[TSSIZE], float x[TSSIZE]);
+void rqs_sqrt_mpfr(float ret[QSSIZE], float x[QSSIZE]);
+
 
 // 2025-02-03 (Mon)
 // ret := mpfr_func(x)

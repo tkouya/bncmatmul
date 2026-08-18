@@ -1269,6 +1269,49 @@ void rqd_sqrt_d_mpfr(double ret[QDSIZE], double x)
     mpfr_clear(in_ret);
 }
 
+// single-based family (used by norm2_c[dtq]svector under USE_GMP)
+void rds_sqrt_mpfr(float ret[DSSIZE], float x[DSSIZE])
+{
+    mpfr_t in_x, in_ret;
+
+    mpfr_init2(in_x, 24 * DSSIZE); mpfr_set_ds(in_x, x, MPFR_RNDN);
+	mpfr_init2(in_ret, 24 * DSSIZE);
+
+    mpfr_sqrt(in_ret, in_x, MPFR_RNDN);
+    mpfr_get_ds(ret, in_ret, MPFR_RNDN);
+
+    mpfr_clear(in_x);
+    mpfr_clear(in_ret);
+}
+
+void rts_sqrt_mpfr(float ret[TSSIZE], float x[TSSIZE])
+{
+    mpfr_t in_x, in_ret;
+
+    mpfr_init2(in_x, 24 * TSSIZE); mpfr_set_ts(in_x, x, MPFR_RNDN);
+	mpfr_init2(in_ret, 24 * TSSIZE);
+
+    mpfr_sqrt(in_ret, in_x, MPFR_RNDN);
+    mpfr_get_ts(ret, in_ret, MPFR_RNDN);
+
+    mpfr_clear(in_x);
+    mpfr_clear(in_ret);
+}
+
+void rqs_sqrt_mpfr(float ret[QSSIZE], float x[QSSIZE])
+{
+    mpfr_t in_x, in_ret;
+
+    mpfr_init2(in_x, 24 * QSSIZE); mpfr_set_qs(in_x, x, MPFR_RNDN);
+	mpfr_init2(in_ret, 24 * QSSIZE);
+
+    mpfr_sqrt(in_ret, in_x, MPFR_RNDN);
+    mpfr_get_qs(ret, in_ret, MPFR_RNDN);
+
+    mpfr_clear(in_x);
+    mpfr_clear(in_ret);
+}
+
 // 2025-02-03 (Mon)
 // ret := mpfr_func(x)
 void rdd_func_mpfr(double ret[DDSIZE], int (* mpfr_func)(mpfr_ptr, mpfr_srcptr, mpfr_rnd_t), double x[DDSIZE])
