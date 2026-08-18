@@ -13,7 +13,7 @@ nobase_include_HEADERS = \
 	_bncomp_linear_cqd.h \
 	_bncomp_linear_ctd.h \
 	benchmark_tools.h \
-	bmatrix.h bmatrix_old.h \
+	bmatrix.h \
 	bnc.h bnc_common.h bnc_common_def.h \
 	bncmatmul.h bncmm.h bncmm_c.h \
 	bncomp.h bncsparse.h bncuda.h \
@@ -23,7 +23,7 @@ nobase_include_HEADERS = \
 	c_dd_qd.h c_ds_qs.h \
 	cddlinear.h cdlinear.h \
 	cdslinear.h ctslinear.h cqslinear.h \
-	clinear.h clinear_org.h \
+	clinear.h \
 	cmpflinear.h cmpflinear_cu.h cqdlinear.h ctdlinear.h \
 	ddlinear.h dlinear.h dslinear.h \
 	flinear.h float128linear.h \
@@ -41,17 +41,17 @@ nobase_include_HEADERS = \
 	gtestmat.h \
 	ieee_floats.h \
 	lu_bench.h \
-	matmul_strassen.h matmul_strassen_org.h \
+	matmul_strassen.h \
 	mmio.h \
 	mpf_func_mpfr.h \
 	mpflinear.h mpflinear_cu.h \
-	mpfr_dd.h mpfr_dd_td_qd.h mpfr_dd_td_qd_org.h \
+	mpfr_dd.h \
 	mpfr_dtq_sd.h \
 	mpi_bnc.h mpi_gmp.h \
 	oz_scheme.h \
 	poly.h \
-	qdlinear.h qdlinear_org.h qslinear.h \
-	rcdd.h rcdd_old.h rcds.h rdd.h rdd_org.h rds.h rsd.h \
+	qdlinear.h qslinear.h \
+	rcdd.h rcds.h rdd.h rds.h \
 	sort.h \
 	tdlinear.h \
 	template_linear.h \
@@ -82,7 +82,6 @@ nobase_include_HEADERS = \
 	avx2/_bncavx_td_avx512.h \
 	avx2/_bncavx_ts.h \
 	avx2/_bncavx_ts_avx512.h \
-	avx2/_bncneon_dd_gemini.h \
 	avx2/bncavx.h \
 	neon/_bncneon128_qd.h \
 	neon/_bncneon_cd.h \
@@ -94,13 +93,11 @@ nobase_include_HEADERS = \
 	neon/_bncneon_dd.h \
 	neon/_bncneon_deft.h \
 	neon/_bncneon_ds.h \
-	neon/_bncneon_f.h \
 	neon/_bncneon_feft.h \
 	neon/_bncneon_fma.h \
 	neon/_bncneon_qd.h \
 	neon/_bncneon_qs.h \
 	neon/_bncneon_td.h \
-	neon/_bncneon_td_gemini.h \
 	neon/_bncneon_ts.h \
 	neon/bncneon.h \
 	sve2/_bncsve2_cdd.h \

@@ -15,3 +15,37 @@ libtool
 
 # Editor backups
 *~
+
+# Benchmark/test executables (no extension ELF binaries, rebuilt by build_*.sh)
+bench/arm/dense_*
+bench/arm/spmv_c[df]_*
+bench/arm/spmv_cf
+bench/mm/mm_*_serial
+bench/mm/mm_*_neon
+bench/mm/mm_*_sve2
+bench/mm/mm_*_avx2
+bench/mm/mm_*_avx512
+bench/mm/out/
+bench/lu/lu_*_serial_* 
+bench/lu/lu_*_neon_*
+bench/lu/lu_*_sve2_*
+bench/lu/lu_ill_*
+bench/lu/obj_*.o
+bench/lu/out/
+bench/fma/*_serial
+bench/fma/*_neon
+bench/fma/*_sve2
+bench/fma/*_serial_f
+bench/fma/*_neon_f
+bench/fma/*_sve2_f
+bench/fma/*_bf
+bench/fma/out/
+bench/elem/elem_bench
+bench/elem/elem_vec_bench_*
+bench/cuda/cuda_*
+bench/cuda/gpu_*
+bench/cuda/*_bench_[0-9]*
+bench/cuda/out/
+bench/regress/out/
+bench/*.xlsx
+*.xlsx

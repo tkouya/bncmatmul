@@ -62,8 +62,6 @@ EXTRA_DIST = \
 	test_iterative_ref_dd.cpp \
 	test_iterative_ref_mpreal.cpp \
 	test_iterative_ref_qd.cpp \
-	test_iterative_ref_org.c \
-	test_iterative_ref_org2.c \
 	test_mm_cmat.c \
 	test_mpf_oz_scheme.c \
 	test_mpfr.c \
@@ -74,7 +72,6 @@ EXTRA_DIST = \
 	test_sparse_oneapi.c \
 	test_copilot_sparse.c \
 	test_spmm.c \
-	test_spmm_old.c \
 	test_urilink.c \
 	webrank.c \
 	webrank_mpf.c
