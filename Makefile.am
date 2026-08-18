@@ -23,7 +23,7 @@ EXTRA_DIST = \
 	mmbench.sh \
 	mmbench_dd.sh \
 	mmbench_qd.sh \
-	README.md \
+	README.md
 
 # Strip generated artifacts from the dist tarball
 dist-hook:
