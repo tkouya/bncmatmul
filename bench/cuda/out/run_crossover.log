@@ -1,0 +1,7 @@
+CPU baseline threads (SVE2 OMP): 20
+## native real d/f (GPU + CPU fast) -> up to 2048
+## native complex cd/cf (serial CPU) -> up to 2048
+## multi-component real dd/td/qd/ds/ts/qs (heavy GPU at large N) -> up to 1024
+## complex multi-component cdd/ctd/cqd (SVE2 OMP) -> up to 1024
+## complex multi-component cds/cts/cqs (serial CPU; cqs/cts serial blows up) 
+Wrote bench/cuda/out/crossover.csv (66 matmul rows)

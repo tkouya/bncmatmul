@@ -1,0 +1,12 @@
+=== OpenMP thread-safety of the branch-free FMA (20 threads, N=400000) ===
+  DD scalar : identical      DS scalar : identical
+  DD NEON   : identical (vs the serial scalar reference)
+  DD SVE2   : identical (vs the serial scalar reference)
+  TD scalar : identical      TS scalar : identical
+  TD NEON   : identical (vs the serial scalar reference)
+  TD SVE2   : identical (vs the serial scalar reference)
+  QD scalar : identical      QS scalar : identical
+  QD NEON   : identical (vs the serial scalar reference)
+  QD SVE2   : identical (vs the serial scalar reference)
+
+OpenMP-PARALLEL RESULTS ARE BITWISE IDENTICAL TO SERIAL (no data race)

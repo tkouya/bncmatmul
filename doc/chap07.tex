@@ -1,0 +1,159 @@
+%==============================================================================%
+% Chapter 7 : Single-based and complex precision families
+%==============================================================================%
+\chapter{\bi{Single-based and complex precision families}{単精度系および複素数系の精度ファミリ}}
+
+\bi{Chapters \ref{chap:basicarith}--\ref{chap:sparse} describe the
+\texttt{double}-based real types D, DD, TD, QD and the arbitrary precision type
+MPF.  BNCmatmul also provides two further groups of fixed-precision types that
+share the very same set of operations: a \emph{single-based} family (built on
+\texttt{float}) and a \emph{complex} family.  This chapter summarises their data
+types; every vector, matrix, multiplication, LU and sparse routine of the
+previous chapters exists for these types as well, obtained by substituting the
+type prefix in the function name.}{第\ref{chap:basicarith}章から第\ref{chap:sparse}章では，\texttt{double}
+に基づく実数型 D，DD，TD，QD および任意精度型 MPF について説明しました．BNCmatmul は，
+これらとまったく同じ演算群を共有する固定精度型のグループをさらに二つ提供します．すなわち
+\texttt{float} に基づいて構築された\emph{単精度系}ファミリと\emph{複素数系}ファミリです．
+本章では，それらのデータ型をまとめます．前章までのすべてのベクトル，行列，乗算，LU 分解，
+疎行列ルーチンは，関数名の型接頭辞を置き換えることにより，これらの型に対しても利用できます．}
+
+%------------------------------------------------------------------%
+\section{\bi{Single-based multi-component types (DS, TS, QS)}{単精度系マルチコンポーネント型 (DS, TS, QS)}}
+%------------------------------------------------------------------%
+
+\bi{The single-based family stores a number as a non-overlapping sum of two, three
+or four \texttt{float} values (the ``multi-component'' way applied to
+\texttt{float}).  It is declared in \texttt{rds.h}, \texttt{c\_ds\_qs.h} and the linear
+headers \texttt{dslinear.h}, \texttt{tslinear.h}, \texttt{qslinear.h}.}{単精度系ファミリは，数値を二つ，三つ，または四つの \texttt{float} 値の重なりのない和
+として格納します（\texttt{float} に適用した「マルチコンポーネント」方式です）．これは
+\texttt{rds.h}，\texttt{c\_ds\_qs.h} および線形演算ヘッダ \texttt{dslinear.h}，
+\texttt{tslinear.h}，\texttt{qslinear.h} で宣言されています．}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{l l l l}
+\hline
+type & components & precision (bits, $\approx$) & decimal digits ($\approx$) \\
+\hline
+DS (double-single)    & \texttt{float}$\times 2$ & 48 & 14 \\
+TS (triple-single)    & \texttt{float}$\times 3$ & 72 & 21 \\
+QS (quadruple-single) & \texttt{float}$\times 4$ & 96 & 28 \\
+\hline
+\end{tabular}
+\caption{\bi{Single-based multi-component types.  \texttt{DSSIZE}$=2$,
+\texttt{TSSIZE}$=3$, \texttt{QSSIZE}$=4$.}{単精度系マルチコンポーネント型．\texttt{DSSIZE}$=2$，
+\texttt{TSSIZE}$=3$，\texttt{QSSIZE}$=4$．}}
+\end{table}
+
+\bi{The element-level arithmetic uses the macro set \texttt{rds\_*}, \texttt{rts\_*},
+\texttt{rqs\_*} (analogous to \texttt{rdd\_*} of Section \ref{sec:rdd}), e.g.\
+\funcname{rds\_add}{}, \funcname{rts\_mul}{}, \funcname{rqs\_div}{},
+\funcname{rqs\_sqrt}{}.}{要素レベルの算術には，マクロ群 \texttt{rds\_*}，\texttt{rts\_*}，\texttt{rqs\_*}
+（第\ref{sec:rdd}節の \texttt{rdd\_*} に相当します）を用います．例えば
+\funcname{rds\_add}{}，\funcname{rts\_mul}{}，\funcname{rqs\_div}{}，
+\funcname{rqs\_sqrt}{} などです．}  \bi{The vector and matrix objects and their operations
+mirror Chapter \ref{chap:basiclinear} exactly:}{ベクトルおよび行列オブジェクトとその演算は，
+第\ref{chap:basiclinear}章とまったく同じ構成です．}
+
+\begin{itemize}
+\funcitem{DSVector}{init\_dsvector}{\varnameli{dim}}\ $\cdots$ \bi{and \funcname{init\_tsvector}{}, \funcname{init\_qsvector}{}, \funcname{init\_dsmatrix}{}, \dots}{および \funcname{init\_tsvector}{}，\funcname{init\_qsvector}{}，\funcname{init\_dsmatrix}{}，\dots}
+\funcitem{void}{add\_dsvector}{\varname{DSVector}{c}, \varname{DSVector}{a}, \varname{DSVector}{b}}\ $\cdots$ \bi{vector $\pm$, \funcname{cmul\_dsvector}{}, \funcname{ip\_dsvector}{}, \funcname{norm2\_dsvector}{}, etc.}{ベクトルの $\pm$．\funcname{cmul\_dsvector}{}，\funcname{ip\_dsvector}{}，\funcname{norm2\_dsvector}{} など．}
+\funcitem{void}{mul\_dsmatrix}{\varname{DSMatrix}{C}, \varname{DSMatrix}{A}, \varname{DSMatrix}{B}}\ $\cdots$ \bi{$C:=AB$; also \funcname{mul\_dsmatrix\_block}{}, \funcname{mul\_dsmatrix\_strassen\_even}{}, \funcname{mul\_dsmatrix\_dsvec}{}, \funcname{mul\_dsmatrixt\_dsvec}{}.}{$C:=AB$．\funcname{mul\_dsmatrix\_block}{}，\funcname{mul\_dsmatrix\_strassen\_even}{}，\funcname{mul\_dsmatrix\_dsvec}{}，\funcname{mul\_dsmatrixt\_dsvec}{} もあります．}
+\funcitem{int}{DSLUdecomp}{\varname{DSMatrix}{A}}\ $\cdots$ \bi{LU decomposition; also \funcname{DSLUdecompP}{} (partial pivoting), \funcname{SolveDSLS}{}, \funcname{SolveDSLSP}{} and the TS/QS variants.}{LU 分解．\funcname{DSLUdecompP}{}（部分ピボット選択），\funcname{SolveDSLS}{}，\funcname{SolveDSLSP}{} および TS/QS 版もあります．}
+\end{itemize}
+
+\bi{The accessor of an element is the value structure \texttt{dsfloat} /
+\texttt{tsfloat} / \texttt{qsfloat} (a \texttt{float} array of \texttt{DSSIZE} etc.);
+read it with \funcname{get\_dsmatrix\_ij\_dsfloat}{} and store the returned value
+in a local variable before using its \texttt{.val} pointer.}{要素のアクセサは値構造体 \texttt{dsfloat} / \texttt{tsfloat} / \texttt{qsfloat}
+（\texttt{DSSIZE} 個などの \texttt{float} 配列）です．\funcname{get\_dsmatrix\_ij\_dsfloat}{}
+で読み出し，その \texttt{.val} ポインタを使用する前に，返された値をローカル変数に格納してください．}
+
+%------------------------------------------------------------------%
+\section{\bi{Complex types (CD and complex multi-component)}{複素数型 (CD およびマルチコンポーネント複素数)}}
+%------------------------------------------------------------------%
+
+\bi{A complex number is stored as a separate real part and imaginary part.  The
+native complex \texttt{double} type CD keeps a C99 \texttt{double \_Complex}
+array; the complex multi-component types keep the real and imaginary parts as
+two vectors/matrices of the corresponding real type.}{複素数は，実部と虚部を別々に格納します．ネイティブな複素 \texttt{double} 型 CD は
+C99 の \texttt{double \_Complex} 配列を保持します．マルチコンポーネント複素数型は，実部と虚部を
+対応する実数型の二つのベクトル／行列として保持します．}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{l l l}
+\hline
+type & real/imag element & header \\
+\hline
+CD  & \texttt{double \_Complex}      & \verb|cdlinear.h|, \verb|clinear.h| \\
+CDD & DD (double-double)             & \verb|cddlinear.h| \\
+CTD & TD (triple-double)             & \verb|ctdlinear.h| \\
+CQD & QD (quadruple-double)          & \verb|cqdlinear.h| \\
+CDS & DS (double-single)             & \verb|cdslinear.h| \\
+CTS & TS (triple-single)             & \verb|ctslinear.h| \\
+CQS & QS (quadruple-single)          & \verb|cqslinear.h| \\
+\hline
+\end{tabular}
+\caption{\bi{Complex types.  The multi-component complex element value is
+\texttt{cXXfloat}~$=\{$\texttt{val\_re[}$\cdot$\texttt{]}, \texttt{val\_im[}$\cdot$\texttt{]}$\}$ (see \texttt{rcdd.h}, \texttt{rcds.h}).}{複素数型．マルチコンポーネント複素数の要素値は
+\texttt{cXXfloat}~$=\{$\texttt{val\_re[}$\cdot$\texttt{]}，\texttt{val\_im[}$\cdot$\texttt{]}$\}$ です（\texttt{rcdd.h}，\texttt{rcds.h} を参照）．}}
+\end{table}
+
+\subsection{\bi{Native complex double (CD)}{ネイティブ複素 double (CD)}}
+\begin{itemize}
+\funcitem{CDVector}{init\_cdvector}{\varnameli{dim}}\ $\cdots$ \bi{and \funcname{init\_cdmatrix}{}.}{および \funcname{init\_cdmatrix}{}．}
+\funcitem{void}{set\_cdvector\_i}{\varname{CDVector}{vec}, \varnameli{index}, \varname{double \_Complex}{val}}\ $\cdots$ \bi{and \funcname{get\_cdvector\_i}{}, \funcname{set\_cdmatrix\_ij}{}, \funcname{get\_cdmatrix\_ij}{}.}{および \funcname{get\_cdvector\_i}{}，\funcname{set\_cdmatrix\_ij}{}，\funcname{get\_cdmatrix\_ij}{}．}
+\funcitem{void}{mul\_cdmatrix}{\varname{CDMatrix}{C}, \varname{CDMatrix}{A}, \varname{CDMatrix}{B}}\ $\cdots$ \bi{$C:=AB$; also \funcname{mul\_cdmatrix\_cdvec}{}, \funcname{mul\_cdmatrixt\_cdvec}{}.}{$C:=AB$．\funcname{mul\_cdmatrix\_cdvec}{}，\funcname{mul\_cdmatrixt\_cdvec}{} もあります．}
+\funcitem{int}{CDLUdecomp}{\varname{CDMatrix}{A}}\ $\cdots$ \bi{LU; also \funcname{CDLUdecompP}{} (partial pivoting) and \funcname{CDLUdecompC}{} (complete pivoting).}{LU 分解．\funcname{CDLUdecompP}{}（部分ピボット選択）および \funcname{CDLUdecompC}{}（完全ピボット選択）もあります．}
+\end{itemize}
+
+\subsection{\bi{Complex multi-component (CDD, CTD, CQD, CDS, CTS, CQS)}{マルチコンポーネント複素数 (CDD, CTD, CQD, CDS, CTS, CQS)}}
+
+\bi{The vector/matrix structure holds two parts of the underlying real type:}{ベクトル／行列構造体は，基礎となる実数型の二つの部分を保持します．}
+\begin{verbatim}
+typedef struct { XXVector re; XXVector im; } cXXvector;  /* e.g. DDVector re, im */
+typedef struct { XXMatrix re; XXMatrix im; } cXXmatrix;
+\end{verbatim}
+
+\begin{itemize}
+\funcitem{CDDVector}{init\_cddvector}{\varname{int}{dim}}\ $\cdots$ \bi{and \funcname{init\_cddmatrix}{} and the CTD/CQD/CDS/CTS/CQS analogues.}{および \funcname{init\_cddmatrix}{}，さらに CTD/CQD/CDS/CTS/CQS の同等品があります．}
+\funcitem{void}{set\_cddvector\_i}{\varname{CDDVector}{vec}, \varnameli{index}, \varname{cddfloat*}{val}}\ $\cdots$ \bi{element set/get via the \texttt{cXXfloat} value (\funcname{get\_cddvector\_i\_cddfloat}{}, \funcname{get\_cddmatrix\_ij\_cddfloat}{}, \funcname{set\_cddmatrix\_ij}{}).}{\texttt{cXXfloat} 値を介した要素の設定／取得（\funcname{get\_cddvector\_i\_cddfloat}{}，\funcname{get\_cddmatrix\_ij\_cddfloat}{}，\funcname{set\_cddmatrix\_ij}{}）．}
+\funcitem{void}{mul\_cddmatrix\_4m}{\varname{CDDMatrix}{C}, \varname{CDDMatrix}{A}, \varname{CDDMatrix}{B}}\
+$\cdots$ \bi{complex matrix multiplication using $4$ real multiplications
+($\mathrm{Re}=A_rB_r-A_iB_i$, $\mathrm{Im}=A_rB_i+A_iB_r$); the $3$-multiplication
+(Karatsuba) variant is \funcname{mul\_cddmatrix\_3m}{}.}{$4$ 回の実数乗算
+（$\mathrm{Re}=A_rB_r-A_iB_i$，$\mathrm{Im}=A_rB_i+A_iB_r$）を用いた複素行列乗算です．
+$3$ 回乗算（Karatsuba）版は \funcname{mul\_cddmatrix\_3m}{} です．}
+\funcitem{void}{mul\_cddmatrix\_cddvec\_4m}{\varname{CDDVector}{v}, \varname{CDDMatrix}{A}, \varname{CDDVector}{vb}}\
+$\cdots$ \bi{matrix-vector product; also \funcname{mul\_cddmatrixt\_cddvec}{} ($A^{T}\mathbf{vb}$).}{行列・ベクトル積です．\funcname{mul\_cddmatrixt\_cddvec}{}（$A^{T}\mathbf{vb}$）もあります．}
+\funcitem{double}{normf\_cddmatrix}{\varname{CDDMatrix}{A}}\ $\cdots$ \bi{Frobenius norm; block/Strassen multiplication is available as \funcname{mul\_cddmatrix\_block\_4m}{}, \funcname{mul\_cddmatrix\_strassen\_4m}{}.}{フロベニウスノルムです．ブロック／Strassen 乗算は \funcname{mul\_cddmatrix\_block\_4m}{}，\funcname{mul\_cddmatrix\_strassen\_4m}{} として利用できます．}
+\end{itemize}
+
+\bi{Each of CTD, CQD, CDS, CTS, CQS provides the identical set with its own prefix
+(e.g.\ \funcname{mul\_cqsmatrix\_4m}{}, \funcname{init\_ctsmatrix}{}).}{CTD，CQD，CDS，CTS，CQS のそれぞれは，独自の接頭辞を持つ同一の関数群を提供します
+（例えば \funcname{mul\_cqsmatrix\_4m}{}，\funcname{init\_ctsmatrix}{}）．}  \bi{The
+sparse-matrix counterparts (CRS storage and SpMV) for CD, CDD, CTD, CQD are
+described together with the real sparse types in Chapter \ref{chap:sparse}
+(\texttt{sparse\_cd.c}, \texttt{sparse\_cdd.c}, \texttt{sparse\_ctd.c}, \texttt{sparse\_cqd.c}).}{CD，CDD，CTD，CQD に対応する疎行列版（CRS 格納形式と SpMV）は，実数系疎行列型とともに
+第\ref{chap:sparse}章で説明します（\texttt{sparse\_cd.c}，\texttt{sparse\_cdd.c}，
+\texttt{sparse\_ctd.c}，\texttt{sparse\_cqd.c}）．}
+
+%------------------------------------------------------------------%
+\section{\bi{Summary of available families}{利用可能なファミリの一覧}}
+%------------------------------------------------------------------%
+
+\begin{table}[h]
+\centering
+\begin{tabular}{l l l}
+\hline
+group & types & where \\
+\hline
+real, \texttt{double}-based & D, DD, TD, QD, MPF & Chap.\ \ref{chap:basiclinear}--\ref{chap:sparse} \\
+real, \texttt{float}-based  & F, DS, TS, QS      & this chapter \\
+complex                     & CD, CDD, CTD, CQD, CDS, CTS, CQS, CMPF & this chapter, Chap.\ \ref{chap:sparse} \\
+GPU (CUDA)                  & g/gc/cg variants of all of the above   & Chap.\ \ref{chap:gpu} \\
+\hline
+\end{tabular}
+\caption{\bi{Precision families provided by BNCmatmul.}{BNCmatmul が提供する精度ファミリ．}}
+\end{table}

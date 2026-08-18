@@ -1,0 +1,34 @@
+# cmpf_bench PREC=106 OMP=32 reps=2 grid=128x32
+  axpy N=4096 done
+  axpy N=16384 done
+  axpy N=65536 done
+  matvec N=128 done
+  matvec N=256 done
+  matvec N=512 done
+  matmul N=64 done
+  matmul N=128 done
+  matmul N=256 done
+PREC=106 done
+# cmpf_bench PREC=212 OMP=32 reps=2 grid=128x32
+  axpy N=4096 done
+  axpy N=16384 done
+  axpy N=65536 done
+  matvec N=128 done
+  matvec N=256 done
+  matvec N=512 done
+  matmul N=64 done
+  matmul N=128 done
+  matmul N=256 done
+PREC=212 done
+# cmpf_bench PREC=424 OMP=32 reps=2 grid=128x32
+  axpy N=4096 done
+  axpy N=16384 done
+  axpy N=65536 done
+  matvec N=128 done
+  matvec N=256 done
+  matvec N=512 done
+  matmul N=64 done
+  matmul N=128 done
+  matmul N=256 done
+PREC=424 done
+CMPF_DONE rows=27

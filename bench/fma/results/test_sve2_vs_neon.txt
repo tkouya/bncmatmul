@@ -1,0 +1,32 @@
+=== SVE2 vs NEON: bitwise agreement of the add/mul kernels ===
+(both implement the same scalar netlist; 200000 random operand pairs each)
+
+single-word base (DS / TS / QS)
+  ds add_sloppy                identical  (0 / 200000)
+  ds mul_sloppy                MISMATCH  (91178 / 200000)
+  ds add_bf                    identical  (0 / 200000)
+  ds mul_bf                    identical  (0 / 200000)
+  ts addq                      identical  (0 / 200000)
+  ts mulq                      identical  (0 / 200000)
+  ts add_bf                    identical  (0 / 200000)
+  ts mul_bf                    identical  (0 / 200000)
+  qs add_sloppy                identical  (0 / 200000)
+  qs mul_sloppy                MISMATCH  (43103 / 200000)
+  qs add_bf                    identical  (0 / 200000)
+  qs mul_bf                    identical  (0 / 200000)
+
+double-word base (DD / TD / QD)
+  dd add_sloppy                identical  (0 / 200000)
+  dd mul_sloppy                MISMATCH  (90851 / 200000)
+  dd add_bf                    identical  (0 / 200000)
+  dd mul_bf                    identical  (0 / 200000)
+  td addq                      identical  (0 / 200000)
+  td mulq                      identical  (0 / 200000)
+  td add_bf                    identical  (0 / 200000)
+  td mul_bf                    identical  (0 / 200000)
+  qd add_sloppy                identical  (0 / 200000)
+  qd mul_sloppy                MISMATCH  (43680 / 200000)
+  qd add_bf                    identical  (0 / 200000)
+  qd mul_bf                    identical  (0 / 200000)
+
+*** SVE2/NEON MISMATCHES FOUND (see above) ***

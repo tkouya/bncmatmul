@@ -1,0 +1,662 @@
+%------------------------------------------------%
+% Sparse matrix
+%------------------------------------------------%
+\chapter{\bi{Sparse matrix and related functions}{疎行列および関連関数}}\label{chap:sparse}
+
+\bi{This chapter describes the sparse matrix types and associated functions provided by the library.
+Sparse matrices are stored in Compressed Row Storage (CRS) format.
+For each matrix type, the library provides real and complex variants
+at double, double-double (DD), triple-double (TD), quadruple-double (QD),
+and multiple-precision (MPF, via GMP) precisions.}{本章では、本ライブラリが提供する疎行列型とそれに付随する関数について説明します。
+疎行列は圧縮行格納（Compressed Row Storage, CRS）形式で格納されます。
+各行列型について、本ライブラリは倍精度、double-double（DD）、triple-double（TD）、quadruple-double（QD）、
+および多倍長精度（MPF、GMPによる）の実数版および複素数版を提供します。}
+
+%------------------------------------------------%
+\section{\bi{Structures of CRS matrix}{CRS行列の構造体}}
+%------------------------------------------------%
+
+\subsection{\texttt{DRSMatrix} --- \bi{double-precision sparse matrix}{倍精度疎行列}}
+
+\bi{The \texttt{drsmatrix} structure stores a real double-precision sparse matrix in CRS format.
+Its pointer type is \texttt{DRSMatrix}.  Key members are:}{\texttt{drsmatrix} 構造体は、実数の倍精度疎行列をCRS形式で格納します。
+そのポインタ型は \texttt{DRSMatrix} です。主なメンバは次のとおりです。}
+
+\begin{itemize}
+    \item \texttt{double *element} --- \bi{array of non-zero elements}{非零要素の配列}
+    \item \texttt{long int row\_dim, col\_dim} --- \bi{row and column dimensions}{行および列の次元}
+    \item \texttt{long int **nzero\_index} --- \bi{column indices of non-zero elements}{非零要素の列インデックス}
+    \item \texttt{long int *nzero\_col\_dim} --- \bi{number of non-zero elements in each row}{各行における非零要素の個数}
+    \item \texttt{long int *nzero\_row\_dim} --- \bi{number of non-zero elements in each column}{各列における非零要素の個数}
+    \item \texttt{long int nzero\_total\_num} --- \bi{total number of non-zero elements}{非零要素の総数}
+    \item \texttt{long int real\_nzero\_total\_num} --- \bi{SIMD-aligned total; equals}{SIMDアラインされた総数。次に等しい：} $\sum_i \texttt{real\_nzero\_col\_dim}[i]$
+    \item \texttt{long int *real\_nzero\_col\_dim} --- \bi{SIMD-aligned row non-zero counts (padded to \texttt{\_BNC\_D\_WIDTH})}{SIMDアラインされた各行の非零要素数（\texttt{\_BNC\_D\_WIDTH} にパディング）}
+    \item \texttt{double zero\_element} --- \bi{zero sentinel value}{ゼロを表す番兵値}
+\end{itemize}
+
+\bi{Note that \texttt{\_BNC\_D\_WIDTH} (and \texttt{\_BNC\_S\_WIDTH} for the
+float-based types) depends on the SIMD backend the library was built for: 4/8
+under AVX2, 8/16 under AVX-512, 2/4 under NEON and SVE2, and 1/1 in the serial
+build.  The padding therefore costs more in a wider build, and for matrices
+whose rows hold fewer non-zeros than the vector width the padded lanes can
+dominate: with a half-bandwidth of 3 (7 non-zeros per row) the AVX-512 SpMV is
+measurably \emph{slower} than the serial one.  See Sec.~\ref{sec:simdbackends}
+for the measurements and for guidance on which library to link against.}{
+\texttt{\_BNC\_D\_WIDTH}（float基の型では \texttt{\_BNC\_S\_WIDTH}）は、
+ライブラリをビルドしたSIMDバックエンドに依存する点に注意してください。
+AVX2では4/8、AVX-512では8/16、NEONおよびSVE2では2/4、serialビルドでは1/1です。
+したがってパディングのコストは幅の広いビルドほど大きくなり、行の非零要素数が
+ベクトル幅より少ない行列ではパディングされたレーンが支配的になり得ます。
+半帯幅3（1行あたり非零要素7個）の場合、AVX-512のSpMVはserialより明確に
+\emph{遅く}なります。測定値とリンクすべきライブラリの選び方については
+\ref{sec:simdbackends}節を参照してください。}
+
+\noindent \bi{Functions for \texttt{DRSMatrix}:}{\texttt{DRSMatrix} に対する関数：}
+
+\begin{itemize}
+    \funcitem{DRSMatrix}{init\_drsmatrix}{\varname{long int}{row\_dim}, \varname{long int *}{nzero\_col\_dim}, \varname{long int}{nzero\_total\_num}}
+    \funcitem{void}{free\_drsmatrix}{\varname{DRSMatrix}{mat}}
+    \funcitem{void}{set\_nzero\_row\_dim}{\varname{DRSMatrix}{mat}}
+    \funcitem{void}{print\_drsmatrix}{\varname{DRSMatrix}{mat}}
+    \funcitem{void}{set\_dmatrix\_drsmatrix}{\varname{DMatrix}{ret}, \varname{DRSMatrix}{spmat}}\ $\cdots$ \bi{Dense}{密} $:=$ \bi{Sparse}{疎}
+    \funcitem{DRSMatrix}{init\_set\_drsmatrix\_dmatrix}{\varname{DMatrix}{org}}
+    \funcitem{double}{get\_drsmatrix\_ij}{\varname{DRSMatrix}{mat}, \varname{long int}{i}, \varname{long int}{j}}
+    \funcitem{void}{set\_drsmatrix\_ij}{\varname{DRSMatrix}{mat}, \varname{long int}{i}, \varname{long int}{j}, \varname{double}{val}}
+    \funcitem{DRSMatrix}{init\_set\_drsmatrix}{\varname{DRSMatrix}{org}}
+    \funcitem{void}{set0\_drsmatrix}{\varname{DRSMatrix}{spmat}}
+    \funcitem{int}{get\_vars\_drsmatrix\_fname}{\varname{long int *}{row\_dim}, \varname{long int **}{nzero\_col\_dim}, \varname{long int *}{nzero\_total\_num}, \varname{const char *}{fname}}
+    \funcitem{int}{fread\_urilinkdat\_fname}{\varname{DRSMatrix}{mat}, \varname{const char *}{fname}}
+    \funcitem{int}{mul\_drsmatrix\_dvec}{\varname{DVector}{ret}, \varname{DRSMatrix}{mat}, \varname{DVector}{vec}}
+    \funcitem{int}{mul\_drsmatrixt\_dvec}{\varname{DVector}{ret}, \varname{DRSMatrix}{mat}, \varname{DVector}{vec}}\ $\cdots$ \bi{transposed}{転置}
+    \funcitem{void}{mul\_drsmatrix\_dvec\_oz}{\varname{DVector}{ret}, \varname{DRSMatrix}{a}, \varname{int}{max\_num\_div\_a}, \varname{DVector}{vb}, \varname{int}{max\_num\_div\_vb}}\ $\cdots$ \bi{Ozaki scheme}{尾崎スキーム}
+    \funcitem{void}{mul\_drsmatrixt\_dvec\_oz}{\varname{DVector}{ret}, \varname{DRSMatrix}{a}, \varname{int}{max\_num\_div\_a}, \varname{DVector}{vb}, \varname{int}{max\_num\_div\_vb}}\ $\cdots$ \bi{transposed, Ozaki scheme}{転置、尾崎スキーム}
+    \funcitem{double}{dpower\_rsmatrix}{\varname{DVector}{evec}, \varname{DRSMatrix}{mat}, \varname{double}{reps}, \varname{double}{aeps}, \varname{long int}{maxtimes}}\ $\cdots$ \bi{power method}{べき乗法}
+    \funcitem{int}{smul\_dvector}{\varname{DVector}{ret}, \varname{double}{c}, \varname{DVector}{vec}}
+    \funcitem{long int}{absmax\_index\_dvector}{\varname{double *}{absmax}, \varname{DVector}{vec}}
+    \funcitem{void}{subst\_drsmatrix}{\varname{DRSMatrix}{ret}, \varname{DRSMatrix}{a}}\ $\cdots$ $\mathit{ret} := a$
+    \funcitem{void}{add\_drsmatrix}{\varname{DRSMatrix}{ret}, \varname{DRSMatrix}{a}, \varname{DRSMatrix}{b}}\ $\cdots$ $\mathit{ret} := a + b$
+    \funcitem{void}{sub\_drsmatrix}{\varname{DRSMatrix}{ret}, \varname{DRSMatrix}{a}, \varname{DRSMatrix}{b}}\ $\cdots$ $\mathit{ret} := a - b$
+    \funcitem{void}{cmul\_drsmatrix}{\varname{DRSMatrix}{ret}, \varname{double}{c}, \varname{DRSMatrix}{a}}\ $\cdots$ $\mathit{ret} := c \cdot a$
+    \funcitem{double}{absmax\_row\_drsmatrix}{\varname{long int *}{max\_j}, \varname{long int}{row}, \varname{DRSMatrix}{mat}}
+    \funcitem{double}{absmax\_col\_drsmatrix}{\varname{long int *}{max\_i}, \varname{long int}{col}, \varname{DRSMatrix}{mat}}
+    \funcitem{double}{normf\_drsmatrix}{\varname{DRSMatrix}{mat}}\ $\cdots$ \bi{Frobenius norm}{フロベニウスノルム}
+    \funcitem{void}{split\_drsmatrix}{\varname{DRSMatrix}{high}, \varname{DRSMatrix}{low}, \varname{DRSMatrix}{org}}\ $\cdots$ SplitMat\_A
+    \funcitem{int}{split\_drsmatrix\_drsmat}{\varname{DRSMatrix[]}{ret}, \varname{int}{num\_div}, \varname{DRSMatrix}{org}}\ $\cdots$ SplitMat\_A \bi{(multiple parts)}{（複数分割）}
+    \funcitem{int}{split\_drsmatrix\_t\_drsmat}{\varname{DRSMatrix[]}{ret}, \varname{int}{num\_div}, \varname{DRSMatrix}{org}}\ $\cdots$ SplitMat\_B
+    \funcitem{void}{iLU0\_drsmatrix}{\varname{DRSMatrix}{mat}}\ $\cdots$ \bi{incomplete LU decomposition (iLU0)}{不完全LU分解（iLU0）}
+    \funcitem{void}{solve\_iLU0\_drsmatrix}{\varname{DVector}{ret}, \varname{DRSMatrix}{ilu}, \varname{DVector}{b}}\ $\cdots$ \bi{solve}{次を解く} $(\mathrm{iLU})\mathbf{x} = \mathbf{b}$
+    \funcitem{void}{solve\_iLU0t\_drsmatrix}{\varname{DVector}{ret}, \varname{DRSMatrix}{ilu}, \varname{DVector}{b}}\ $\cdots$ \bi{solve}{次を解く} $\mathbf{x}^T (\mathrm{iLU}) = \mathbf{b}^T$
+\end{itemize}
+
+\subsection{\texttt{CDRSMatrix} --- \bi{complex double-precision sparse matrix}{複素倍精度疎行列}}
+
+\bi{The \texttt{cdrsmatrix} structure stores a complex sparse matrix as a pair of real \texttt{DRSMatrix} parts.
+Its pointer type is \texttt{CDRSMatrix}.  Members: \texttt{DRSMatrix re} (real part), \texttt{DRSMatrix im} (imaginary part).}{\texttt{cdrsmatrix} 構造体は、複素疎行列を実数の \texttt{DRSMatrix} 部の対として格納します。
+そのポインタ型は \texttt{CDRSMatrix} です。メンバは \texttt{DRSMatrix re}（実部）、\texttt{DRSMatrix im}（虚部）です。}
+
+\begin{itemize}
+    \funcitem{CDRSMatrix}{init\_cdrsmatrix}{\varname{long int}{row\_dim}, \varname{long int *}{nzero\_col\_dim}, \varname{long int}{nzero\_total\_num}}
+    \funcitem{void}{free\_cdrsmatrix}{\varname{CDRSMatrix}{mat}}
+    \funcitem{void}{print\_cdrsmatrix}{\varname{CDRSMatrix}{mat}}
+    \funcitem{void}{set\_cdmatrix\_cdrsmatrix}{\varname{CDMatrix}{ret}, \varname{CDRSMatrix}{spmat}}
+    \funcitem{double}{normf\_cdrsmatrix}{\varname{CDRSMatrix}{mat}}\ $\cdots$ \bi{Frobenius norm}{フロベニウスノルム}
+    \funcitem{CDRSMatrix}{init\_set\_cdrsmatrix\_cdmatrix}{\varname{CDMatrix}{org}}
+    \funcitem{CDRSMatrix}{init\_set\_cdrsmatrix}{\varname{CDRSMatrix}{org}}
+    \funcitem{double \_Complex}{get\_cdrsmatrix\_ij}{\varname{CDRSMatrix}{mat}, \varname{long int}{i}, \varname{long int}{j}}
+    \funcitem{void}{set\_cdrsmatrix\_ij}{\varname{CDRSMatrix}{mat}, \varname{long int}{i}, \varname{long int}{j}, \varname{double \_Complex}{val}}
+    \funcitem{int}{mul\_cdrsmatrix\_cdvec}{\varname{CDVector}{ret}, \varname{CDRSMatrix}{mat}, \varname{CDVector}{vec}}
+    \funcitem{int}{mul\_cdrsmatrixt\_cdvec}{\varname{CDVector}{ret}, \varname{CDRSMatrix}{mat}, \varname{CDVector}{vec}}\ $\cdots$ \bi{transposed}{転置}
+    \funcitem{int}{mul\_cdrsmatrixs\_cdvec}{\varname{CDVector}{ret}, \varname{CDRSMatrix}{mat}, \varname{CDVector}{vec}}\ $\cdots$ \bi{conjugate-transposed}{共役転置}
+    \funcitem{void}{iLU0\_cdrsmatrix}{\varname{CDRSMatrix}{mat}}
+    \funcitem{void}{solve\_iLU0\_cdrsmatrix}{\varname{CDVector}{ret}, \varname{CDRSMatrix}{ilu}, \varname{CDVector}{b}}
+    \funcitem{void}{solve\_iLU0t\_cdrsmatrix}{\varname{CDVector}{ret}, \varname{CDRSMatrix}{ilu}, \varname{CDVector}{b}}
+    \funcitem{void}{solve\_iLU0s\_cdrsmatrix}{\varname{CDVector}{ret}, \varname{CDRSMatrix}{ilu}, \varname{CDVector}{b}}
+\end{itemize}
+
+\subsection{\texttt{DDRSMatrix} \bi{and}{および} \texttt{CDDRSMatrix} --- \bi{double-double sparse matrices (requires \texttt{USE\_DDLINEAR})}{double-double疎行列（\texttt{USE\_DDLINEAR} が必要）}}
+
+\bi{The \texttt{ddrsmatrix} structure stores a double-double sparse matrix; pointer type \texttt{DDRSMatrix}.
+Its elements are stored as \texttt{double *element[DDSIZE]}.
+The complex variant \texttt{CDDRSMatrix} holds a pair of \texttt{DDRSMatrix} parts.}{\texttt{ddrsmatrix} 構造体は double-double 疎行列を格納します。ポインタ型は \texttt{DDRSMatrix} です。
+要素は \texttt{double *element[DDSIZE]} として格納されます。
+複素数版 \texttt{CDDRSMatrix} は \texttt{DDRSMatrix} 部の対を保持します。}
+
+\begin{itemize}
+    \funcitem{DDRSMatrix}{init\_ddrsmatrix}{\varname{long int}{row\_dim}, \varname{long int *}{nzero\_col\_dim}, \varname{long int}{nzero\_total\_num}}
+    \funcitem{void}{free\_ddrsmatrix}{\varname{DDRSMatrix}{mat}}
+    \funcitem{void}{set\_nzero\_row\_dim\_dd}{\varname{DDRSMatrix}{mat}}
+    \funcitem{void}{print\_ddrsmatrix}{\varname{DDRSMatrix}{mat}}
+    \funcitem{void}{normf\_ddrsmatrix}{\varname{double}{ret[DDSIZE]}, \varname{DDRSMatrix}{mat}}
+    \funcitem{DDRSMatrix}{init\_set\_ddrsmatrix\_ddmatrix}{\varname{DDMatrix}{org}}
+    \funcitem{void}{get\_ddrsmatrix\_ij}{\varname{double}{ret[DDSIZE]}, \varname{DDRSMatrix}{mat}, \varname{long int}{i}, \varname{long int}{j}}
+    \funcitem{void}{set\_ddrsmatrix\_ij}{\varname{DDRSMatrix}{mat}, \varname{long int}{i}, \varname{long int}{j}, \varname{double}{val[DDSIZE]}}
+    \funcitem{DDRSMatrix}{init\_set\_ddrsmatrix}{\varname{DDRSMatrix}{org}}
+    \funcitem{void}{set0\_ddrsmatrix}{\varname{DDRSMatrix}{spmat}}
+    \funcitem{void}{subst\_ddrsmatrix}{\varname{DDRSMatrix}{ret}, \varname{DDRSMatrix}{a}}
+    \funcitem{DRSMatrix}{init\_set\_drsmatrix\_ddrsmat}{\varname{DDRSMatrix}{org}}
+    \funcitem{int}{get\_vars\_ddrsmatrix\_fname}{\varname{long int *}{row\_dim}, \varname{long int **}{nzero\_col\_dim}, \varname{long int *}{nzero\_total\_num}, \varname{const char *}{fname}}
+    \funcitem{int}{mul\_ddrsmatrix\_ddvec}{\varname{DDVector}{ret}, \varname{DDRSMatrix}{mat}, \varname{DDVector}{vec}}
+    \funcitem{int}{mul\_ddrsmatrixt\_ddvec}{\varname{DDVector}{ret}, \varname{DDRSMatrix}{mat}, \varname{DDVector}{vec}}
+    \funcitem{int}{mul\_drsmatrix\_ddvec}{\varname{DDVector}{ret}, \varname{DRSMatrix}{mat}, \varname{DDVector}{vec}}
+    \funcitem{int}{mul\_drsmatrixt\_ddvec}{\varname{DDVector}{ret}, \varname{DRSMatrix}{mat}, \varname{DDVector}{vec}}
+    \funcitem{void}{ddpower\_sp}{\varname{double}{max\_eig[DDSIZE]}, \varname{DDVector}{evec}, \varname{DDRSMatrix}{mat}, \varname{double}{reps[DDSIZE]}, \varname{double}{aeps[DDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{absmax\_index\_ddvector}{\varname{double}{ret[DDSIZE]}, \varname{DDVector}{vec}}
+    \funcitem{void}{subst\_ddrsmatrix\_drsmat}{\varname{DDRSMatrix}{c}, \varname{DRSMatrix}{a}}\ $\cdots$ $c := (\mathrm{DD})a$
+    \funcitem{void}{subst\_drsmatrix\_ddrsmat}{\varname{DRSMatrix}{c}, \varname{DDRSMatrix}{a}}\ $\cdots$ $c := (\mathrm{D})a$
+    \funcitem{void}{absmax\_row\_ddrsmatrix}{\varname{double}{mu[DDSIZE]}, \varname{long int *}{max\_j}, \varname{long int}{row}, \varname{DDRSMatrix}{mat}}
+    \funcitem{void}{absmax\_col\_ddrsmatrix}{\varname{double}{mu[DDSIZE]}, \varname{long int *}{max\_i}, \varname{long int}{col}, \varname{DDRSMatrix}{mat}}
+    \funcitem{void}{add\_ddrsmatrix\_drsmat}{\varname{DDRSMatrix}{c}, \varname{DDRSMatrix}{a}, \varname{DRSMatrix}{b}}
+    \funcitem{void}{sub\_ddrsmatrix\_drsmat}{\varname{DDRSMatrix}{c}, \varname{DDRSMatrix}{a}, \varname{DRSMatrix}{b}}
+    \funcitem{int}{split\_ddrsmatrix\_drsmat}{\varname{DRSMatrix[]}{ret}, \varname{int}{num\_div}, \varname{DDRSMatrix}{org}}
+    \funcitem{int}{split\_ddrsmatrix\_t\_drsmat}{\varname{DRSMatrix[]}{ret}, \varname{int}{num\_div}, \varname{DDRSMatrix}{org}}
+    \funcitem{void}{mul\_ddrsmatrix\_ddvec\_oz}{\varname{DDVector}{ret}, \varname{DDRSMatrix}{a}, \varname{int}{max\_num\_div\_a}, \varname{DDVector}{vb}, \varname{int}{max\_num\_div\_vb}}
+    \funcitem{void}{mul\_ddrsmatrixt\_ddvec\_oz}{\varname{DDVector}{ret}, \varname{DDRSMatrix}{a}, \varname{int}{max\_num\_div\_a}, \varname{DDVector}{vb}, \varname{int}{max\_num\_div\_vb}}
+    \funcitem{void}{iLU0\_ddrsmatrix}{\varname{DDRSMatrix}{mat}}
+    \funcitem{void}{solve\_iLU0\_ddrsmatrix}{\varname{DDVector}{ret}, \varname{DDRSMatrix}{ilu}, \varname{DDVector}{b}}
+    \funcitem{void}{solve\_iLU0t\_ddrsmatrix}{\varname{DDVector}{ret}, \varname{DDRSMatrix}{ilu}, \varname{DDVector}{b}}
+    \funcitem{void}{solve\_iLU0\_drsmatrix\_ddvec}{\varname{DDVector}{ret}, \varname{DRSMatrix}{ilu}, \varname{DDVector}{b}}
+    \funcitem{void}{solve\_iLU0t\_drsmatrix\_ddvec}{\varname{DDVector}{ret}, \varname{DRSMatrix}{ilu}, \varname{DDVector}{b}}
+\end{itemize}
+
+\noindent \bi{Complex DD sparse matrix (\texttt{CDDRSMatrix}):}{複素DD疎行列（\texttt{CDDRSMatrix}）：}
+
+\begin{itemize}
+    \funcitem{CDDRSMatrix}{init\_cddrsmatrix}{\varname{long int}{row\_dim}, \varname{long int *}{nzero\_col\_dim}, \varname{long int}{nzero\_total\_num}}
+    \funcitem{void}{free\_cddrsmatrix}{\varname{CDDRSMatrix}{mat}}
+    \funcitem{void}{print\_cddrsmatrix}{\varname{CDDRSMatrix}{mat}}
+    \funcitem{void}{normf\_cddrsmatrix}{\varname{double}{ret[DDSIZE]}, \varname{CDDRSMatrix}{mat}}
+    \funcitem{CDDRSMatrix}{init\_set\_cddrsmatrix}{\varname{CDDRSMatrix}{org}}
+    \funcitem{int}{mul\_cddrsmatrix\_cddvec}{\varname{CDDVector}{ret}, \varname{CDDRSMatrix}{mat}, \varname{CDDVector}{vec}}
+    \funcitem{int}{mul\_cddrsmatrixt\_cddvec}{\varname{CDDVector}{ret}, \varname{CDDRSMatrix}{mat}, \varname{CDDVector}{vec}}
+    \funcitem{int}{mul\_cddrsmatrixs\_cddvec}{\varname{CDDVector}{ret}, \varname{CDDRSMatrix}{mat}, \varname{CDDVector}{vec}}
+    \funcitem{int}{mul\_cdrsmatrix\_cddvec}{\varname{CDDVector}{ret}, \varname{CDRSMatrix}{mat}, \varname{CDDVector}{vec}}
+    \funcitem{int}{mul\_cdrsmatrixt\_cddvec}{\varname{CDDVector}{ret}, \varname{CDRSMatrix}{mat}, \varname{CDDVector}{vec}}
+    \funcitem{int}{mul\_cdrsmatrixs\_cddvec}{\varname{CDDVector}{ret}, \varname{CDRSMatrix}{mat}, \varname{CDDVector}{vec}}
+    \funcitem{void}{iLU0\_cddrsmatrix}{\varname{CDDRSMatrix}{mat}}
+    \funcitem{void}{solve\_iLU0\_cddrsmatrix}{\varname{CDDVector}{ret}, \varname{CDDRSMatrix}{ilu}, \varname{CDDVector}{b}}
+    \funcitem{void}{solve\_iLU0t\_cddrsmatrix}{\varname{CDDVector}{ret}, \varname{CDDRSMatrix}{ilu}, \varname{CDDVector}{b}}
+    \funcitem{void}{solve\_iLU0s\_cddrsmatrix}{\varname{CDDVector}{ret}, \varname{CDDRSMatrix}{ilu}, \varname{CDDVector}{b}}
+    \funcitem{void}{solve\_iLU0\_cdrsmatrix\_cddvec}{\varname{CDDVector}{ret}, \varname{CDRSMatrix}{ilu}, \varname{CDDVector}{b}}
+    \funcitem{void}{solve\_iLU0t\_cdrsmatrix\_cddvec}{\varname{CDDVector}{ret}, \varname{CDRSMatrix}{ilu}, \varname{CDDVector}{b}}
+    \funcitem{void}{solve\_iLU0s\_cdrsmatrix\_cddvec}{\varname{CDDVector}{ret}, \varname{CDRSMatrix}{ilu}, \varname{CDDVector}{b}}
+\end{itemize}
+
+\subsection{\texttt{TDRSMatrix} \bi{and}{および} \texttt{CTDRSMatrix} --- \bi{triple-double sparse matrices (requires \texttt{USE\_TDLINEAR})}{triple-double疎行列（\texttt{USE\_TDLINEAR} が必要）}}
+
+\bi{The \texttt{tdrsmatrix} structure stores a triple-double sparse matrix; pointer type \texttt{TDRSMatrix}.
+Elements are stored as \texttt{double *element[TDSIZE]}.}{\texttt{tdrsmatrix} 構造体は triple-double 疎行列を格納します。ポインタ型は \texttt{TDRSMatrix} です。
+要素は \texttt{double *element[TDSIZE]} として格納されます。}
+
+\begin{itemize}
+    \funcitem{TDRSMatrix}{init\_tdrsmatrix}{\varname{long int}{row\_dim}, \varname{long int *}{nzero\_col\_dim}, \varname{long int}{nzero\_total\_num}}
+    \funcitem{void}{free\_tdrsmatrix}{\varname{TDRSMatrix}{mat}}
+    \funcitem{void}{set\_nzero\_row\_dim\_td}{\varname{TDRSMatrix}{mat}}
+    \funcitem{void}{print\_tdrsmatrix}{\varname{TDRSMatrix}{mat}}
+    \funcitem{void}{get\_tdrsmatrix\_ij}{\varname{double}{ret[TDSIZE]}, \varname{TDRSMatrix}{mat}, \varname{long int}{i}, \varname{long int}{j}}
+    \funcitem{void}{set\_tdrsmatrix\_ij}{\varname{TDRSMatrix}{mat}, \varname{long int}{i}, \varname{long int}{j}, \varname{double}{val[TDSIZE]}}
+    \funcitem{TDRSMatrix}{init\_set\_tdrsmatrix}{\varname{TDRSMatrix}{org}}
+    \funcitem{void}{set0\_tdrsmatrix}{\varname{TDRSMatrix}{spmat}}
+    \funcitem{void}{subst\_tdrsmatrix}{\varname{TDRSMatrix}{ret}, \varname{TDRSMatrix}{a}}
+    \funcitem{DRSMatrix}{init\_set\_drsmatrix\_tdrsmat}{\varname{TDRSMatrix}{org}}
+    \funcitem{TDRSMatrix}{init\_set\_tdrsmatrix\_tdmatrix}{\varname{TDMatrix}{org}}
+    \funcitem{int}{get\_vars\_tdrsmatrix\_fname}{\varname{long int *}{row\_dim}, \varname{long int **}{nzero\_col\_dim}, \varname{long int *}{nzero\_total\_num}, \varname{const char *}{fname}}
+    \funcitem{int}{mul\_tdrsmatrix\_tdvec}{\varname{TDVector}{ret}, \varname{TDRSMatrix}{mat}, \varname{TDVector}{vec}}
+    \funcitem{int}{mul\_tdrsmatrixt\_tdvec}{\varname{TDVector}{ret}, \varname{TDRSMatrix}{mat}, \varname{TDVector}{vec}}
+    \funcitem{int}{mul\_drsmatrix\_tdvec}{\varname{TDVector}{ret}, \varname{DRSMatrix}{mat}, \varname{TDVector}{vec}}
+    \funcitem{int}{mul\_drsmatrixt\_tdvec}{\varname{TDVector}{ret}, \varname{DRSMatrix}{mat}, \varname{TDVector}{vec}}
+    \funcitem{void}{tdpower\_sp}{\varname{double}{max\_eig[TDSIZE]}, \varname{TDVector}{evec}, \varname{TDRSMatrix}{mat}, \varname{double}{reps[TDSIZE]}, \varname{double}{aeps[TDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{absmax\_index\_tdvector}{\varname{double}{ret[TDSIZE]}, \varname{TDVector}{vec}}
+    \funcitem{void}{subst\_tdrsmatrix\_drsmat}{\varname{TDRSMatrix}{c}, \varname{DRSMatrix}{a}}
+    \funcitem{void}{subst\_drsmatrix\_tdrsmat}{\varname{DRSMatrix}{c}, \varname{TDRSMatrix}{a}}
+    \funcitem{void}{absmax\_row\_tdrsmatrix}{\varname{double}{mu[TDSIZE]}, \varname{long int *}{max\_j}, \varname{long int}{row}, \varname{TDRSMatrix}{mat}}
+    \funcitem{void}{absmax\_col\_tdrsmatrix}{\varname{double}{mu[TDSIZE]}, \varname{long int *}{max\_i}, \varname{long int}{col}, \varname{TDRSMatrix}{mat}}
+    \funcitem{void}{add\_tdrsmatrix\_drsmat}{\varname{TDRSMatrix}{c}, \varname{TDRSMatrix}{a}, \varname{DRSMatrix}{b}}
+    \funcitem{void}{sub\_tdrsmatrix\_drsmat}{\varname{TDRSMatrix}{c}, \varname{TDRSMatrix}{a}, \varname{DRSMatrix}{b}}
+    \funcitem{int}{split\_tdrsmatrix\_drsmat}{\varname{DRSMatrix[]}{ret}, \varname{int}{num\_div}, \varname{TDRSMatrix}{org}}
+    \funcitem{int}{split\_tdrsmatrix\_t\_drsmat}{\varname{DRSMatrix[]}{ret}, \varname{int}{num\_div}, \varname{TDRSMatrix}{org}}
+    \funcitem{void}{mul\_tdrsmatrix\_tdvec\_oz}{\varname{TDVector}{ret}, \varname{TDRSMatrix}{a}, \varname{int}{max\_num\_div\_a}, \varname{TDVector}{vb}, \varname{int}{max\_num\_div\_vb}}
+    \funcitem{void}{mul\_tdrsmatrixt\_tdvec\_oz}{\varname{TDVector}{ret}, \varname{TDRSMatrix}{a}, \varname{int}{max\_num\_div\_a}, \varname{TDVector}{vb}, \varname{int}{max\_num\_div\_vb}}
+    \funcitem{void}{iLU0\_tdrsmatrix}{\varname{TDRSMatrix}{mat}}
+    \funcitem{void}{solve\_iLU0\_tdrsmatrix}{\varname{TDVector}{ret}, \varname{TDRSMatrix}{ilu}, \varname{TDVector}{b}}
+    \funcitem{void}{solve\_iLU0t\_tdrsmatrix}{\varname{TDVector}{ret}, \varname{TDRSMatrix}{ilu}, \varname{TDVector}{b}}
+    \funcitem{void}{solve\_iLU0\_drsmatrix\_tdvec}{\varname{TDVector}{ret}, \varname{DRSMatrix}{ilu}, \varname{TDVector}{b}}
+    \funcitem{void}{solve\_iLU0t\_drsmatrix\_tdvec}{\varname{TDVector}{ret}, \varname{DRSMatrix}{ilu}, \varname{TDVector}{b}}
+\end{itemize}
+
+\noindent \bi{Complex TD sparse matrix (\texttt{CTDRSMatrix}):}{複素TD疎行列（\texttt{CTDRSMatrix}）：}
+
+\begin{itemize}
+    \funcitem{CTDRSMatrix}{init\_ctdrsmatrix}{\varname{long int}{row\_dim}, \varname{long int *}{nzero\_col\_dim}, \varname{long int}{nzero\_total\_num}}
+    \funcitem{void}{free\_ctdrsmatrix}{\varname{CTDRSMatrix}{mat}}
+    \funcitem{void}{print\_ctdrsmatrix}{\varname{CTDRSMatrix}{mat}}
+    \funcitem{CTDRSMatrix}{init\_set\_ctdrsmatrix}{\varname{CTDRSMatrix}{org}}
+    \funcitem{int}{mul\_ctdrsmatrix\_ctdvec}{\varname{CTDVector}{ret}, \varname{CTDRSMatrix}{mat}, \varname{CTDVector}{vec}}
+    \funcitem{int}{mul\_ctdrsmatrixt\_ctdvec}{\varname{CTDVector}{ret}, \varname{CTDRSMatrix}{mat}, \varname{CTDVector}{vec}}
+    \funcitem{int}{mul\_ctdrsmatrixs\_ctdvec}{\varname{CTDVector}{ret}, \varname{CTDRSMatrix}{mat}, \varname{CTDVector}{vec}}
+    \funcitem{int}{mul\_cdrsmatrix\_ctdvec}{\varname{CTDVector}{ret}, \varname{CDRSMatrix}{mat}, \varname{CTDVector}{vec}}
+    \funcitem{int}{mul\_cdrsmatrixt\_ctdvec}{\varname{CTDVector}{ret}, \varname{CDRSMatrix}{mat}, \varname{CTDVector}{vec}}
+    \funcitem{int}{mul\_cdrsmatrixs\_ctdvec}{\varname{CTDVector}{ret}, \varname{CDRSMatrix}{mat}, \varname{CTDVector}{vec}}
+    \funcitem{void}{iLU0\_ctdrsmatrix}{\varname{CTDRSMatrix}{mat}}
+    \funcitem{void}{solve\_iLU0\_ctdrsmatrix}{\varname{CTDVector}{ret}, \varname{CTDRSMatrix}{ilu}, \varname{CTDVector}{b}}
+    \funcitem{void}{solve\_iLU0t\_ctdrsmatrix}{\varname{CTDVector}{ret}, \varname{CTDRSMatrix}{ilu}, \varname{CTDVector}{b}}
+    \funcitem{void}{solve\_iLU0s\_ctdrsmatrix}{\varname{CTDVector}{ret}, \varname{CTDRSMatrix}{ilu}, \varname{CTDVector}{b}}
+    \funcitem{void}{solve\_iLU0\_cdrsmatrix\_ctdvec}{\varname{CTDVector}{ret}, \varname{CDRSMatrix}{ilu}, \varname{CTDVector}{b}}
+    \funcitem{void}{solve\_iLU0t\_cdrsmatrix\_ctdvec}{\varname{CTDVector}{ret}, \varname{CDRSMatrix}{ilu}, \varname{CTDVector}{b}}
+    \funcitem{void}{solve\_iLU0s\_cdrsmatrix\_ctdvec}{\varname{CTDVector}{ret}, \varname{CDRSMatrix}{ilu}, \varname{CTDVector}{b}}
+\end{itemize}
+
+\subsection{\texttt{QDRSMatrix} \bi{and}{および} \texttt{CQDRSMatrix} --- \bi{quadruple-double sparse matrices (requires \texttt{USE\_QDLINEAR})}{quadruple-double疎行列（\texttt{USE\_QDLINEAR} が必要）}}
+
+\bi{The \texttt{qdrsmatrix} structure stores a quadruple-double sparse matrix; pointer type \texttt{QDRSMatrix}.
+Elements are stored as \texttt{double *element[QDSIZE]}.}{\texttt{qdrsmatrix} 構造体は quadruple-double 疎行列を格納します。ポインタ型は \texttt{QDRSMatrix} です。
+要素は \texttt{double *element[QDSIZE]} として格納されます。}
+
+\begin{itemize}
+    \funcitem{QDRSMatrix}{init\_qdrsmatrix}{\varname{long int}{row\_dim}, \varname{long int *}{nzero\_col\_dim}, \varname{long int}{nzero\_total\_num}}
+    \funcitem{void}{free\_qdrsmatrix}{\varname{QDRSMatrix}{mat}}
+    \funcitem{void}{set\_nzero\_row\_dim\_qd}{\varname{QDRSMatrix}{mat}}
+    \funcitem{void}{print\_qdrsmatrix}{\varname{QDRSMatrix}{mat}}
+    \funcitem{QDRSMatrix}{init\_set\_qdrsmatrix\_qdmatrix}{\varname{QDMatrix}{org}}
+    \funcitem{void}{get\_qdrsmatrix\_ij}{\varname{double}{ret[QDSIZE]}, \varname{QDRSMatrix}{mat}, \varname{long int}{i}, \varname{long int}{j}}
+    \funcitem{void}{set\_qdrsmatrix\_ij}{\varname{QDRSMatrix}{mat}, \varname{long int}{i}, \varname{long int}{j}, \varname{double}{val[QDSIZE]}}
+    \funcitem{QDRSMatrix}{init\_set\_qdrsmatrix}{\varname{QDRSMatrix}{org}}
+    \funcitem{void}{set0\_qdrsmatrix}{\varname{QDRSMatrix}{spmat}}
+    \funcitem{void}{subst\_qdrsmatrix}{\varname{QDRSMatrix}{ret}, \varname{QDRSMatrix}{a}}
+    \funcitem{DRSMatrix}{init\_set\_drsmatrix\_qdrsmat}{\varname{QDRSMatrix}{org}}
+    \funcitem{int}{get\_vars\_qdrsmatrix\_fname}{\varname{long int *}{row\_dim}, \varname{long int **}{nzero\_col\_dim}, \varname{long int *}{nzero\_total\_num}, \varname{const char *}{fname}}
+    \funcitem{int}{mul\_qdrsmatrix\_qdvec}{\varname{QDVector}{ret}, \varname{QDRSMatrix}{mat}, \varname{QDVector}{vec}}
+    \funcitem{int}{mul\_qdrsmatrixt\_qdvec}{\varname{QDVector}{ret}, \varname{QDRSMatrix}{mat}, \varname{QDVector}{vec}}
+    \funcitem{int}{mul\_drsmatrix\_qdvec}{\varname{QDVector}{ret}, \varname{DRSMatrix}{mat}, \varname{QDVector}{vec}}
+    \funcitem{int}{mul\_drsmatrixt\_qdvec}{\varname{QDVector}{ret}, \varname{DRSMatrix}{mat}, \varname{QDVector}{vec}}
+    \funcitem{void}{qdpower\_sp}{\varname{double}{max\_eig[QDSIZE]}, \varname{QDVector}{evec}, \varname{QDRSMatrix}{mat}, \varname{double}{reps[QDSIZE]}, \varname{double}{aeps[QDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{absmax\_index\_qdvector}{\varname{double}{ret[QDSIZE]}, \varname{QDVector}{vec}}
+    \funcitem{void}{subst\_qdrsmatrix\_drsmat}{\varname{QDRSMatrix}{c}, \varname{DRSMatrix}{a}}
+    \funcitem{void}{subst\_drsmatrix\_qdrsmat}{\varname{DRSMatrix}{c}, \varname{QDRSMatrix}{a}}
+    \funcitem{void}{absmax\_row\_qdrsmatrix}{\varname{double}{mu[QDSIZE]}, \varname{long int *}{max\_j}, \varname{long int}{row}, \varname{QDRSMatrix}{mat}}
+    \funcitem{void}{absmax\_col\_qdrsmatrix}{\varname{double}{mu[QDSIZE]}, \varname{long int *}{max\_i}, \varname{long int}{col}, \varname{QDRSMatrix}{mat}}
+    \funcitem{void}{add\_qdrsmatrix\_drsmat}{\varname{QDRSMatrix}{c}, \varname{QDRSMatrix}{a}, \varname{DRSMatrix}{b}}
+    \funcitem{void}{sub\_qdrsmatrix\_drsmat}{\varname{QDRSMatrix}{c}, \varname{QDRSMatrix}{a}, \varname{DRSMatrix}{b}}
+    \funcitem{int}{split\_qdrsmatrix\_drsmat}{\varname{DRSMatrix[]}{ret}, \varname{int}{num\_div}, \varname{QDRSMatrix}{org}}
+    \funcitem{int}{split\_qdrsmatrix\_t\_drsmat}{\varname{DRSMatrix[]}{ret}, \varname{int}{num\_div}, \varname{QDRSMatrix}{org}}
+    \funcitem{void}{mul\_qdrsmatrix\_qdvec\_oz}{\varname{QDVector}{ret}, \varname{QDRSMatrix}{a}, \varname{int}{max\_num\_div\_a}, \varname{QDVector}{vb}, \varname{int}{max\_num\_div\_vb}}
+    \funcitem{void}{mul\_qdrsmatrixt\_qdvec\_oz}{\varname{QDVector}{ret}, \varname{QDRSMatrix}{a}, \varname{int}{max\_num\_div\_a}, \varname{QDVector}{vb}, \varname{int}{max\_num\_div\_vb}}
+    \funcitem{void}{iLU0\_qdrsmatrix}{\varname{QDRSMatrix}{mat}}
+    \funcitem{void}{solve\_iLU0\_qdrsmatrix}{\varname{QDVector}{ret}, \varname{QDRSMatrix}{ilu}, \varname{QDVector}{b}}
+    \funcitem{void}{solve\_iLU0t\_qdrsmatrix}{\varname{QDVector}{ret}, \varname{QDRSMatrix}{ilu}, \varname{QDVector}{b}}
+    \funcitem{void}{solve\_iLU0\_drsmatrix\_qdvec}{\varname{QDVector}{ret}, \varname{DRSMatrix}{ilu}, \varname{QDVector}{b}}
+    \funcitem{void}{solve\_iLU0t\_drsmatrix\_qdvec}{\varname{QDVector}{ret}, \varname{DRSMatrix}{ilu}, \varname{QDVector}{b}}
+\end{itemize}
+
+\noindent \bi{Complex QD sparse matrix (\texttt{CQDRSMatrix}):}{複素QD疎行列（\texttt{CQDRSMatrix}）：}
+
+\begin{itemize}
+    \funcitem{CQDRSMatrix}{init\_cqdrsmatrix}{\varname{long int}{row\_dim}, \varname{long int *}{nzero\_col\_dim}, \varname{long int}{nzero\_total\_num}}
+    \funcitem{void}{free\_cqdrsmatrix}{\varname{CQDRSMatrix}{mat}}
+    \funcitem{void}{print\_cqdrsmatrix}{\varname{CQDRSMatrix}{mat}}
+    \funcitem{CQDRSMatrix}{init\_set\_cqdrsmatrix}{\varname{CQDRSMatrix}{org}}
+    \funcitem{int}{mul\_cqdrsmatrix\_cqdvec}{\varname{CQDVector}{ret}, \varname{CQDRSMatrix}{mat}, \varname{CQDVector}{vec}}
+    \funcitem{int}{mul\_cqdrsmatrixt\_cqdvec}{\varname{CQDVector}{ret}, \varname{CQDRSMatrix}{mat}, \varname{CQDVector}{vec}}
+    \funcitem{int}{mul\_cqdrsmatrixs\_cqdvec}{\varname{CQDVector}{ret}, \varname{CQDRSMatrix}{mat}, \varname{CQDVector}{vec}}
+    \funcitem{int}{mul\_cdrsmatrix\_cqdvec}{\varname{CQDVector}{ret}, \varname{CDRSMatrix}{mat}, \varname{CQDVector}{vec}}
+    \funcitem{int}{mul\_cdrsmatrixt\_cqdvec}{\varname{CQDVector}{ret}, \varname{CDRSMatrix}{mat}, \varname{CQDVector}{vec}}
+    \funcitem{int}{mul\_cdrsmatrixs\_cqdvec}{\varname{CQDVector}{ret}, \varname{CDRSMatrix}{mat}, \varname{CQDVector}{vec}}
+    \funcitem{void}{iLU0\_cqdrsmatrix}{\varname{CQDRSMatrix}{mat}}
+    \funcitem{void}{solve\_iLU0\_cqdrsmatrix}{\varname{CQDVector}{ret}, \varname{CQDRSMatrix}{ilu}, \varname{CQDVector}{b}}
+    \funcitem{void}{solve\_iLU0t\_cqdrsmatrix}{\varname{CQDVector}{ret}, \varname{CQDRSMatrix}{ilu}, \varname{CQDVector}{b}}
+    \funcitem{void}{solve\_iLU0s\_cqdrsmatrix}{\varname{CQDVector}{ret}, \varname{CQDRSMatrix}{ilu}, \varname{CQDVector}{b}}
+    \funcitem{void}{solve\_iLU0\_cdrsmatrix\_cqdvec}{\varname{CQDVector}{ret}, \varname{CDRSMatrix}{ilu}, \varname{CQDVector}{b}}
+    \funcitem{void}{solve\_iLU0t\_cdrsmatrix\_cqdvec}{\varname{CQDVector}{ret}, \varname{CDRSMatrix}{ilu}, \varname{CQDVector}{b}}
+    \funcitem{void}{solve\_iLU0s\_cdrsmatrix\_cqdvec}{\varname{CQDVector}{ret}, \varname{CDRSMatrix}{ilu}, \varname{CQDVector}{b}}
+\end{itemize}
+
+\subsection{\texttt{MPFRSMatrix} \bi{and}{および} \texttt{CMPFRSMatrix} --- \bi{multiple-precision sparse matrices (requires \texttt{USE\_GMP})}{多倍長精度疎行列（\texttt{USE\_GMP} が必要）}}
+
+\bi{The \texttt{mpfrsmatrix} structure stores a GMP multiple-precision sparse matrix; pointer type \texttt{MPFRSMatrix}.
+Its elements are stored as \texttt{mpf\_t *element}.
+The complex variant \texttt{CMPFRSMatrix} uses \texttt{mpc\_t *element}.}{\texttt{mpfrsmatrix} 構造体は GMP の多倍長精度疎行列を格納します。ポインタ型は \texttt{MPFRSMatrix} です。
+要素は \texttt{mpf\_t *element} として格納されます。
+複素数版 \texttt{CMPFRSMatrix} は \texttt{mpc\_t *element} を用います。}
+
+\begin{itemize}
+    \funcitem{MPFRSMatrix}{init\_mpfrsmatrix}{\varname{long int}{row\_dim}, \varname{long int *}{nzero\_col\_dim}, \varname{long int}{nzero\_total\_num}}
+    \funcitem{MPFRSMatrix}{init2\_mpfrsmatrix}{\varname{long int}{row\_dim}, \varname{long int *}{nzero\_col\_dim}, \varname{long int}{nzero\_total\_num}, \varname{unsigned long}{prec}}
+    \funcitem{void}{free\_mpfrsmatrix}{\varname{MPFRSMatrix}{mat}}
+    \funcitem{void}{set\_nzero\_row\_dim\_mpf}{\varname{MPFRSMatrix}{mat}}
+    \funcitem{void}{print\_mpfrsmatrix}{\varname{MPFRSMatrix}{mat}}
+    \funcitem{void}{get\_mpfrsmatrix\_ij}{\varname{mpf\_t}{ret}, \varname{MPFRSMatrix}{mat}, \varname{long int}{i}, \varname{long int}{j}}
+    \funcitem{void}{set\_mpfrsmatrix\_ij}{\varname{MPFRSMatrix}{mat}, \varname{long int}{i}, \varname{long int}{j}, \varname{mpf\_t}{val}}
+    \funcitem{MPFRSMatrix}{init\_set\_mpfrsmatrix}{\varname{MPFRSMatrix}{org}}
+    \funcitem{void}{set0\_mpfrsmatrix}{\varname{MPFRSMatrix}{spmat}}
+    \funcitem{void}{set\_mpfmatrix\_mpfrsmat}{\varname{MPFMatrix}{ret}, \varname{MPFRSMatrix}{spmat}}
+    \funcitem{MPFRSMatrix}{init\_set\_mpfrsmatrix\_mpfmatrix}{\varname{MPFMatrix}{org}}
+    \funcitem{int}{get\_vars\_mpfrsmatrix\_fname}{\varname{long int *}{row\_dim}, \varname{long int **}{nzero\_col\_dim}, \varname{long int *}{nzero\_total\_num}, \varname{const char *}{fname}}
+    \funcitem{int}{fread\_urilinkdat\_fname\_mpf}{\varname{MPFRSMatrix}{mat}, \varname{const char *}{fname}}
+    \funcitem{long int}{absmax\_index\_mpfvector}{\varname{mpf\_t}{absmax}, \varname{MPFVector}{vec}}
+    \funcitem{int}{mul\_mpfrsmatrix\_mpfvec}{\varname{MPFVector}{ret}, \varname{MPFRSMatrix}{mat}, \varname{MPFVector}{vec}}
+    \funcitem{int}{mul\_mpfrsmatrixt\_mpfvec}{\varname{MPFVector}{ret}, \varname{MPFRSMatrix}{mat}, \varname{MPFVector}{vec}}
+    \funcitem{int}{mul\_drsmatrix\_mpfvec}{\varname{MPFVector}{ret}, \varname{DRSMatrix}{mat}, \varname{MPFVector}{vec}}
+    \funcitem{int}{mul\_drsmatrixt\_mpfvec}{\varname{MPFVector}{ret}, \varname{DRSMatrix}{mat}, \varname{MPFVector}{vec}}
+    \funcitem{void}{mpfpower\_rsmatrix}{\varname{mpf\_t}{max\_eig}, \varname{MPFVector}{evec}, \varname{MPFRSMatrix}{mat}, \varname{mpf\_t}{reps}, \varname{mpf\_t}{aeps}, \varname{long int}{maxtimes}}
+    \funcitem{int}{smul\_mpfvector}{\varname{MPFVector}{ret}, \varname{mpf\_t}{c}, \varname{MPFVector}{vec}}
+    \funcitem{void}{iLU0\_mpfrsmatrix}{\varname{MPFRSMatrix}{mat}}
+    \funcitem{void}{solve\_iLU0\_mpfrsmatrix}{\varname{MPFVector}{ret}, \varname{MPFRSMatrix}{ilu}, \varname{MPFVector}{b}}
+    \funcitem{void}{solve\_iLU0t\_mpfrsmatrix}{\varname{MPFVector}{ret}, \varname{MPFRSMatrix}{ilu}, \varname{MPFVector}{b}}
+    \funcitem{void}{solve\_iLU0\_drsmatrix\_mpfvec}{\varname{MPFVector}{ret}, \varname{DRSMatrix}{ilu}, \varname{MPFVector}{b}}
+    \funcitem{void}{solve\_iLU0t\_drsmatrix\_mpfvec}{\varname{MPFVector}{ret}, \varname{DRSMatrix}{ilu}, \varname{MPFVector}{b}}
+\end{itemize}
+
+\noindent \bi{Complex MPF sparse matrix (\texttt{CMPFRSMatrix}):}{複素MPF疎行列（\texttt{CMPFRSMatrix}）：}
+
+\begin{itemize}
+    \funcitem{CMPFRSMatrix}{init\_cmpfrsmatrix}{\varname{long int}{row\_dim}, \varname{long int *}{nzero\_col\_dim}, \varname{long int}{nzero\_total\_num}}
+    \funcitem{CMPFRSMatrix}{init2\_cmpfrsmatrix}{\varname{long int}{row\_dim}, \varname{long int *}{nzero\_col\_dim}, \varname{long int}{nzero\_total\_num}, \varname{unsigned long}{prec}}
+    \funcitem{void}{free\_cmpfrsmatrix}{\varname{CMPFRSMatrix}{mat}}
+    \funcitem{void}{set\_nzero\_row\_dim\_cmpf}{\varname{CMPFRSMatrix}{mat}}
+    \funcitem{void}{print\_cmpfrsmatrix}{\varname{CMPFRSMatrix}{mat}}
+    \funcitem{void}{normf\_cmpfrsmatrix}{\varname{mpf\_t}{ret}, \varname{CMPFRSMatrix}{mat}}
+    \funcitem{mpc\_ptr}{get\_cmpfrsmatrix\_ij}{\varname{CMPFRSMatrix}{mat}, \varname{long int}{i}, \varname{long int}{j}}
+    \funcitem{void}{set\_cmpfrsmatrix\_ij}{\varname{CMPFRSMatrix}{mat}, \varname{long int}{i}, \varname{long int}{j}, \varname{mpc\_t}{val}}
+    \funcitem{CMPFRSMatrix}{init\_set\_cmpfrsmatrix}{\varname{CMPFRSMatrix}{org}}
+    \funcitem{void}{set\_cmpfmatrix\_cmpfrsmat}{\varname{CMPFMatrix}{ret}, \varname{CMPFRSMatrix}{spmat}}
+    \funcitem{CMPFRSMatrix}{init\_set\_cmpfrsmatrix\_cmpfmatrix}{\varname{CMPFMatrix}{org}}
+    \funcitem{int}{get\_vars\_cmpfrsmatrix\_fname}{\varname{long int *}{row\_dim}, \varname{long int **}{nzero\_col\_dim}, \varname{long int *}{nzero\_total\_num}, \varname{const char *}{fname}}
+    \funcitem{int}{mul\_cmpfrsmatrix\_cmpfvec}{\varname{CMPFVector}{ret}, \varname{CMPFRSMatrix}{mat}, \varname{CMPFVector}{vec}}
+    \funcitem{int}{mul\_cmpfrsmatrixt\_cmpfvec}{\varname{CMPFVector}{ret}, \varname{CMPFRSMatrix}{mat}, \varname{CMPFVector}{vec}}
+    \funcitem{int}{mul\_cmpfrsmatrixs\_cmpfvec}{\varname{CMPFVector}{ret}, \varname{CMPFRSMatrix}{mat}, \varname{CMPFVector}{vec}}
+    \funcitem{int}{mul\_cdrsmatrix\_cmpfvec}{\varname{CMPFVector}{ret}, \varname{CDRSMatrix}{mat}, \varname{CMPFVector}{vec}}
+    \funcitem{int}{mul\_cdrsmatrixt\_cmpfvec}{\varname{CMPFVector}{ret}, \varname{CDRSMatrix}{mat}, \varname{CMPFVector}{vec}}
+    \funcitem{int}{mul\_cdrsmatrixs\_cmpfvec}{\varname{CMPFVector}{ret}, \varname{CDRSMatrix}{mat}, \varname{CMPFVector}{vec}}
+    \funcitem{void}{iLU0\_cmpfrsmatrix}{\varname{CMPFRSMatrix}{mat}}
+    \funcitem{void}{solve\_iLU0\_cmpfrsmatrix}{\varname{CMPFVector}{ret}, \varname{CMPFRSMatrix}{ilu}, \varname{CMPFVector}{b}}
+    \funcitem{void}{solve\_iLU0t\_cmpfrsmatrix}{\varname{CMPFVector}{ret}, \varname{CMPFRSMatrix}{ilu}, \varname{CMPFVector}{b}}
+    \funcitem{void}{solve\_iLU0s\_cmpfrsmatrix}{\varname{CMPFVector}{ret}, \varname{CMPFRSMatrix}{ilu}, \varname{CMPFVector}{b}}
+    \funcitem{void}{solve\_iLU0\_cdrsmatrix\_cmpfvec}{\varname{CMPFVector}{ret}, \varname{CDRSMatrix}{ilu}, \varname{CMPFVector}{b}}
+    \funcitem{void}{solve\_iLU0t\_cdrsmatrix\_cmpfvec}{\varname{CMPFVector}{ret}, \varname{CDRSMatrix}{ilu}, \varname{CMPFVector}{b}}
+    \funcitem{void}{solve\_iLU0s\_cdrsmatrix\_cmpfvec}{\varname{CMPFVector}{ret}, \varname{CDRSMatrix}{ilu}, \varname{CMPFVector}{b}}
+\end{itemize}
+
+\noindent \bi{Conversion functions from \texttt{MPFRSMatrix} to other types (requires \texttt{USE\_GMP}):}{\texttt{MPFRSMatrix} から他の型への変換関数（\texttt{USE\_GMP} が必要）：}
+
+\begin{itemize}
+    \funcitem{DRSMatrix}{init\_set\_drsmatrix\_mpfrsmatrix}{\varname{MPFRSMatrix}{org}}
+    \funcitem{CDRSMatrix}{init\_set\_cdrsmatrix\_cmpfrsmatrix}{\varname{CMPFRSMatrix}{org}}
+    \funcitem{DDRSMatrix}{init\_set\_ddrsmatrix\_mpfrsmatrix}{\varname{MPFRSMatrix}{org}}\ \bi{(requires \texttt{USE\_DDLINEAR})}{（\texttt{USE\_DDLINEAR} が必要）}
+    \funcitem{CDDRSMatrix}{init\_set\_cddrsmatrix\_cmpfrsmatrix}{\varname{CMPFRSMatrix}{org}}\ \bi{(requires \texttt{USE\_DDLINEAR})}{（\texttt{USE\_DDLINEAR} が必要）}
+    \funcitem{TDRSMatrix}{init\_set\_tdrsmatrix\_mpfrsmatrix}{\varname{MPFRSMatrix}{org}}\ \bi{(requires \texttt{USE\_TDLINEAR})}{（\texttt{USE\_TDLINEAR} が必要）}
+    \funcitem{CTDRSMatrix}{init\_set\_ctdrsmatrix\_cmpfrsmatrix}{\varname{CMPFRSMatrix}{org}}\ \bi{(requires \texttt{USE\_TDLINEAR})}{（\texttt{USE\_TDLINEAR} が必要）}
+    \funcitem{QDRSMatrix}{init\_set\_qdrsmatrix\_mpfrsmatrix}{\varname{MPFRSMatrix}{org}}\ \bi{(requires \texttt{USE\_QDLINEAR})}{（\texttt{USE\_QDLINEAR} が必要）}
+    \funcitem{CQDRSMatrix}{init\_set\_cqdrsmatrix\_cmpfrsmatrix}{\varname{CMPFRSMatrix}{org}}\ \bi{(requires \texttt{USE\_QDLINEAR})}{（\texttt{USE\_QDLINEAR} が必要）}
+\end{itemize}
+
+%------------------------------------------------%
+\section{\bi{Krylov subspace iterative solvers}{クリロフ部分空間反復解法}}
+%------------------------------------------------%
+
+\subsection{\bi{Conjugate Gradient method}{共役勾配法} (\texttt{FCG}, \texttt{DCG}, \texttt{DDCG}, \texttt{TDCG}, \texttt{QDCG}, \texttt{MPFCG})}
+
+\begin{itemize}
+    \funcitem{long int}{FCG}{\varname{FVector}{ans}, \varname{FMatrix}{a}, \varname{FVector}{b}, \varname{float}{reps}, \varname{float}{aeps}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{DCG\_sp}{\varname{DVector}{ans}, \varname{DRSMatrix}{a}, \varname{DVector}{b}, \varname{double}{reps}, \varname{double}{aeps}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{bnc\_DCG}{\varname{DVector}{ans}, \varname{DMatrix}{a}, \varname{DVector}{b}, \varname{double}{reps}, \varname{double}{aeps}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{CDCOCG\_sp}{\varname{CDVector}{ans}, \varname{CDRSMatrix}{a}, \varname{CDVector}{b}, \varname{double}{reps}, \varname{double}{aeps}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{CDCOCG}{\varname{CDVector}{ans}, \varname{CDMatrix}{a}, \varname{CDVector}{b}, \varname{double}{reps}, \varname{double}{aeps}, \varname{long int}{maxtimes}}
+\end{itemize}
+
+\noindent \bi{Double-double CG (requires \texttt{USE\_DDLINEAR}):}{double-double CG（\texttt{USE\_DDLINEAR} が必要）：}
+
+\begin{itemize}
+    \funcitem{long int}{DDCG\_sp}{\varname{DDVector}{ans}, \varname{DDRSMatrix}{a}, \varname{DDVector}{b}, \varname{double}{reps[DDSIZE]}, \varname{double}{aeps[DDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{DDCG\_sp\_d}{\varname{DDVector}{ans}, \varname{DRSMatrix}{a}, \varname{DDVector}{b}, \varname{double}{reps[DDSIZE]}, \varname{double}{aeps[DDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{DDCG}{\varname{DDVector}{ans}, \varname{DDMatrix}{a}, \varname{DDVector}{b}, \varname{double}{reps[DDSIZE]}, \varname{double}{aeps[DDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{CDDCOCG\_sp}{\varname{CDDVector}{ans}, \varname{CDDRSMatrix}{a}, \varname{CDDVector}{b}, \varname{double}{reps[DDSIZE]}, \varname{double}{aeps[DDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{CDDCOCG\_sp\_d}{\varname{CDDVector}{ans}, \varname{CDRSMatrix}{a}, \varname{CDDVector}{b}, \varname{double}{reps[DDSIZE]}, \varname{double}{aeps[DDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{CDDCOCG}{\varname{CDDVector}{ans}, \varname{CDDMatrix}{a}, \varname{CDDVector}{b}, \varname{double}{reps[DDSIZE]}, \varname{double}{aeps[DDSIZE]}, \varname{long int}{maxtimes}}
+\end{itemize}
+
+\noindent \bi{Triple-double CG (requires \texttt{USE\_TDLINEAR}):}{triple-double CG（\texttt{USE\_TDLINEAR} が必要）：}
+
+\begin{itemize}
+    \funcitem{long int}{TDCG\_sp}{\varname{TDVector}{ans}, \varname{TDRSMatrix}{a}, \varname{TDVector}{b}, \varname{double}{reps[TDSIZE]}, \varname{double}{aeps[TDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{TDCG\_sp\_d}{\varname{TDVector}{ans}, \varname{DRSMatrix}{a}, \varname{TDVector}{b}, \varname{double}{reps[TDSIZE]}, \varname{double}{aeps[TDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{TDCG}{\varname{TDVector}{ans}, \varname{TDMatrix}{a}, \varname{TDVector}{b}, \varname{double}{reps[TDSIZE]}, \varname{double}{aeps[TDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{CTDCOCG\_sp}{\varname{CTDVector}{ans}, \varname{CTDRSMatrix}{a}, \varname{CTDVector}{b}, \varname{double}{reps[TDSIZE]}, \varname{double}{aeps[TDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{CTDCOCG\_sp\_d}{\varname{CTDVector}{ans}, \varname{CDRSMatrix}{a}, \varname{CTDVector}{b}, \varname{double}{reps[TDSIZE]}, \varname{double}{aeps[TDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{CTDCOCG}{\varname{CTDVector}{ans}, \varname{CTDMatrix}{a}, \varname{CTDVector}{b}, \varname{double}{reps[TDSIZE]}, \varname{double}{aeps[TDSIZE]}, \varname{long int}{maxtimes}}
+\end{itemize}
+
+\noindent \bi{Quadruple-double CG (requires \texttt{USE\_QDLINEAR}):}{quadruple-double CG（\texttt{USE\_QDLINEAR} が必要）：}
+
+\begin{itemize}
+    \funcitem{long int}{QDCG\_sp}{\varname{QDVector}{ans}, \varname{QDRSMatrix}{a}, \varname{QDVector}{b}, \varname{double}{reps[QDSIZE]}, \varname{double}{aeps[QDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{QDCG\_sp\_d}{\varname{QDVector}{ans}, \varname{DRSMatrix}{a}, \varname{QDVector}{b}, \varname{double}{reps[QDSIZE]}, \varname{double}{aeps[QDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{QDCG}{\varname{QDVector}{ans}, \varname{QDMatrix}{a}, \varname{QDVector}{b}, \varname{double}{reps[QDSIZE]}, \varname{double}{aeps[QDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{CQDCOCG\_sp}{\varname{CQDVector}{ans}, \varname{CQDRSMatrix}{a}, \varname{CQDVector}{b}, \varname{double}{reps[QDSIZE]}, \varname{double}{aeps[QDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{CQDCOCG\_sp\_d}{\varname{CQDVector}{ans}, \varname{CDRSMatrix}{a}, \varname{CQDVector}{b}, \varname{double}{reps[QDSIZE]}, \varname{double}{aeps[QDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{CQDCOCG}{\varname{CQDVector}{ans}, \varname{CQDMatrix}{a}, \varname{CQDVector}{b}, \varname{double}{reps[QDSIZE]}, \varname{double}{aeps[QDSIZE]}, \varname{long int}{maxtimes}}
+\end{itemize}
+
+\noindent \bi{Multiple-precision CG (requires \texttt{USE\_GMP}):}{多倍長精度 CG（\texttt{USE\_GMP} が必要）：}
+
+\begin{itemize}
+    \funcitem{long int}{MPFCG\_sp}{\varname{MPFVector}{ans}, \varname{MPFRSMatrix}{a}, \varname{MPFVector}{b}, \varname{mpf\_t}{reps}, \varname{mpf\_t}{aeps}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{MPFCG\_sp\_d}{\varname{MPFVector}{ans}, \varname{DRSMatrix}{a}, \varname{MPFVector}{b}, \varname{mpf\_t}{reps}, \varname{mpf\_t}{aeps}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{MPFCG}{\varname{MPFVector}{ans}, \varname{MPFMatrix}{a}, \varname{MPFVector}{b}, \varname{mpf\_t}{reps}, \varname{mpf\_t}{aeps}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{CMPFCOCG\_sp}{\varname{CMPFVector}{ans}, \varname{CMPFRSMatrix}{a}, \varname{CMPFVector}{b}, \varname{mpf\_t}{reps}, \varname{mpf\_t}{aeps}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{CMPFCOCG\_sp\_d}{\varname{CMPFVector}{ans}, \varname{CDRSMatrix}{a}, \varname{CMPFVector}{b}, \varname{mpf\_t}{reps}, \varname{mpf\_t}{aeps}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{CMPFCOCG}{\varname{CMPFVector}{ans}, \varname{CMPFMatrix}{a}, \varname{CMPFVector}{b}, \varname{mpf\_t}{reps}, \varname{mpf\_t}{aeps}, \varname{long int}{maxtimes}}
+\end{itemize}
+
+\subsection{\bi{BiCG, CGS, BiCGSTAB, GPBiCG methods (double)}{BiCG, CGS, BiCGSTAB, GPBiCG 法（倍精度）}}
+
+\bi{Each solver is provided in sparse (\texttt{\_sp}), sparse with preconditioning (\texttt{\_sp\_iLU0}), and dense variants.}{各ソルバは、疎（\texttt{\_sp}）、前処理付き疎（\texttt{\_sp\_iLU0}）、および密の各版で提供されます。}
+
+\begin{itemize}
+    \funcitem{long int}{DBiCG\_sp}{\varname{DVector}{ans}, \varname{DRSMatrix}{a}, \varname{DVector}{b}, \varname{double}{reps}, \varname{double}{aeps}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{DCGS\_sp}{\varname{DVector}{ans}, \varname{DRSMatrix}{a}, \varname{DVector}{b}, \varname{double}{reps}, \varname{double}{aeps}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{DBiCGSTAB\_sp}{\varname{DVector}{ans}, \varname{DRSMatrix}{a}, \varname{DVector}{b}, \varname{double}{reps}, \varname{double}{aeps}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{DGPBiCG\_sp}{\varname{DVector}{ans}, \varname{DRSMatrix}{a}, \varname{DVector}{b}, \varname{double}{reps}, \varname{double}{aeps}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{DBiCG\_sp\_iLU0}{\varname{DVector}{ans}, \varname{DRSMatrix}{a}, \varname{DVector}{b}, \varname{double}{reps}, \varname{double}{aeps}, \varname{long int}{maxtimes}, \varname{DRSMatrix}{ilu}, \varname{double *}{norm2\_res\_history}}
+    \funcitem{long int}{DCGS\_sp\_iLU0}{\varname{DVector}{ans}, \varname{DRSMatrix}{a}, \varname{DVector}{b}, \varname{double}{reps}, \varname{double}{aeps}, \varname{long int}{maxtimes}, \varname{DRSMatrix}{ilu}, \varname{double *}{norm2\_res\_history}}
+    \funcitem{long int}{DBiCGSTAB\_sp\_iLU0}{\varname{DVector}{ans}, \varname{DRSMatrix}{a}, \varname{DVector}{b}, \varname{double}{reps}, \varname{double}{aeps}, \varname{long int}{maxtimes}, \varname{DRSMatrix}{ilu}, \varname{double *}{norm2\_res\_history}}
+    \funcitem{long int}{DGPBiCG\_sp\_iLU0}{\varname{DVector}{ans}, \varname{DRSMatrix}{a}, \varname{DVector}{b}, \varname{double}{reps}, \varname{double}{aeps}, \varname{long int}{maxtimes}, \varname{DRSMatrix}{ilu}, \varname{double *}{norm2\_res\_history}}
+    \funcitem{long int}{DBiCG}{\varname{DVector}{ans}, \varname{DMatrix}{a}, \varname{DVector}{b}, \varname{double}{reps}, \varname{double}{aeps}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{DCGS}{\varname{DVector}{ans}, \varname{DMatrix}{a}, \varname{DVector}{b}, \varname{double}{reps}, \varname{double}{aeps}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{DBiCGSTAB}{\varname{DVector}{ans}, \varname{DMatrix}{a}, \varname{DVector}{b}, \varname{double}{reps}, \varname{double}{aeps}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{DGPBiCG}{\varname{DVector}{ans}, \varname{DMatrix}{a}, \varname{DVector}{b}, \varname{double}{reps}, \varname{double}{aeps}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{CDBiCG\_sp}{\varname{CDVector}{ans}, \varname{CDRSMatrix}{a}, \varname{CDVector}{b}, \varname{double}{reps}, \varname{double}{aeps}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{CDCGS\_sp}{\varname{CDVector}{ans}, \varname{CDRSMatrix}{a}, \varname{CDVector}{b}, \varname{double}{reps}, \varname{double}{aeps}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{CDBiCGSTAB\_sp}{\varname{CDVector}{ans}, \varname{CDRSMatrix}{a}, \varname{CDVector}{b}, \varname{double}{reps}, \varname{double}{aeps}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{CDGPBiCG\_sp}{\varname{CDVector}{ans}, \varname{CDRSMatrix}{a}, \varname{CDVector}{b}, \varname{double}{reps}, \varname{double}{aeps}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{CDBiCG\_sp\_iLU0}{\varname{CDVector}{ans}, \varname{CDRSMatrix}{a}, \varname{CDVector}{b}, \varname{double}{reps}, \varname{double}{aeps}, \varname{long int}{maxtimes}, \varname{CDRSMatrix}{ilu}, \varname{double *}{norm2\_res\_history}}
+    \funcitem{long int}{CDCGS\_sp\_iLU0}{\varname{CDVector}{ans}, \varname{CDRSMatrix}{a}, \varname{CDVector}{b}, \varname{double}{reps}, \varname{double}{aeps}, \varname{long int}{maxtimes}, \varname{CDRSMatrix}{ilu}, \varname{double *}{norm2\_res\_history}}
+    \funcitem{long int}{CDBiCGSTAB\_sp\_iLU0}{\varname{CDVector}{ans}, \varname{CDRSMatrix}{a}, \varname{CDVector}{b}, \varname{double}{reps}, \varname{double}{aeps}, \varname{long int}{maxtimes}, \varname{CDRSMatrix}{ilu}, \varname{double *}{norm2\_res\_history}}
+    \funcitem{long int}{CDGPBiCG\_sp\_iLU0}{\varname{CDVector}{ans}, \varname{CDRSMatrix}{a}, \varname{CDVector}{b}, \varname{double}{reps}, \varname{double}{aeps}, \varname{long int}{maxtimes}, \varname{CDRSMatrix}{ilu}, \varname{double *}{norm2\_res\_history}}
+    \funcitem{long int}{CDBiCG}{\varname{CDVector}{ans}, \varname{CDMatrix}{a}, \varname{CDVector}{b}, \varname{double}{reps}, \varname{double}{aeps}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{CDCGS}{\varname{CDVector}{ans}, \varname{CDMatrix}{a}, \varname{CDVector}{b}, \varname{double}{reps}, \varname{double}{aeps}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{CDBiCGSTAB}{\varname{CDVector}{ans}, \varname{CDMatrix}{a}, \varname{CDVector}{b}, \varname{double}{reps}, \varname{double}{aeps}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{CDGPBiCG}{\varname{CDVector}{ans}, \varname{CDMatrix}{a}, \varname{CDVector}{b}, \varname{double}{reps}, \varname{double}{aeps}, \varname{long int}{maxtimes}}
+\end{itemize}
+
+\subsection{\bi{BiCG, CGS, BiCGSTAB, GPBiCG methods (double-double; requires \texttt{USE\_DDLINEAR})}{BiCG, CGS, BiCGSTAB, GPBiCG 法（double-double。\texttt{USE\_DDLINEAR} が必要）}}
+
+\begin{itemize}
+    \funcitem{long int}{DDBiCG\_sp}{\varname{DDVector}{ans}, \varname{DDRSMatrix}{a}, \varname{DDVector}{b}, \varname{double}{reps[DDSIZE]}, \varname{double}{aeps[DDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{DDCGS\_sp}{\varname{DDVector}{ans}, \varname{DDRSMatrix}{a}, \varname{DDVector}{b}, \varname{double}{reps[DDSIZE]}, \varname{double}{aeps[DDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{DDBiCGSTAB\_sp}{\varname{DDVector}{ans}, \varname{DDRSMatrix}{a}, \varname{DDVector}{b}, \varname{double}{reps[DDSIZE]}, \varname{double}{aeps[DDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{DDGPBiCG\_sp}{\varname{DDVector}{ans}, \varname{DDRSMatrix}{a}, \varname{DDVector}{b}, \varname{double}{reps[DDSIZE]}, \varname{double}{aeps[DDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{DDBiCG\_sp\_iLU0}{\varname{DDVector}{ans}, \varname{DDRSMatrix}{a}, \varname{DDVector}{b}, \varname{double}{reps[DDSIZE]}, \varname{double}{aeps[DDSIZE]}, \varname{long int}{maxtimes}, \varname{DDRSMatrix}{ilu}, \varname{double *}{norm2\_res\_history}}
+    \funcitem{long int}{DDCGS\_sp\_iLU0}{\varname{DDVector}{ans}, \varname{DDRSMatrix}{a}, \varname{DDVector}{b}, \varname{double}{reps[DDSIZE]}, \varname{double}{aeps[DDSIZE]}, \varname{long int}{maxtimes}, \varname{DDRSMatrix}{ilu}, \varname{double *}{norm2\_res\_history}}
+    \funcitem{long int}{DDBiCGSTAB\_sp\_iLU0}{\varname{DDVector}{ans}, \varname{DDRSMatrix}{a}, \varname{DDVector}{b}, \varname{double}{reps[DDSIZE]}, \varname{double}{aeps[DDSIZE]}, \varname{long int}{maxtimes}, \varname{DDRSMatrix}{ilu}, \varname{double *}{norm2\_res\_history}}
+    \funcitem{long int}{DDGPBiCG\_sp\_iLU0}{\varname{DDVector}{ans}, \varname{DDRSMatrix}{a}, \varname{DDVector}{b}, \varname{double}{reps[DDSIZE]}, \varname{double}{aeps[DDSIZE]}, \varname{long int}{maxtimes}, \varname{DDRSMatrix}{ilu}, \varname{double *}{norm2\_res\_history}}
+    \funcitem{long int}{DDBiCG\_sp\_d}{\varname{DDVector}{ans}, \varname{DRSMatrix}{a}, \varname{DDVector}{b}, \varname{double}{reps[DDSIZE]}, \varname{double}{aeps[DDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{DDCGS\_sp\_d}{\varname{DDVector}{ans}, \varname{DRSMatrix}{a}, \varname{DDVector}{b}, \varname{double}{reps[DDSIZE]}, \varname{double}{aeps[DDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{DDBiCGSTAB\_sp\_d}{\varname{DDVector}{ans}, \varname{DRSMatrix}{a}, \varname{DDVector}{b}, \varname{double}{reps[DDSIZE]}, \varname{double}{aeps[DDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{DDGPBiCG\_sp\_d}{\varname{DDVector}{ans}, \varname{DRSMatrix}{a}, \varname{DDVector}{b}, \varname{double}{reps[DDSIZE]}, \varname{double}{aeps[DDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{DDBiCG\_sp\_d\_iLU0}{\varname{DDVector}{ans}, \varname{DRSMatrix}{a}, \varname{DDVector}{b}, \varname{double}{reps[DDSIZE]}, \varname{double}{aeps[DDSIZE]}, \varname{long int}{maxtimes}, \varname{DRSMatrix}{ilu}, \varname{double *}{norm2\_res\_history}}
+    \funcitem{long int}{DDCGS\_sp\_d\_iLU0}{\varname{DDVector}{ans}, \varname{DRSMatrix}{a}, \varname{DDVector}{b}, \varname{double}{reps[DDSIZE]}, \varname{double}{aeps[DDSIZE]}, \varname{long int}{maxtimes}, \varname{DRSMatrix}{ilu}, \varname{double *}{norm2\_res\_history}}
+    \funcitem{long int}{DDBiCGSTAB\_sp\_d\_iLU0}{\varname{DDVector}{ans}, \varname{DRSMatrix}{a}, \varname{DDVector}{b}, \varname{double}{reps[DDSIZE]}, \varname{double}{aeps[DDSIZE]}, \varname{long int}{maxtimes}, \varname{DRSMatrix}{ilu}, \varname{double *}{norm2\_res\_history}}
+    \funcitem{long int}{DDGPBiCG\_sp\_d\_iLU0}{\varname{DDVector}{ans}, \varname{DRSMatrix}{a}, \varname{DDVector}{b}, \varname{double}{reps[DDSIZE]}, \varname{double}{aeps[DDSIZE]}, \varname{long int}{maxtimes}, \varname{DRSMatrix}{ilu}, \varname{double *}{norm2\_res\_history}}
+    \funcitem{long int}{DDBiCG}{\varname{DDVector}{ans}, \varname{DDMatrix}{a}, \varname{DDVector}{b}, \varname{double}{reps[DDSIZE]}, \varname{double}{aeps[DDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{DDCGS}{\varname{DDVector}{ans}, \varname{DDMatrix}{a}, \varname{DDVector}{b}, \varname{double}{reps[DDSIZE]}, \varname{double}{aeps[DDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{DDBiCGSTAB}{\varname{DDVector}{ans}, \varname{DDMatrix}{a}, \varname{DDVector}{b}, \varname{double}{reps[DDSIZE]}, \varname{double}{aeps[DDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{DDGPBiCG}{\varname{DDVector}{ans}, \varname{DDMatrix}{a}, \varname{DDVector}{b}, \varname{double}{reps[DDSIZE]}, \varname{double}{aeps[DDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{CDDBiCG\_sp}{\varname{CDDVector}{ans}, \varname{CDDRSMatrix}{a}, \varname{CDDVector}{b}, \varname{double}{reps[DDSIZE]}, \varname{double}{aeps[DDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{CDDCGS\_sp}{\varname{CDDVector}{ans}, \varname{CDDRSMatrix}{a}, \varname{CDDVector}{b}, \varname{double}{reps[DDSIZE]}, \varname{double}{aeps[DDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{CDDBiCGSTAB\_sp}{\varname{CDDVector}{ans}, \varname{CDDRSMatrix}{a}, \varname{CDDVector}{b}, \varname{double}{reps[DDSIZE]}, \varname{double}{aeps[DDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{CDDGPBiCG\_sp}{\varname{CDDVector}{ans}, \varname{CDDRSMatrix}{a}, \varname{CDDVector}{b}, \varname{double}{reps[DDSIZE]}, \varname{double}{aeps[DDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{CDDBiCG\_sp\_iLU0}{\varname{CDDVector}{ans}, \varname{CDDRSMatrix}{a}, \varname{CDDVector}{b}, \varname{double}{reps[DDSIZE]}, \varname{double}{aeps[DDSIZE]}, \varname{long int}{maxtimes}, \varname{CDDRSMatrix}{ilu}, \varname{double *}{norm2\_res\_history}}
+    \funcitem{long int}{CDDCGS\_sp\_iLU0}{\varname{CDDVector}{ans}, \varname{CDDRSMatrix}{a}, \varname{CDDVector}{b}, \varname{double}{reps[DDSIZE]}, \varname{double}{aeps[DDSIZE]}, \varname{long int}{maxtimes}, \varname{CDDRSMatrix}{ilu}, \varname{double *}{norm2\_res\_history}}
+    \funcitem{long int}{CDDBiCGSTAB\_sp\_iLU0}{\varname{CDDVector}{ans}, \varname{CDDRSMatrix}{a}, \varname{CDDVector}{b}, \varname{double}{reps[DDSIZE]}, \varname{double}{aeps[DDSIZE]}, \varname{long int}{maxtimes}, \varname{CDDRSMatrix}{ilu}, \varname{double *}{norm2\_res\_history}}
+    \funcitem{long int}{CDDGPBiCG\_sp\_iLU0}{\varname{CDDVector}{ans}, \varname{CDDRSMatrix}{a}, \varname{CDDVector}{b}, \varname{double}{reps[DDSIZE]}, \varname{double}{aeps[DDSIZE]}, \varname{long int}{maxtimes}, \varname{CDDRSMatrix}{ilu}, \varname{double *}{norm2\_res\_history}}
+    \funcitem{long int}{CDDBiCG\_sp\_d}{\varname{CDDVector}{ans}, \varname{CDRSMatrix}{a}, \varname{CDDVector}{b}, \varname{double}{reps[DDSIZE]}, \varname{double}{aeps[DDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{CDDCGS\_sp\_d}{\varname{CDDVector}{ans}, \varname{CDRSMatrix}{a}, \varname{CDDVector}{b}, \varname{double}{reps[DDSIZE]}, \varname{double}{aeps[DDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{CDDBiCGSTAB\_sp\_d}{\varname{CDDVector}{ans}, \varname{CDRSMatrix}{a}, \varname{CDDVector}{b}, \varname{double}{reps[DDSIZE]}, \varname{double}{aeps[DDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{CDDGPBiCG\_sp\_d}{\varname{CDDVector}{ans}, \varname{CDRSMatrix}{a}, \varname{CDDVector}{b}, \varname{double}{reps[DDSIZE]}, \varname{double}{aeps[DDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{CDDBiCG\_sp\_d\_iLU0}{\varname{CDDVector}{ans}, \varname{CDRSMatrix}{a}, \varname{CDDVector}{b}, \varname{double}{reps[DDSIZE]}, \varname{double}{aeps[DDSIZE]}, \varname{long int}{maxtimes}, \varname{CDRSMatrix}{ilu}, \varname{double *}{norm2\_res\_history}}
+    \funcitem{long int}{CDDCGS\_sp\_d\_iLU0}{\varname{CDDVector}{ans}, \varname{CDRSMatrix}{a}, \varname{CDDVector}{b}, \varname{double}{reps[DDSIZE]}, \varname{double}{aeps[DDSIZE]}, \varname{long int}{maxtimes}, \varname{CDRSMatrix}{ilu}, \varname{double *}{norm2\_res\_history}}
+    \funcitem{long int}{CDDBiCGSTAB\_sp\_d\_iLU0}{\varname{CDDVector}{ans}, \varname{CDRSMatrix}{a}, \varname{CDDVector}{b}, \varname{double}{reps[DDSIZE]}, \varname{double}{aeps[DDSIZE]}, \varname{long int}{maxtimes}, \varname{CDRSMatrix}{ilu}, \varname{double *}{norm2\_res\_history}}
+    \funcitem{long int}{CDDGPBiCG\_sp\_d\_iLU0}{\varname{CDDVector}{ans}, \varname{CDRSMatrix}{a}, \varname{CDDVector}{b}, \varname{double}{reps[DDSIZE]}, \varname{double}{aeps[DDSIZE]}, \varname{long int}{maxtimes}, \varname{CDRSMatrix}{ilu}, \varname{double *}{norm2\_res\_history}}
+    \funcitem{long int}{CDDBiCG}{\varname{CDDVector}{ans}, \varname{CDDMatrix}{a}, \varname{CDDVector}{b}, \varname{double}{reps[DDSIZE]}, \varname{double}{aeps[DDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{CDDCGS}{\varname{CDDVector}{ans}, \varname{CDDMatrix}{a}, \varname{CDDVector}{b}, \varname{double}{reps[DDSIZE]}, \varname{double}{aeps[DDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{CDDBiCGSTAB}{\varname{CDDVector}{ans}, \varname{CDDMatrix}{a}, \varname{CDDVector}{b}, \varname{double}{reps[DDSIZE]}, \varname{double}{aeps[DDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{CDDGPBiCG}{\varname{CDDVector}{ans}, \varname{CDDMatrix}{a}, \varname{CDDVector}{b}, \varname{double}{reps[DDSIZE]}, \varname{double}{aeps[DDSIZE]}, \varname{long int}{maxtimes}}
+\end{itemize}
+
+\subsection{\bi{BiCG, CGS, BiCGSTAB, GPBiCG methods (triple-double; requires \texttt{USE\_TDLINEAR})}{BiCG, CGS, BiCGSTAB, GPBiCG 法（triple-double。\texttt{USE\_TDLINEAR} が必要）}}
+
+\begin{itemize}
+    \funcitem{long int}{TDBiCG\_sp}{\varname{TDVector}{ans}, \varname{TDRSMatrix}{a}, \varname{TDVector}{b}, \varname{double}{reps[TDSIZE]}, \varname{double}{aeps[TDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{TDCGS\_sp}{\varname{TDVector}{ans}, \varname{TDRSMatrix}{a}, \varname{TDVector}{b}, \varname{double}{reps[TDSIZE]}, \varname{double}{aeps[TDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{TDBiCGSTAB\_sp}{\varname{TDVector}{ans}, \varname{TDRSMatrix}{a}, \varname{TDVector}{b}, \varname{double}{reps[TDSIZE]}, \varname{double}{aeps[TDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{TDGPBiCG\_sp}{\varname{TDVector}{ans}, \varname{TDRSMatrix}{a}, \varname{TDVector}{b}, \varname{double}{reps[TDSIZE]}, \varname{double}{aeps[TDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{TDBiCG\_sp\_iLU0}{\varname{TDVector}{ans}, \varname{TDRSMatrix}{a}, \varname{TDVector}{b}, \varname{double}{reps[TDSIZE]}, \varname{double}{aeps[TDSIZE]}, \varname{long int}{maxtimes}, \varname{TDRSMatrix}{ilu}, \varname{double *}{norm2\_res\_history}}
+    \funcitem{long int}{TDCGS\_sp\_iLU0}{\varname{TDVector}{ans}, \varname{TDRSMatrix}{a}, \varname{TDVector}{b}, \varname{double}{reps[TDSIZE]}, \varname{double}{aeps[TDSIZE]}, \varname{long int}{maxtimes}, \varname{TDRSMatrix}{ilu}, \varname{double *}{norm2\_res\_history}}
+    \funcitem{long int}{TDBiCGSTAB\_sp\_iLU0}{\varname{TDVector}{ans}, \varname{TDRSMatrix}{a}, \varname{TDVector}{b}, \varname{double}{reps[TDSIZE]}, \varname{double}{aeps[TDSIZE]}, \varname{long int}{maxtimes}, \varname{TDRSMatrix}{ilu}, \varname{double *}{norm2\_res\_history}}
+    \funcitem{long int}{TDGPBiCG\_sp\_iLU0}{\varname{TDVector}{ans}, \varname{TDRSMatrix}{a}, \varname{TDVector}{b}, \varname{double}{reps[TDSIZE]}, \varname{double}{aeps[TDSIZE]}, \varname{long int}{maxtimes}, \varname{TDRSMatrix}{ilu}, \varname{double *}{norm2\_res\_history}}
+    \funcitem{long int}{TDBiCG\_sp\_d}{\varname{TDVector}{ans}, \varname{DRSMatrix}{a}, \varname{TDVector}{b}, \varname{double}{reps[TDSIZE]}, \varname{double}{aeps[TDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{TDCGS\_sp\_d}{\varname{TDVector}{ans}, \varname{DRSMatrix}{a}, \varname{TDVector}{b}, \varname{double}{reps[TDSIZE]}, \varname{double}{aeps[TDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{TDBiCGSTAB\_sp\_d}{\varname{TDVector}{ans}, \varname{DRSMatrix}{a}, \varname{TDVector}{b}, \varname{double}{reps[TDSIZE]}, \varname{double}{aeps[TDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{TDGPBiCG\_sp\_d}{\varname{TDVector}{ans}, \varname{DRSMatrix}{a}, \varname{TDVector}{b}, \varname{double}{reps[TDSIZE]}, \varname{double}{aeps[TDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{TDBiCG\_sp\_d\_iLU0}{\varname{TDVector}{ans}, \varname{DRSMatrix}{a}, \varname{TDVector}{b}, \varname{double}{reps[TDSIZE]}, \varname{double}{aeps[TDSIZE]}, \varname{long int}{maxtimes}, \varname{DRSMatrix}{ilu}, \varname{double *}{norm2\_res\_history}}
+    \funcitem{long int}{TDCGS\_sp\_d\_iLU0}{\varname{TDVector}{ans}, \varname{DRSMatrix}{a}, \varname{TDVector}{b}, \varname{double}{reps[TDSIZE]}, \varname{double}{aeps[TDSIZE]}, \varname{long int}{maxtimes}, \varname{DRSMatrix}{ilu}, \varname{double *}{norm2\_res\_history}}
+    \funcitem{long int}{TDBiCGSTAB\_sp\_d\_iLU0}{\varname{TDVector}{ans}, \varname{DRSMatrix}{a}, \varname{TDVector}{b}, \varname{double}{reps[TDSIZE]}, \varname{double}{aeps[TDSIZE]}, \varname{long int}{maxtimes}, \varname{DRSMatrix}{ilu}, \varname{double *}{norm2\_res\_history}}
+    \funcitem{long int}{TDGPBiCG\_sp\_d\_iLU0}{\varname{TDVector}{ans}, \varname{DRSMatrix}{a}, \varname{TDVector}{b}, \varname{double}{reps[TDSIZE]}, \varname{double}{aeps[TDSIZE]}, \varname{long int}{maxtimes}, \varname{DRSMatrix}{ilu}, \varname{double *}{norm2\_res\_history}}
+    \funcitem{long int}{TDBiCG}{\varname{TDVector}{ans}, \varname{TDMatrix}{a}, \varname{TDVector}{b}, \varname{double}{reps[TDSIZE]}, \varname{double}{aeps[TDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{TDCGS}{\varname{TDVector}{ans}, \varname{TDMatrix}{a}, \varname{TDVector}{b}, \varname{double}{reps[TDSIZE]}, \varname{double}{aeps[TDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{TDBiCGSTAB}{\varname{TDVector}{ans}, \varname{TDMatrix}{a}, \varname{TDVector}{b}, \varname{double}{reps[TDSIZE]}, \varname{double}{aeps[TDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{TDGPBiCG}{\varname{TDVector}{ans}, \varname{TDMatrix}{a}, \varname{TDVector}{b}, \varname{double}{reps[TDSIZE]}, \varname{double}{aeps[TDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{CTDBiCG\_sp}{\varname{CTDVector}{ans}, \varname{CTDRSMatrix}{a}, \varname{CTDVector}{b}, \varname{double}{reps[TDSIZE]}, \varname{double}{aeps[TDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{CTDCGS\_sp}{\varname{CTDVector}{ans}, \varname{CTDRSMatrix}{a}, \varname{CTDVector}{b}, \varname{double}{reps[TDSIZE]}, \varname{double}{aeps[TDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{CTDBiCGSTAB\_sp}{\varname{CTDVector}{ans}, \varname{CTDRSMatrix}{a}, \varname{CTDVector}{b}, \varname{double}{reps[TDSIZE]}, \varname{double}{aeps[TDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{CTDGPBiCG\_sp}{\varname{CTDVector}{ans}, \varname{CTDRSMatrix}{a}, \varname{CTDVector}{b}, \varname{double}{reps[TDSIZE]}, \varname{double}{aeps[TDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{CTDBiCG\_sp\_iLU0}{\varname{CTDVector}{ans}, \varname{CTDRSMatrix}{a}, \varname{CTDVector}{b}, \varname{double}{reps[TDSIZE]}, \varname{double}{aeps[TDSIZE]}, \varname{long int}{maxtimes}, \varname{CTDRSMatrix}{ilu}, \varname{double *}{norm2\_res\_history}}
+    \funcitem{long int}{CTDCGS\_sp\_iLU0}{\varname{CTDVector}{ans}, \varname{CTDRSMatrix}{a}, \varname{CTDVector}{b}, \varname{double}{reps[TDSIZE]}, \varname{double}{aeps[TDSIZE]}, \varname{long int}{maxtimes}, \varname{CTDRSMatrix}{ilu}, \varname{double *}{norm2\_res\_history}}
+    \funcitem{long int}{CTDBiCGSTAB\_sp\_iLU0}{\varname{CTDVector}{ans}, \varname{CTDRSMatrix}{a}, \varname{CTDVector}{b}, \varname{double}{reps[TDSIZE]}, \varname{double}{aeps[TDSIZE]}, \varname{long int}{maxtimes}, \varname{CTDRSMatrix}{ilu}, \varname{double *}{norm2\_res\_history}}
+    \funcitem{long int}{CTDGPBiCG\_sp\_iLU0}{\varname{CTDVector}{ans}, \varname{CTDRSMatrix}{a}, \varname{CTDVector}{b}, \varname{double}{reps[TDSIZE]}, \varname{double}{aeps[TDSIZE]}, \varname{long int}{maxtimes}, \varname{CTDRSMatrix}{ilu}, \varname{double *}{norm2\_res\_history}}
+    \funcitem{long int}{CTDBiCG\_sp\_d}{\varname{CTDVector}{ans}, \varname{CDRSMatrix}{a}, \varname{CTDVector}{b}, \varname{double}{reps[TDSIZE]}, \varname{double}{aeps[TDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{CTDCGS\_sp\_d}{\varname{CTDVector}{ans}, \varname{CDRSMatrix}{a}, \varname{CTDVector}{b}, \varname{double}{reps[TDSIZE]}, \varname{double}{aeps[TDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{CTDBiCGSTAB\_sp\_d}{\varname{CTDVector}{ans}, \varname{CDRSMatrix}{a}, \varname{CTDVector}{b}, \varname{double}{reps[TDSIZE]}, \varname{double}{aeps[TDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{CTDGPBiCG\_sp\_d}{\varname{CTDVector}{ans}, \varname{CDRSMatrix}{a}, \varname{CTDVector}{b}, \varname{double}{reps[TDSIZE]}, \varname{double}{aeps[TDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{CTDBiCG\_sp\_d\_iLU0}{\varname{CTDVector}{ans}, \varname{CDRSMatrix}{a}, \varname{CTDVector}{b}, \varname{double}{reps[TDSIZE]}, \varname{double}{aeps[TDSIZE]}, \varname{long int}{maxtimes}, \varname{CDRSMatrix}{ilu}, \varname{double *}{norm2\_res\_history}}
+    \funcitem{long int}{CTDCGS\_sp\_d\_iLU0}{\varname{CTDVector}{ans}, \varname{CDRSMatrix}{a}, \varname{CTDVector}{b}, \varname{double}{reps[TDSIZE]}, \varname{double}{aeps[TDSIZE]}, \varname{long int}{maxtimes}, \varname{CDRSMatrix}{ilu}, \varname{double *}{norm2\_res\_history}}
+    \funcitem{long int}{CTDBiCGSTAB\_sp\_d\_iLU0}{\varname{CTDVector}{ans}, \varname{CDRSMatrix}{a}, \varname{CTDVector}{b}, \varname{double}{reps[TDSIZE]}, \varname{double}{aeps[TDSIZE]}, \varname{long int}{maxtimes}, \varname{CDRSMatrix}{ilu}, \varname{double *}{norm2\_res\_history}}
+    \funcitem{long int}{CTDGPBiCG\_sp\_d\_iLU0}{\varname{CTDVector}{ans}, \varname{CDRSMatrix}{a}, \varname{CTDVector}{b}, \varname{double}{reps[TDSIZE]}, \varname{double}{aeps[TDSIZE]}, \varname{long int}{maxtimes}, \varname{CDRSMatrix}{ilu}, \varname{double *}{norm2\_res\_history}}
+    \funcitem{long int}{CTDBiCG}{\varname{CTDVector}{ans}, \varname{CTDMatrix}{a}, \varname{CTDVector}{b}, \varname{double}{reps[TDSIZE]}, \varname{double}{aeps[TDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{CTDCGS}{\varname{CTDVector}{ans}, \varname{CTDMatrix}{a}, \varname{CTDVector}{b}, \varname{double}{reps[TDSIZE]}, \varname{double}{aeps[TDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{CTDBiCGSTAB}{\varname{CTDVector}{ans}, \varname{CTDMatrix}{a}, \varname{CTDVector}{b}, \varname{double}{reps[TDSIZE]}, \varname{double}{aeps[TDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{CTDGPBiCG}{\varname{CTDVector}{ans}, \varname{CTDMatrix}{a}, \varname{CTDVector}{b}, \varname{double}{reps[TDSIZE]}, \varname{double}{aeps[TDSIZE]}, \varname{long int}{maxtimes}}
+\end{itemize}
+
+\subsection{\bi{BiCG, CGS, BiCGSTAB, GPBiCG methods (quadruple-double; requires \texttt{USE\_QDLINEAR})}{BiCG, CGS, BiCGSTAB, GPBiCG 法（quadruple-double。\texttt{USE\_QDLINEAR} が必要）}}
+
+\begin{itemize}
+    \funcitem{long int}{QDBiCG\_sp}{\varname{QDVector}{ans}, \varname{QDRSMatrix}{a}, \varname{QDVector}{b}, \varname{double}{reps[QDSIZE]}, \varname{double}{aeps[QDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{QDCGS\_sp}{\varname{QDVector}{ans}, \varname{QDRSMatrix}{a}, \varname{QDVector}{b}, \varname{double}{reps[QDSIZE]}, \varname{double}{aeps[QDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{QDBiCGSTAB\_sp}{\varname{QDVector}{ans}, \varname{QDRSMatrix}{a}, \varname{QDVector}{b}, \varname{double}{reps[QDSIZE]}, \varname{double}{aeps[QDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{QDGPBiCG\_sp}{\varname{QDVector}{ans}, \varname{QDRSMatrix}{a}, \varname{QDVector}{b}, \varname{double}{reps[QDSIZE]}, \varname{double}{aeps[QDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{QDBiCG\_sp\_iLU0}{\varname{QDVector}{ans}, \varname{QDRSMatrix}{a}, \varname{QDVector}{b}, \varname{double}{reps[QDSIZE]}, \varname{double}{aeps[QDSIZE]}, \varname{long int}{maxtimes}, \varname{QDRSMatrix}{ilu}, \varname{double *}{norm2\_res\_history}}
+    \funcitem{long int}{QDCGS\_sp\_iLU0}{\varname{QDVector}{ans}, \varname{QDRSMatrix}{a}, \varname{QDVector}{b}, \varname{double}{reps[QDSIZE]}, \varname{double}{aeps[QDSIZE]}, \varname{long int}{maxtimes}, \varname{QDRSMatrix}{ilu}, \varname{double *}{norm2\_res\_history}}
+    \funcitem{long int}{QDBiCGSTAB\_sp\_iLU0}{\varname{QDVector}{ans}, \varname{QDRSMatrix}{a}, \varname{QDVector}{b}, \varname{double}{reps[QDSIZE]}, \varname{double}{aeps[QDSIZE]}, \varname{long int}{maxtimes}, \varname{QDRSMatrix}{ilu}, \varname{double *}{norm2\_res\_history}}
+    \funcitem{long int}{QDGPBiCG\_sp\_iLU0}{\varname{QDVector}{ans}, \varname{QDRSMatrix}{a}, \varname{QDVector}{b}, \varname{double}{reps[QDSIZE]}, \varname{double}{aeps[QDSIZE]}, \varname{long int}{maxtimes}, \varname{QDRSMatrix}{ilu}, \varname{double *}{norm2\_res\_history}}
+    \funcitem{long int}{QDBiCG\_sp\_d}{\varname{QDVector}{ans}, \varname{DRSMatrix}{a}, \varname{QDVector}{b}, \varname{double}{reps[QDSIZE]}, \varname{double}{aeps[QDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{QDCGS\_sp\_d}{\varname{QDVector}{ans}, \varname{DRSMatrix}{a}, \varname{QDVector}{b}, \varname{double}{reps[QDSIZE]}, \varname{double}{aeps[QDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{QDBiCGSTAB\_sp\_d}{\varname{QDVector}{ans}, \varname{DRSMatrix}{a}, \varname{QDVector}{b}, \varname{double}{reps[QDSIZE]}, \varname{double}{aeps[QDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{QDGPBiCG\_sp\_d}{\varname{QDVector}{ans}, \varname{DRSMatrix}{a}, \varname{QDVector}{b}, \varname{double}{reps[QDSIZE]}, \varname{double}{aeps[QDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{QDBiCG\_sp\_d\_iLU0}{\varname{QDVector}{ans}, \varname{DRSMatrix}{a}, \varname{QDVector}{b}, \varname{double}{reps[QDSIZE]}, \varname{double}{aeps[QDSIZE]}, \varname{long int}{maxtimes}, \varname{DRSMatrix}{ilu}, \varname{double *}{norm2\_res\_history}}
+    \funcitem{long int}{QDCGS\_sp\_d\_iLU0}{\varname{QDVector}{ans}, \varname{DRSMatrix}{a}, \varname{QDVector}{b}, \varname{double}{reps[QDSIZE]}, \varname{double}{aeps[QDSIZE]}, \varname{long int}{maxtimes}, \varname{DRSMatrix}{ilu}, \varname{double *}{norm2\_res\_history}}
+    \funcitem{long int}{QDBiCGSTAB\_sp\_d\_iLU0}{\varname{QDVector}{ans}, \varname{DRSMatrix}{a}, \varname{QDVector}{b}, \varname{double}{reps[QDSIZE]}, \varname{double}{aeps[QDSIZE]}, \varname{long int}{maxtimes}, \varname{DRSMatrix}{ilu}, \varname{double *}{norm2\_res\_history}}
+    \funcitem{long int}{QDGPBiCG\_sp\_d\_iLU0}{\varname{QDVector}{ans}, \varname{DRSMatrix}{a}, \varname{QDVector}{b}, \varname{double}{reps[QDSIZE]}, \varname{double}{aeps[QDSIZE]}, \varname{long int}{maxtimes}, \varname{DRSMatrix}{ilu}, \varname{double *}{norm2\_res\_history}}
+    \funcitem{long int}{QDBiCG}{\varname{QDVector}{ans}, \varname{QDMatrix}{a}, \varname{QDVector}{b}, \varname{double}{reps[QDSIZE]}, \varname{double}{aeps[QDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{QDCGS}{\varname{QDVector}{ans}, \varname{QDMatrix}{a}, \varname{QDVector}{b}, \varname{double}{reps[QDSIZE]}, \varname{double}{aeps[QDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{QDBiCGSTAB}{\varname{QDVector}{ans}, \varname{QDMatrix}{a}, \varname{QDVector}{b}, \varname{double}{reps[QDSIZE]}, \varname{double}{aeps[QDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{QDGPBiCG}{\varname{QDVector}{ans}, \varname{QDMatrix}{a}, \varname{QDVector}{b}, \varname{double}{reps[QDSIZE]}, \varname{double}{aeps[QDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{CQDBiCG\_sp}{\varname{CQDVector}{ans}, \varname{CQDRSMatrix}{a}, \varname{CQDVector}{b}, \varname{double}{reps[QDSIZE]}, \varname{double}{aeps[QDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{CQDCGS\_sp}{\varname{CQDVector}{ans}, \varname{CQDRSMatrix}{a}, \varname{CQDVector}{b}, \varname{double}{reps[QDSIZE]}, \varname{double}{aeps[QDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{CQDBiCGSTAB\_sp}{\varname{CQDVector}{ans}, \varname{CQDRSMatrix}{a}, \varname{CQDVector}{b}, \varname{double}{reps[QDSIZE]}, \varname{double}{aeps[QDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{CQDGPBiCG\_sp}{\varname{CQDVector}{ans}, \varname{CQDRSMatrix}{a}, \varname{CQDVector}{b}, \varname{double}{reps[QDSIZE]}, \varname{double}{aeps[QDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{CQDBiCG\_sp\_iLU0}{\varname{CQDVector}{ans}, \varname{CQDRSMatrix}{a}, \varname{CQDVector}{b}, \varname{double}{reps[QDSIZE]}, \varname{double}{aeps[QDSIZE]}, \varname{long int}{maxtimes}, \varname{CQDRSMatrix}{ilu}, \varname{double *}{norm2\_res\_history}}
+    \funcitem{long int}{CQDCGS\_sp\_iLU0}{\varname{CQDVector}{ans}, \varname{CQDRSMatrix}{a}, \varname{CQDVector}{b}, \varname{double}{reps[QDSIZE]}, \varname{double}{aeps[QDSIZE]}, \varname{long int}{maxtimes}, \varname{CQDRSMatrix}{ilu}, \varname{double *}{norm2\_res\_history}}
+    \funcitem{long int}{CQDBiCGSTAB\_sp\_iLU0}{\varname{CQDVector}{ans}, \varname{CQDRSMatrix}{a}, \varname{CQDVector}{b}, \varname{double}{reps[QDSIZE]}, \varname{double}{aeps[QDSIZE]}, \varname{long int}{maxtimes}, \varname{CQDRSMatrix}{ilu}, \varname{double *}{norm2\_res\_history}}
+    \funcitem{long int}{CQDGPBiCG\_sp\_iLU0}{\varname{CQDVector}{ans}, \varname{CQDRSMatrix}{a}, \varname{CQDVector}{b}, \varname{double}{reps[QDSIZE]}, \varname{double}{aeps[QDSIZE]}, \varname{long int}{maxtimes}, \varname{CQDRSMatrix}{ilu}, \varname{double *}{norm2\_res\_history}}
+    \funcitem{long int}{CQDBiCG\_sp\_d}{\varname{CQDVector}{ans}, \varname{CDRSMatrix}{a}, \varname{CQDVector}{b}, \varname{double}{reps[QDSIZE]}, \varname{double}{aeps[QDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{CQDCGS\_sp\_d}{\varname{CQDVector}{ans}, \varname{CDRSMatrix}{a}, \varname{CQDVector}{b}, \varname{double}{reps[QDSIZE]}, \varname{double}{aeps[QDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{CQDBiCGSTAB\_sp\_d}{\varname{CQDVector}{ans}, \varname{CDRSMatrix}{a}, \varname{CQDVector}{b}, \varname{double}{reps[QDSIZE]}, \varname{double}{aeps[QDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{CQDGPBiCG\_sp\_d}{\varname{CQDVector}{ans}, \varname{CDRSMatrix}{a}, \varname{CQDVector}{b}, \varname{double}{reps[QDSIZE]}, \varname{double}{aeps[QDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{CQDBiCG\_sp\_d\_iLU0}{\varname{CQDVector}{ans}, \varname{CDRSMatrix}{a}, \varname{CQDVector}{b}, \varname{double}{reps[QDSIZE]}, \varname{double}{aeps[QDSIZE]}, \varname{long int}{maxtimes}, \varname{CDRSMatrix}{ilu}, \varname{double *}{norm2\_res\_history}}
+    \funcitem{long int}{CQDCGS\_sp\_d\_iLU0}{\varname{CQDVector}{ans}, \varname{CDRSMatrix}{a}, \varname{CQDVector}{b}, \varname{double}{reps[QDSIZE]}, \varname{double}{aeps[QDSIZE]}, \varname{long int}{maxtimes}, \varname{CDRSMatrix}{ilu}, \varname{double *}{norm2\_res\_history}}
+    \funcitem{long int}{CQDBiCGSTAB\_sp\_d\_iLU0}{\varname{CQDVector}{ans}, \varname{CDRSMatrix}{a}, \varname{CQDVector}{b}, \varname{double}{reps[QDSIZE]}, \varname{double}{aeps[QDSIZE]}, \varname{long int}{maxtimes}, \varname{CDRSMatrix}{ilu}, \varname{double *}{norm2\_res\_history}}
+    \funcitem{long int}{CQDGPBiCG\_sp\_d\_iLU0}{\varname{CQDVector}{ans}, \varname{CDRSMatrix}{a}, \varname{CQDVector}{b}, \varname{double}{reps[QDSIZE]}, \varname{double}{aeps[QDSIZE]}, \varname{long int}{maxtimes}, \varname{CDRSMatrix}{ilu}, \varname{double *}{norm2\_res\_history}}
+    \funcitem{long int}{CQDBiCG}{\varname{CQDVector}{ans}, \varname{CQDMatrix}{a}, \varname{CQDVector}{b}, \varname{double}{reps[QDSIZE]}, \varname{double}{aeps[QDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{CQDCGS}{\varname{CQDVector}{ans}, \varname{CQDMatrix}{a}, \varname{CQDVector}{b}, \varname{double}{reps[QDSIZE]}, \varname{double}{aeps[QDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{CQDBiCGSTAB}{\varname{CQDVector}{ans}, \varname{CQDMatrix}{a}, \varname{CQDVector}{b}, \varname{double}{reps[QDSIZE]}, \varname{double}{aeps[QDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{CQDGPBiCG}{\varname{CQDVector}{ans}, \varname{CQDMatrix}{a}, \varname{CQDVector}{b}, \varname{double}{reps[QDSIZE]}, \varname{double}{aeps[QDSIZE]}, \varname{long int}{maxtimes}}
+\end{itemize}
+
+\subsection{\bi{BiCG, CGS, BiCGSTAB, GPBiCG methods (multiple-precision; requires \texttt{USE\_GMP})}{BiCG, CGS, BiCGSTAB, GPBiCG 法（多倍長精度。\texttt{USE\_GMP} が必要）}}
+
+\begin{itemize}
+    \funcitem{long int}{MPFBiCG\_sp}{\varname{MPFVector}{ans}, \varname{MPFRSMatrix}{a}, \varname{MPFVector}{b}, \varname{mpf\_t}{reps}, \varname{mpf\_t}{aeps}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{MPFCGS\_sp}{\varname{MPFVector}{ans}, \varname{MPFRSMatrix}{a}, \varname{MPFVector}{b}, \varname{mpf\_t}{reps}, \varname{mpf\_t}{aeps}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{MPFBiCGSTAB\_sp}{\varname{MPFVector}{ans}, \varname{MPFRSMatrix}{a}, \varname{MPFVector}{b}, \varname{mpf\_t}{reps}, \varname{mpf\_t}{aeps}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{MPFGPBiCG\_sp}{\varname{MPFVector}{ans}, \varname{MPFRSMatrix}{a}, \varname{MPFVector}{b}, \varname{mpf\_t}{reps}, \varname{mpf\_t}{aeps}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{MPFBiCG\_sp\_iLU0}{\varname{MPFVector}{ans}, \varname{MPFRSMatrix}{a}, \varname{MPFVector}{b}, \varname{mpf\_t}{reps}, \varname{mpf\_t}{aeps}, \varname{long int}{maxtimes}, \varname{MPFRSMatrix}{ilu}, \varname{MPFVector}{norm2\_res\_history}}
+    \funcitem{long int}{MPFCGS\_sp\_iLU0}{\varname{MPFVector}{ans}, \varname{MPFRSMatrix}{a}, \varname{MPFVector}{b}, \varname{mpf\_t}{reps}, \varname{mpf\_t}{aeps}, \varname{long int}{maxtimes}, \varname{MPFRSMatrix}{ilu}, \varname{MPFVector}{norm2\_res\_history}}
+    \funcitem{long int}{MPFBiCGSTAB\_sp\_iLU0}{\varname{MPFVector}{ans}, \varname{MPFRSMatrix}{a}, \varname{MPFVector}{b}, \varname{mpf\_t}{reps}, \varname{mpf\_t}{aeps}, \varname{long int}{maxtimes}, \varname{MPFRSMatrix}{ilu}, \varname{MPFVector}{norm2\_res\_history}}
+    \funcitem{long int}{MPFGPBiCG\_sp\_iLU0}{\varname{MPFVector}{ans}, \varname{MPFRSMatrix}{a}, \varname{MPFVector}{b}, \varname{mpf\_t}{reps}, \varname{mpf\_t}{aeps}, \varname{long int}{maxtimes}, \varname{MPFRSMatrix}{ilu}, \varname{MPFVector}{norm2\_res\_history}}
+    \funcitem{long int}{MPFBiCG\_sp\_d}{\varname{MPFVector}{ans}, \varname{DRSMatrix}{a}, \varname{MPFVector}{b}, \varname{mpf\_t}{reps}, \varname{mpf\_t}{aeps}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{MPFCGS\_sp\_d}{\varname{MPFVector}{ans}, \varname{DRSMatrix}{a}, \varname{MPFVector}{b}, \varname{mpf\_t}{reps}, \varname{mpf\_t}{aeps}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{MPFBiCGSTAB\_sp\_d}{\varname{MPFVector}{ans}, \varname{DRSMatrix}{a}, \varname{MPFVector}{b}, \varname{mpf\_t}{reps}, \varname{mpf\_t}{aeps}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{MPFGPBiCG\_sp\_d}{\varname{MPFVector}{ans}, \varname{DRSMatrix}{a}, \varname{MPFVector}{b}, \varname{mpf\_t}{reps}, \varname{mpf\_t}{aeps}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{MPFBiCG\_sp\_d\_iLU0}{\varname{MPFVector}{ans}, \varname{DRSMatrix}{a}, \varname{MPFVector}{b}, \varname{mpf\_t}{reps}, \varname{mpf\_t}{aeps}, \varname{long int}{maxtimes}, \varname{DRSMatrix}{ilu}, \varname{MPFVector}{norm2\_res\_history}}
+    \funcitem{long int}{MPFCGS\_sp\_d\_iLU0}{\varname{MPFVector}{ans}, \varname{DRSMatrix}{a}, \varname{MPFVector}{b}, \varname{mpf\_t}{reps}, \varname{mpf\_t}{aeps}, \varname{long int}{maxtimes}, \varname{DRSMatrix}{ilu}, \varname{MPFVector}{norm2\_res\_history}}
+    \funcitem{long int}{MPFBiCGSTAB\_sp\_d\_iLU0}{\varname{MPFVector}{ans}, \varname{DRSMatrix}{a}, \varname{MPFVector}{b}, \varname{mpf\_t}{reps}, \varname{mpf\_t}{aeps}, \varname{long int}{maxtimes}, \varname{DRSMatrix}{ilu}, \varname{MPFVector}{norm2\_res\_history}}
+    \funcitem{long int}{MPFGPBiCG\_sp\_d\_iLU0}{\varname{MPFVector}{ans}, \varname{DRSMatrix}{a}, \varname{MPFVector}{b}, \varname{mpf\_t}{reps}, \varname{mpf\_t}{aeps}, \varname{long int}{maxtimes}, \varname{DRSMatrix}{ilu}, \varname{MPFVector}{norm2\_res\_history}}
+    \funcitem{long int}{MPFBiCG}{\varname{MPFVector}{ans}, \varname{MPFMatrix}{a}, \varname{MPFVector}{b}, \varname{mpf\_t}{reps}, \varname{mpf\_t}{aeps}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{MPFCGS}{\varname{MPFVector}{ans}, \varname{MPFMatrix}{a}, \varname{MPFVector}{b}, \varname{mpf\_t}{reps}, \varname{mpf\_t}{aeps}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{MPFBiCGSTAB}{\varname{MPFVector}{ans}, \varname{MPFMatrix}{a}, \varname{MPFVector}{b}, \varname{mpf\_t}{reps}, \varname{mpf\_t}{aeps}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{MPFGPBiCG}{\varname{MPFVector}{ans}, \varname{MPFMatrix}{a}, \varname{MPFVector}{b}, \varname{mpf\_t}{reps}, \varname{mpf\_t}{aeps}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{CMPFBiCG\_sp}{\varname{CMPFVector}{ans}, \varname{CMPFRSMatrix}{a}, \varname{CMPFVector}{b}, \varname{mpf\_t}{reps}, \varname{mpf\_t}{aeps}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{CMPFCGS\_sp}{\varname{CMPFVector}{ans}, \varname{CMPFRSMatrix}{a}, \varname{CMPFVector}{b}, \varname{mpf\_t}{reps}, \varname{mpf\_t}{aeps}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{CMPFBiCGSTAB\_sp}{\varname{CMPFVector}{ans}, \varname{CMPFRSMatrix}{a}, \varname{CMPFVector}{b}, \varname{mpf\_t}{reps}, \varname{mpf\_t}{aeps}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{CMPFGPBiCG\_sp}{\varname{CMPFVector}{ans}, \varname{CMPFRSMatrix}{a}, \varname{CMPFVector}{b}, \varname{mpf\_t}{reps}, \varname{mpf\_t}{aeps}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{CMPFBiCG\_sp\_iLU0}{\varname{CMPFVector}{ans}, \varname{CMPFRSMatrix}{a}, \varname{CMPFVector}{b}, \varname{mpf\_t}{reps}, \varname{mpf\_t}{aeps}, \varname{long int}{maxtimes}, \varname{CMPFRSMatrix}{ilu}, \varname{MPFVector}{norm2\_res\_history}}
+    \funcitem{long int}{CMPFCGS\_sp\_iLU0}{\varname{CMPFVector}{ans}, \varname{CMPFRSMatrix}{a}, \varname{CMPFVector}{b}, \varname{mpf\_t}{reps}, \varname{mpf\_t}{aeps}, \varname{long int}{maxtimes}, \varname{CMPFRSMatrix}{ilu}, \varname{MPFVector}{norm2\_res\_history}}
+    \funcitem{long int}{CMPFBiCGSTAB\_sp\_iLU0}{\varname{CMPFVector}{ans}, \varname{CMPFRSMatrix}{a}, \varname{CMPFVector}{b}, \varname{mpf\_t}{reps}, \varname{mpf\_t}{aeps}, \varname{long int}{maxtimes}, \varname{CMPFRSMatrix}{ilu}, \varname{MPFVector}{norm2\_res\_history}}
+    \funcitem{long int}{CMPFGPBiCG\_sp\_iLU0}{\varname{CMPFVector}{ans}, \varname{CMPFRSMatrix}{a}, \varname{CMPFVector}{b}, \varname{mpf\_t}{reps}, \varname{mpf\_t}{aeps}, \varname{long int}{maxtimes}, \varname{CMPFRSMatrix}{ilu}, \varname{MPFVector}{norm2\_res\_history}}
+    \funcitem{long int}{CMPFBiCG\_sp\_d}{\varname{CMPFVector}{ans}, \varname{CDRSMatrix}{a}, \varname{CMPFVector}{b}, \varname{mpf\_t}{reps}, \varname{mpf\_t}{aeps}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{CMPFCGS\_sp\_d}{\varname{CMPFVector}{ans}, \varname{CDRSMatrix}{a}, \varname{CMPFVector}{b}, \varname{mpf\_t}{reps}, \varname{mpf\_t}{aeps}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{CMPFBiCGSTAB\_sp\_d}{\varname{CMPFVector}{ans}, \varname{CDRSMatrix}{a}, \varname{CMPFVector}{b}, \varname{mpf\_t}{reps}, \varname{mpf\_t}{aeps}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{CMPFGPBiCG\_sp\_d}{\varname{CMPFVector}{ans}, \varname{CDRSMatrix}{a}, \varname{CMPFVector}{b}, \varname{mpf\_t}{reps}, \varname{mpf\_t}{aeps}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{CMPFBiCG\_sp\_d\_iLU0}{\varname{CMPFVector}{ans}, \varname{CDRSMatrix}{a}, \varname{CMPFVector}{b}, \varname{mpf\_t}{reps}, \varname{mpf\_t}{aeps}, \varname{long int}{maxtimes}, \varname{CDRSMatrix}{ilu}, \varname{MPFVector}{norm2\_res\_history}}
+    \funcitem{long int}{CMPFCGS\_sp\_d\_iLU0}{\varname{CMPFVector}{ans}, \varname{CDRSMatrix}{a}, \varname{CMPFVector}{b}, \varname{mpf\_t}{reps}, \varname{mpf\_t}{aeps}, \varname{long int}{maxtimes}, \varname{CDRSMatrix}{ilu}, \varname{MPFVector}{norm2\_res\_history}}
+    \funcitem{long int}{CMPFBiCGSTAB\_sp\_d\_iLU0}{\varname{CMPFVector}{ans}, \varname{CDRSMatrix}{a}, \varname{CMPFVector}{b}, \varname{mpf\_t}{reps}, \varname{mpf\_t}{aeps}, \varname{long int}{maxtimes}, \varname{CDRSMatrix}{ilu}, \varname{MPFVector}{norm2\_res\_history}}
+    \funcitem{long int}{CMPFGPBiCG\_sp\_d\_iLU0}{\varname{CMPFVector}{ans}, \varname{CDRSMatrix}{a}, \varname{CMPFVector}{b}, \varname{mpf\_t}{reps}, \varname{mpf\_t}{aeps}, \varname{long int}{maxtimes}, \varname{CDRSMatrix}{ilu}, \varname{MPFVector}{norm2\_res\_history}}
+    \funcitem{long int}{CMPFBiCG}{\varname{CMPFVector}{ans}, \varname{CMPFMatrix}{a}, \varname{CMPFVector}{b}, \varname{mpf\_t}{reps}, \varname{mpf\_t}{aeps}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{CMPFCGS}{\varname{CMPFVector}{ans}, \varname{CMPFMatrix}{a}, \varname{CMPFVector}{b}, \varname{mpf\_t}{reps}, \varname{mpf\_t}{aeps}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{CMPFBiCGSTAB}{\varname{CMPFVector}{ans}, \varname{CMPFMatrix}{a}, \varname{CMPFVector}{b}, \varname{mpf\_t}{reps}, \varname{mpf\_t}{aeps}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{CMPFGPBiCG}{\varname{CMPFVector}{ans}, \varname{CMPFMatrix}{a}, \varname{CMPFVector}{b}, \varname{mpf\_t}{reps}, \varname{mpf\_t}{aeps}, \varname{long int}{maxtimes}}
+\end{itemize}
+
+%------------------------------------------------%
+% End of document
+%------------------------------------------------%

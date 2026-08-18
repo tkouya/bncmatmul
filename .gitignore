@@ -1,0 +1,17 @@
+# Build artifacts
+*.o
+*.lo
+*.a
+.libs/
+.deps/
+autom4te.cache/
+cuda_obj/
+config.log
+config.status
+configure~
+libtool
+*.tar.gz
+*.premmfix
+
+# Editor backups
+*~

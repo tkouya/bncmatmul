@@ -1,0 +1,114 @@
+\contentsline {chapter}{\numberline {Chapter~1}What's BNCmatmul?}{1}{}%
+\contentsline {section}{\numberline {1.1}Copyright and condition for distribution}{1}{}%
+\contentsline {section}{\numberline {1.2}How to compile BNCmatmul}{1}{}%
+\contentsline {section}{\numberline {1.3}Mathematical notation}{2}{}%
+\contentsline {section}{\numberline {1.4}Why do we require a multiple-precision floating-point arithmetic library?}{2}{}%
+\contentsline {section}{\numberline {1.5}Algorithms and performance of optimized matrix multiplication}{3}{}%
+\contentsline {section}{\numberline {1.6}Software layer of BNCmatmul}{5}{}%
+\contentsline {section}{\numberline {1.7}History of Version and Todo list}{6}{}%
+\contentsline {paragraph}{History of Version}{6}{}%
+\contentsline {paragraph}{Todo list}{7}{}%
+\contentsline {chapter}{\numberline {Chapter~2}Basic datatypes and arithmetic}{8}{}%
+\contentsline {section}{\numberline {2.1}c\_dd\_qd.h}{8}{}%
+\contentsline {subsection}{\numberline {2.1.1}DD (double-double): 106-bit (53bits $\times $ 2) precision floating-point number}{8}{}%
+\contentsline {section}{\numberline {2.2}Error-free transformation}{9}{}%
+\contentsline {section}{\numberline {2.3}Double-double precision arithmetic}{9}{}%
+\contentsline {section}{\numberline {2.4}Quadruple-double precision arithmetic}{10}{}%
+\contentsline {section}{\numberline {2.5}Triple-double precision arithmetic}{11}{}%
+\contentsline {section}{\numberline {2.6}Branch-free fused multiply-add (\texttt {bncfma.h})}{12}{}%
+\contentsline {paragraph}{div/sqrt-safe variants}{13}{}%
+\contentsline {section}{\numberline {2.7}FMA-based elementary functions (\texttt {bncelem.h})}{13}{}%
+\contentsline {subsection}{\numberline {2.7.1}Scalar functions}{13}{}%
+\contentsline {subsection}{\numberline {2.7.2}Wiring into the \texttt {c\_dd\_*} / \texttt {c\_td\_*} / \texttt {c\_qd\_*} interfaces}{14}{}%
+\contentsline {subsection}{\numberline {2.7.3}SIMD-vectorized elementwise functions (\texttt {bncelem\_vector.h})}{14}{}%
+\contentsline {subsection}{\numberline {2.7.4}FMA-driven division}{14}{}%
+\contentsline {subsection}{\numberline {2.7.5}Accuracy and performance benchmarks}{15}{}%
+\contentsline {section}{\numberline {2.8}Exported function API for DLL/Python (\texttt {rdtq\_func.h})}{15}{}%
+\contentsline {section}{\numberline {2.9}rdd.h}{15}{}%
+\contentsline {section}{\numberline {2.10}AVX2}{18}{}%
+\contentsline {subsection}{\numberline {2.10.1}float}{18}{}%
+\contentsline {subsection}{\numberline {2.10.2}double}{18}{}%
+\contentsline {subsection}{\numberline {2.10.3}Error-free transformation}{18}{}%
+\contentsline {subsection}{\numberline {2.10.4}Double-double precision arithmetic}{18}{}%
+\contentsline {subsection}{\numberline {2.10.5}Triple-double precision arithmetic}{19}{}%
+\contentsline {subsection}{\numberline {2.10.6}Quadruple-double precision arithmetic}{19}{}%
+\contentsline {section}{\numberline {2.11}Miscellaneous functions}{20}{}%
+\contentsline {subsection}{\numberline {2.11.1}common functions}{20}{}%
+\contentsline {subsection}{\numberline {2.11.2}Random functions}{21}{}%
+\contentsline {subsection}{\numberline {2.11.3}Solver for algebraic equation}{21}{}%
+\contentsline {section}{\numberline {2.12}Tool functions for benchmarking}{21}{}%
+\contentsline {subsection}{\numberline {2.12.1}Time estimation}{21}{}%
+\contentsline {subsection}{\numberline {2.12.2}Relative error of{vec}tor and matrix}{22}{}%
+\contentsline {paragraph}{Relative error of{vec}tor}{22}{}%
+\contentsline {paragraph}{Relative error of matrix}{22}{}%
+\contentsline {chapter}{\numberline {Chapter~3}Basic linear computation}{24}{}%
+\contentsline {section}{\numberline {3.1}Detatypes of D, DD, TD, QD and MPFR vector and matrix}{24}{}%
+\contentsline {section}{\numberline {3.2}Vector arithmetic}{25}{}%
+\contentsline {section}{\numberline {3.3}Matrix arithmetic}{27}{}%
+\contentsline {section}{\numberline {3.4}File I/O with matrix and vector}{30}{}%
+\contentsline {section}{\numberline {3.5}Generating test matrices}{31}{}%
+\contentsline {section}{\numberline {3.6}Simple, block, and Strassen matrix multiplication and related functions}{32}{}%
+\contentsline {subsection}{\numberline {3.6.1}OpenMP}{33}{}%
+\contentsline {section}{\numberline {3.7}Getting relative errors of vector and matrix}{33}{}%
+\contentsline {section}{\numberline {3.8}Ozaki scheme and related functions}{34}{}%
+\contentsline {chapter}{\numberline {Chapter~4}LU decomposition}{36}{}%
+\contentsline {section}{\numberline {4.1}List of functions}{36}{}%
+\contentsline {chapter}{\numberline {Chapter~5}Array, polynomial and solvers of algebraic equations}{38}{}%
+\contentsline {section}{\numberline {5.1}Data types of Array and polynomial}{38}{}%
+\contentsline {subsection}{\numberline {5.1.1}Polynomial types}{38}{}%
+\contentsline {subsubsection}{Float (\texttt {FPoly}) and float complex (\texttt {CFPoly})}{38}{}%
+\contentsline {subsubsection}{Double (\texttt {DPoly}) and double complex (\texttt {CDPoly})}{38}{}%
+\contentsline {subsubsection}{Double-double (\texttt {DDPoly}) and complex double-double (\texttt {CDDPoly})}{38}{}%
+\contentsline {subsubsection}{Triple-double (\texttt {TDPoly}) and complex triple-double (\texttt {CTDPoly})}{38}{}%
+\contentsline {subsubsection}{Quadruple-double (\texttt {QDPoly}) and complex quadruple-double (\texttt {CQDPoly})}{39}{}%
+\contentsline {subsubsection}{Multiple-precision (\texttt {MPFPoly}) and complex multiple-precision (\texttt {CMPFPoly})}{39}{}%
+\contentsline {subsection}{\numberline {5.1.2}Array types}{39}{}%
+\contentsline {section}{\numberline {5.2}List of functions}{39}{}%
+\contentsline {subsection}{\numberline {5.2.1}Float polynomial functions (\texttt {poly.c} --- \texttt {FPoly})}{39}{}%
+\contentsline {subsection}{\numberline {5.2.2}Double polynomial functions (\texttt {poly.c} --- \texttt {DPoly})}{40}{}%
+\contentsline {subsection}{\numberline {5.2.3}Double complex polynomial functions (\texttt {poly.c} --- \texttt {CDPoly})}{40}{}%
+\contentsline {subsection}{\numberline {5.2.4}Double-double polynomial functions (\texttt {poly.c} --- \texttt {DDPoly}, \texttt {CDDPoly}; requires \texttt {USE\_DDLINEAR})}{41}{}%
+\contentsline {subsection}{\numberline {5.2.5}Triple-double polynomial functions (\texttt {poly.c} --- \texttt {TDPoly}; requires \texttt {USE\_TDLINEAR})}{42}{}%
+\contentsline {subsection}{\numberline {5.2.6}Quadruple-double polynomial functions (\texttt {poly.c} --- \texttt {QDPoly}; requires \texttt {USE\_QDLINEAR})}{43}{}%
+\contentsline {subsection}{\numberline {5.2.7}Multiple-precision polynomial functions (\texttt {poly.c} --- \texttt {MPFPoly}; requires \texttt {USE\_GMP})}{44}{}%
+\contentsline {subsection}{\numberline {5.2.8}Array functions (\texttt {array.c})}{45}{}%
+\contentsline {subsection}{\numberline {5.2.9}DKA root-finding methods (\texttt {dka.c})}{46}{}%
+\contentsline {subsection}{\numberline {5.2.10}Hirano method (\texttt {hirano.c}, \texttt {dd\_hirano.c})}{47}{}%
+\contentsline {subsection}{\numberline {5.2.11}File I/O functions (\texttt {fread\_write\_complex.c}; requires \texttt {USE\_GMP})}{48}{}%
+\contentsline {chapter}{\numberline {Chapter~6}Sparse matrix and related functions}{49}{}%
+\contentsline {section}{\numberline {6.1}Structures of CRS matrix}{49}{}%
+\contentsline {subsection}{\numberline {6.1.1}\texttt {DRSMatrix} --- double-precision sparse matrix}{49}{}%
+\contentsline {subsection}{\numberline {6.1.2}\texttt {CDRSMatrix} --- complex double-precision sparse matrix}{50}{}%
+\contentsline {subsection}{\numberline {6.1.3}\texttt {DDRSMatrix} and \texttt {CDDRSMatrix} --- double-double sparse matrices (requires \texttt {USE\_DDLINEAR})}{50}{}%
+\contentsline {subsection}{\numberline {6.1.4}\texttt {TDRSMatrix} and \texttt {CTDRSMatrix} --- triple-double sparse matrices (requires \texttt {USE\_TDLINEAR})}{52}{}%
+\contentsline {subsection}{\numberline {6.1.5}\texttt {QDRSMatrix} and \texttt {CQDRSMatrix} --- quadruple-double sparse matrices (requires \texttt {USE\_QDLINEAR})}{53}{}%
+\contentsline {subsection}{\numberline {6.1.6}\texttt {MPFRSMatrix} and \texttt {CMPFRSMatrix} --- multiple-precision sparse matrices (requires \texttt {USE\_GMP})}{54}{}%
+\contentsline {section}{\numberline {6.2}Krylov subspace iterative solvers}{56}{}%
+\contentsline {subsection}{\numberline {6.2.1}Conjugate Gradient method (\texttt {FCG}, \texttt {DCG}, \texttt {DDCG}, \texttt {TDCG}, \texttt {QDCG}, \texttt {MPFCG})}{56}{}%
+\contentsline {subsection}{\numberline {6.2.2}BiCG, CGS, BiCGSTAB, GPBiCG methods (double)}{57}{}%
+\contentsline {subsection}{\numberline {6.2.3}BiCG, CGS, BiCGSTAB, GPBiCG methods (double-double; requires \texttt {USE\_DDLINEAR})}{58}{}%
+\contentsline {subsection}{\numberline {6.2.4}BiCG, CGS, BiCGSTAB, GPBiCG methods (triple-double; requires \texttt {USE\_TDLINEAR})}{60}{}%
+\contentsline {subsection}{\numberline {6.2.5}BiCG, CGS, BiCGSTAB, GPBiCG methods (quadruple-double; requires \texttt {USE\_QDLINEAR})}{61}{}%
+\contentsline {subsection}{\numberline {6.2.6}BiCG, CGS, BiCGSTAB, GPBiCG methods (multiple-precision; requires \texttt {USE\_GMP})}{63}{}%
+\contentsline {chapter}{\numberline {Chapter~7}Single-based and complex precision families}{65}{}%
+\contentsline {section}{\numberline {7.1}Single-based multi-component types (DS, TS, QS)}{65}{}%
+\contentsline {section}{\numberline {7.2}Complex types (CD and complex multi-component)}{65}{}%
+\contentsline {subsection}{\numberline {7.2.1}Native complex double (CD)}{66}{}%
+\contentsline {subsection}{\numberline {7.2.2}Complex multi-component (CDD, CTD, CQD, CDS, CTS, CQS)}{66}{}%
+\contentsline {section}{\numberline {7.3}Summary of available families}{66}{}%
+\contentsline {chapter}{\numberline {Chapter~8}GPU computation with CUDA}{68}{}%
+\contentsline {section}{\numberline {8.1}Naming convention and data types}{68}{}%
+\contentsline {section}{\numberline {8.2}Device memory and host-device transfer}{69}{}%
+\contentsline {section}{\numberline {8.3}Vector and matrix arithmetic}{69}{}%
+\contentsline {section}{\numberline {8.4}Matrix multiplication and matrix-vector product}{70}{}%
+\contentsline {section}{\numberline {8.5}LU decomposition and linear solver on GPU}{70}{}%
+\contentsline {section}{\numberline {8.6}Sparse matrix-vector multiplication (SpMV)}{70}{}%
+\contentsline {section}{\numberline {8.7}Arbitrary precision matrix multiplication (CUDA MPFR / MPC)}{71}{}%
+\contentsline {section}{\numberline {8.8}Building and running the GPU suite}{71}{}%
+\contentsline {chapter}{\numberline {Chapter~9}Using BNCmatmul from Python}{72}{}%
+\contentsline {section}{\numberline {9.1}Building the shared library}{72}{}%
+\contentsline {section}{\numberline {9.2}Loading the library and printing full precision}{72}{}%
+\contentsline {section}{\numberline {9.3}Arithmetic, FMA and elementary functions}{73}{}%
+\contentsline {section}{\numberline {9.4}SIMD array functions with NumPy}{73}{}%
+\contentsline {section}{\numberline {9.5}Notes and caveats}{74}{}%
+\contentsline {chapter}{Bibliography}{75}{}%

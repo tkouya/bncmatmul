@@ -1,0 +1,8 @@
+CPU baseline threads (SVE2 OMP): 20
+## native real d/f (matmul/matvec/axpy, CPU all sizes)
+## native complex cd/cf (matmul/matvec, CPU all sizes)
+## multi-component real dd/td/qd/ds/ts/qs
+## complex multi-component cdd/ctd/cqd (SVE2 OMP, CPU all sizes)
+## complex multi-component cds/cts/cqs (serial CPU; cts/cqs capped at 512)
+## complex axpy (GPU-only; no CPU cmul routine in library)
+Wrote bench/cuda/out/cuda_results.csv (208 rows)

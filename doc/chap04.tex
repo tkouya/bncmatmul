@@ -1,0 +1,84 @@
+%------------------------------------------------%
+% Chap. 4
+%------------------------------------------------%
+\chapter{\bi{LU decomposition}{LU分解}}
+
+\bi{BNCmatmul has various LU decompositions and solvers for the corresponding decomposed linear system of equations.}{BNCmatmulは，各種のLU分解と，分解された連立一次方程式を解くための対応するソルバを備えています．}
+
+%------------------------------------------------%
+% List of functions
+%------------------------------------------------%
+\section{\bi{List of functions}{関数一覧}}
+
+%\begin{description}
+\begin{itemize}
+    \funcitem{int}{DLUdecomp}{\varname{DMatrix}{$A$}}\ $\cdots$ \bi{LU decompose the matrix $A$ without any types of pivoting.}{ピボット選択を行わずに行列$A$をLU分解します．}
+    \funcitem{int}{DDLUdecomp}{\varname{DDMatrix}{$A$}}
+    \funcitem{int}{TDLUdecomp}{\varname{TDMatrix}{$A$}}
+    \funcitem{int}{QDLUdecomp}{\varname{QDMatrix}{$A$}}
+    \funcitem{int}{MPFLUdecomp}{\varname{MFPMatrix}{$A$}}
+
+\funcitem{int}{SolveDLS}{\varname{DVector}{$\mathbf{x}$}, \varname{DMatrix}{$LU$}, \varname{DVector}{$\mathbf{b}$}}\ $\cdots$ \bi{Solve $(LU)\mathbf{x} = \mathbf{b}$ for $\mathbf{x}$.}{$(LU)\mathbf{x} = \mathbf{b}$を$\mathbf{x}$について解きます．}
+\funcitem{int}{SolveDDLS}{\varname{DDVector}{$\mathbf{x}$}, \varname{DDMatrix}{$LU$}, \varname{DDVector}{$\mathbf{b}$}}
+\funcitem{int}{SolveTDLS}{\varname{TDVector}{$\mathbf{x}$}, \varname{TDMatrix}{$LU$}, \varname{TDVector}{$\mathbf{b}$}}
+\funcitem{int}{SolveQDLS}{\varname{QDVector}{$\mathbf{x}$}, \varname{QDMatrix}{l$LU$}, \varname{QDVector}{$\mathbf{b}$}}
+\funcitem{int}{SolveMPFLS}{\varname{MPFVector}{$\mathbf{x}$}, \varname{MPFMatrix}{$LU$}, \varname{MPFVector}{$\mathbf{b}$}}
+
+\funcitem{int}{DLUdecompP}{\varname{DMatrix}{$A$}, \varname{long int}{ch[]}}\ $\cdots$ \bi{LU decompose the matrix $A$ with partial pivoting, order of rows is stored in \texttt{ch[]}.}{部分ピボット選択を用いて行列$A$をLU分解します．行の順序は\texttt{ch[]}に格納されます．}
+\funcitem{int}{DDLUdecompP}{\varname{DDMatrix}{$A$}, \varname{long int}{ch[]}}
+\funcitem{int}{TDLUdecompP}{\varname{TDMatrix}{$A$}, \varname{long int}{ch[]}}
+\funcitem{int}{QDLUdecompP}{\varname{DDMatrix}{$A$}, \varname{long int}{ch[]}}
+\funcitem{int}{MPFLUdecompP}{\varname{MPFMatrix}{$A$}, \varname{long int}{ch[]}}
+
+\funcitem{int}{SolveDLSP}{\varnamedvec{$\mathbf{x}$}, \varnamedmat{$LU$}, \varnamedvec{$\mathbf{b}$}, \varnameli{ch[]}}\ $\cdots$ \bi{Solve $(LU)\mathbf{x} = \mathbf{b}$ for $\mathbf{x}$ using \texttt{ch[]} as row numbering.}{\texttt{ch[]}を行番号として用いて，$(LU)\mathbf{x} = \mathbf{b}$を$\mathbf{x}$について解きます．}
+\funcitem{int}{SolveDDLSP}{\varnameddvec{$\mathbf{x}$}, \varnameddmat{$LU$}, \varnameddvec{$\mathbf{b}$}, \varnameli{ch[]}}
+\funcitem{int}{SolveTDLSP}{\varnametdvec{$\mathbf{x}$}, \varnametdmat{$LU$}, \varnametdvec{$\mathbf{b}$}, \varnameli{ch[]}}
+\funcitem{int}{SolveQDLSP}{\varnameddvec{$\mathbf{x}$}, \varnameqdmat{$LU$}, \varnameqdvec{$\mathbf{b}$}, \varnameli{ch[]}}
+\funcitem{int}{SolveMPFLSP}{\varnamempfvec{$\mathbf{x}$}, \varnamempfmat{$LU$}, \varnamempfvec{$\mathbf{b}$}, \varnameli{ch[]}}
+
+\funcitem{int}{DLUdecompC}{\varname{DMatrix}{$A$}, \varname{long int}{row\_ch[]}, \varname{long int}{col\_ch[]}}\ $\cdots$ \bi{LU decompose the matrix $A$ with complete pivoting, order of rows is stored in \texttt{row\_ch[]}, and order of columns in \texttt{col\_ch[]}.}{完全ピボット選択を用いて行列$A$をLU分解します．行の順序は\texttt{row\_ch[]}に，列の順序は\texttt{col\_ch[]}に格納されます．}
+\funcitem{int}{DDLUdecompC}{\varname{DDMatrix}{$A$}, \varname{long int}{row\_ch[]}, \varname{long int}{col\_ch[]}}
+\funcitem{int}{TDLUdecompC}{\varname{TDMatrix}{$A$}, \varname{long int}{row\_ch[]}, \varname{long int}{col\_ch[]}}
+\funcitem{int}{QDLUdecompC}{\varname{QDMatrix}{$A$}, \varname{long int}{row\_ch[]}, \varname{long int}{col\_ch[]}}
+\funcitem{int}{MPFLUdecompC}{\varname{MPFMatrix}{$A$}, \varname{long int}{row\_ch[]}, \varname{long int}{col\_ch[]}}
+
+\funcitem{int}{SolveDLSC}{\varnamedvec{$\mathbf{x}$}, \varnamedmat{$LU$}, \varnamedvec{$\mathbf{b}$}, \varnameli{row\_ch[]}, \varnameli{col\_ch[]}}\ $\cdots$\bi{Solve $(LU)\mathbf{x} = \mathbf{b}$ for $\mathbf{x}$ using \texttt{row\_ch[]} and \texttt{col\_ch[]} as row and column numbering, respectively.}{\texttt{row\_ch[]}と\texttt{col\_ch[]}をそれぞれ行番号と列番号として用いて，$(LU)\mathbf{x} = \mathbf{b}$を$\mathbf{x}$について解きます．}
+\funcitem{int}{SolveDDLSC}{\varnameddvec{$\mathbf{x}$}, \varnameddmat{$LU$}, \varnameddvec{$\mathbf{b}$}, \varnameli{row\_ch[]}, \varnameli{col\_ch[]}}
+\funcitem{int}{SolveTDLSC}{\varnametdvec{$\mathbf{x}$}, \varnametdmat{$LU$}, \varnametdvec{$\mathbf{b}$}, \varnameli{row\_ch[]}, \varnameli{col\_ch[]}}
+\funcitem{int}{SolveQDLSC}{\varnameqdvec{$\mathbf{x}$}, \varnameqdmat{$LU$}, \varnameqdvec{$\mathbf{b}$}, \varnameli{row\_ch[]}, \varnameli{col\_ch[]}}
+\funcitem{int}{SolveMPFLSC}{\varnamempfvec{$\mathbf{x}$}, \varnamempfmat{$LU$}, \varnamempfvec{$\mathbf{b}$}, \varnameli{row\_ch[]},  \varnameli{col\_ch[]}}
+
+\funcitem{int}{DLUdecomp\_strassen}{\varnamedmat{$A$}, \varnameli{min\_dim}}\ $\cdots$ \bi{LU decompose, using Strassen matrix multiplication.}{Strassenの行列乗算を用いてLU分解します．}
+\funcitem{int}{DDLUdecomp\_strassen}{\varnameddmat{$A$}, \varnameli{min\_dim}}
+\funcitem{int}{TDLUdecomp\_strassen}{\varnametdmat{$A$}, \varnameli{min\_dim}}
+\funcitem{int}{QDLUdecomp\_strassen}{\varnameqdmat{$A$}, \varnameli{min\_dim}}
+\funcitem{int}{MPFLUdecomp\_strassen}{\varnamempfmat{$A$}, \varnameli{min\_dim}}
+
+\funcitem{int}{DLUdecomp\_strassenPM}{\varnamedmat{$A$}, \varnameli{ch[]}, \varnameli{min\_dim}}\ $\cdots$ \bi{LU decompose, using Strassen matrix multiplication, the matrix $A$ with partial pivoting, order of rows is stored in \texttt{ch[]}.}{Strassenの行列乗算と部分ピボット選択を用いて行列$A$をLU分解します．行の順序は\texttt{ch[]}に格納されます．}
+\funcitem{int}{DDLUdecomp\_strassenPM}{\varnameddmat{$A$}, \varnameli{ch[]}, \varnameli{min\_dim}}
+\funcitem{int}{TDLUdecomp\_strassenPM}{\varnametdmat{$A$}, \varnameli{ch[]}, \varnameli{min\_dim}}
+\funcitem{int}{QDLUdecomp\_strassenPM}{\varnameqdmat{$A$}, \varname{long int}{ch[]}, \varname{long int}{min\_dim}}
+\funcitem{int}{MPFLUdecomp\_strassenPM}{\varnamempfmat{$A$}, \varname{long int}{ch[]}, \varname{long int}{min\_dim}}
+
+\funcitem{int}{DLUdecomp\_oz}{\varnamedmat{$A$}, \varname{long int}{min\_dim}, \varname{int}{max\_num\_div}}\ $\cdots$ \bi{LU decompose, using Ozaki scheme setting \texttt{max\_num\_div} as maximum number of divisions.}{\texttt{max\_num\_div}を最大分割数として設定し，Ozakiスキームを用いてLU分解します．}
+\funcitem{int}{DDLUdecomp\_oz}{\varnameddmat{$A$}, \varname{long int}{min\_dim}, \varname{int}{max\_num\_div}} 
+\funcitem{int}{TDLUdecomp\_oz}{\varnamedmat{$A$}, \varname{long int}{min\_dim}, \varname{int}{max\_num\_div}} 
+\funcitem{int}{QDLUdecomp\_oz}{\varnamedmat{$A$}, \varname{long int}{min\_dim}, \varname{int}{max\_num\_div}} 
+\funcitem{int}{MPFLUdecomp\_oz}{\varnamempfmat{$A$}, \varname{long int}{min\_dim}, \varname{int}{max\_num\_div}} 
+
+\funcitem{int}{DLUdecomp\_ozPM}{\varnamedmat{$A$}, \varname{long int}{ch[]}, \varname{long int}{min\_dim}, \varname{int}{max\_num\_div}}\ $\cdots$ \bi{LU decompose, using partial pivoting and Ozaki scheme setting \texttt{max\_num\_div} as maximum number of divisions.}{\texttt{max\_num\_div}を最大分割数として設定し，部分ピボット選択とOzakiスキームを用いてLU分解します．}
+\funcitem{int}{DDLUdecomp\_ozPM}{\varnamedmat{$A$}, \varname{long int}{ch[]}, \varname{long int}{min\_dim}, \varname{int}{max\_num\_div}}
+\funcitem{int}{TDLUdecomp\_ozPM}{\varnamedmat{$A$}, \varname{long int}{ch[]}, \varname{long int}{min\_dim}, \varname{int}{max\_num\_div}}
+\funcitem{int}{QDLUdecomp\_ozPM}{\varnamedmat{$A$}, \varname{long int}{ch[]}, \varname{long int}{min\_dim}, \varname{int}{max\_num\_div}}
+\funcitem{int}{MPFLUdecomp\_ozPM}{\varnamempfmat{$A$}, \varname{long int}{ch[]}, \varname{long int}{min\_dim}, \varname{int}{max\_num\_div}}
+\end{itemize}
+%\end{description}
+
+%------------------------------------------------%
+% Sample program
+%------------------------------------------------%
+%\section{Sample program}
+
+%------------------------------------------------%
+% End of Document
+%------------------------------------------------%

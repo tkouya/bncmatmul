@@ -1,0 +1,228 @@
+%------------------------------------------------%
+% Chap. 9 Using BNCmatmul from Python
+%------------------------------------------------%
+\chapter{\bi{Using BNCmatmul from Python}{PythonからのBNCmatmulの利用}}\label{chap:python}
+
+\bi{This chapter shows how to call the DD/TD/QD (and DS/TS/QS) arithmetic,
+FMA and elementary functions of BNCmatmul from Python via the standard
+\texttt{ctypes} module, using the exported function API of
+Sec.~\ref{sec:rdtqfunc} (\texttt{src/rdtq\_func.c} /
+\texttt{include/rdtq\_func.h}) and the elementwise array functions of
+Sec.~\ref{sec:bncelem}.  All code fragments in this chapter are taken from
+\texttt{python/example\_rdtq.py}, which is shipped with the library and can
+be executed as-is; \texttt{python/test\_rdtq.py} is the corresponding
+regression driver.}{本章では、\ref{sec:rdtqfunc}節の関数エクスポートAPI
+（\texttt{src/rdtq\_func.c} / \texttt{include/rdtq\_func.h}）と
+\ref{sec:bncelem}節の要素毎の一括関数を使って、BNCmatmulの
+DD/TD/QD（およびDS/TS/QS）演算・FMA・初等関数をPython標準の
+\texttt{ctypes} モジュールから呼び出す方法を示します。本章のコード断片は
+すべてライブラリに同梱の \texttt{python/example\_rdtq.py} から取ったもので、
+そのまま実行できます。対応する回帰テストは \texttt{python/test\_rdtq.py}
+です。}
+
+\section{\bi{Building the shared library}{共有ライブラリのビルド}}
+
+\bi{The exported symbols live in a small shared library
+\texttt{python/librdtq.so}, built from \texttt{rdtq\_func.c} (99 scalar
+functions) and \texttt{elem\_vector.c} (12 array functions) by the
+legacy make targets:}{エクスポートされるシンボルは、\texttt{rdtq\_func.c}
+（スカラー関数99個）と \texttt{elem\_vector.c}（一括関数12個）から
+ビルドされる小さな共有ライブラリ \texttt{python/librdtq.so} に
+収められます。レガシーmakeターゲットでビルドします:}
+
+\begin{verbatim}
+$ cd bncmatmul-0.24/src
+$ make -f Makefile.legacy librdtq        # generic build
+$ make -f Makefile.legacy librdtq_neon   # Arm NEON build
+\end{verbatim}
+
+\bi{or directly with the compiler:}{あるいはコンパイラを直接使う場合:}
+
+\begin{verbatim}
+$ gcc -O3 -ffp-contract=off -fPIC -shared -Iinclude \
+      src/rdtq_func.c src/elem_vector.c -o python/librdtq.so -lm
+\end{verbatim}
+
+\bi{(\texttt{-ffp-contract=off} is mandatory, as everywhere in BNCmatmul.)
+The full library shared objects \texttt{libbncmatmul-0.24*.so} contain the
+same symbols plus the whole linear-computation API; \texttt{librdtq.so} is
+merely the smallest self-contained subset for scripting use.}{（BNCmatmulの
+他の部分と同様、\texttt{-ffp-contract=off} は必須です。）フルライブラリの
+共有オブジェクト \texttt{libbncmatmul-0.24*.so} にも同じシンボルに加えて
+線形計算API全体が含まれます。\texttt{librdtq.so} はスクリプト用途向けの
+最小自己完結サブセットです。}
+
+\section{\bi{Loading the library and printing full precision}{ライブラリのロードとフル精度表示}}
+
+\bi{A DD/TD/QD value is an unevaluated sum of 2/3/4 doubles, so the natural
+ctypes representation is a small \texttt{c\_double} array.  Since every limb
+is an exact binary value, converting each limb to \texttt{decimal.Decimal}
+and summing reproduces the full-precision value exactly --- Python's
+\texttt{float} arithmetic would round it back to 53 bits:}{DD/TD/QD値は
+2／3／4個のdoubleの未評価和なので、ctypesでは小さな \texttt{c\_double}
+配列で表すのが自然です。各limbは厳密な2進値なので、limbごとに
+\texttt{decimal.Decimal} へ変換して合計すればフル精度の値が厳密に
+再現されます（Pythonの \texttt{float} 演算では53ビットに丸め戻されて
+しまいます）:}
+
+\begin{verbatim}
+import ctypes as ct
+from decimal import Decimal, getcontext
+
+lib = ct.CDLL("./librdtq.so")
+
+DD = ct.c_double * 2    # double-double  (~32 decimal digits)
+TD = ct.c_double * 3    # triple-double  (~48 decimal digits)
+QD = ct.c_double * 4    # quad-double    (~63 decimal digits)
+
+getcontext().prec = 70
+def to_decimal(limbs):
+    return sum((Decimal(x) for x in limbs), Decimal(0))
+
+x = DD(1.5, 0.0)        # x = 1.5 (high limb, low limb)
+r = DD()
+lib.rdd_exp(r, x)       # result first, as in rdd.h
+print("dd exp(1.5) =", to_decimal(r))
+# dd exp(1.5) = 4.48168907033806482260205546011928...
+\end{verbatim}
+
+\bi{Note the argument order: as in the \texttt{rdd.h} convention, the result
+comes first.  The float-based families use \texttt{ct.c\_float * 2/3/4}
+arrays and the \texttt{rds\_} / \texttt{rts\_} / \texttt{rqs\_}
+prefixes.}{引数順に注意してください。\texttt{rdd.h} の慣習どおり、結果が
+先頭です。float基のファミリは \texttt{ct.c\_float * 2/3/4} 配列と
+\texttt{rds\_} / \texttt{rts\_} / \texttt{rqs\_} 接頭辞を使います。}
+
+\section{\bi{Arithmetic, FMA and elementary functions}{算術演算・FMA・初等関数}}
+
+\bi{The next fragment exercises quad-double square root, the certified
+branch-free FMA (as an exact residual check $\sqrt{2}^2 - 2$), the
+FMA-driven triple-double division, and the simultaneous
+$\sin$/$\cos$:}{次の断片では、quad-double平方根、証明付きbranch-free FMA
+（厳密な残差検査 $\sqrt{2}^2 - 2$ として）、FMA駆動triple-double除算、
+$\sin$／$\cos$ の同時計算を使います:}
+
+\begin{verbatim}
+# quad-double: sqrt(2) to ~63 digits
+two = QD(2.0, 0.0, 0.0, 0.0)
+s = QD()
+lib.rqd_sqrt(s, two)
+print("qd sqrt(2) =", to_decimal(s))
+# 1.41421356237309504880168872420969807856967187537694807317667973...
+
+# residual sqrt(2)^2 - 2 via the certified FMA: fma(s, s, -2)
+m2 = QD(-2.0, 0.0, 0.0, 0.0)
+resid = QD()
+lib.rqd_fma(resid, s, s, m2)
+print("qd sqrt(2)^2 - 2 =", to_decimal(resid))   # ~0 (qd eps level)
+
+# FMA-driven division: 1/3 in triple-double
+a = TD(1.0, 0.0, 0.0);  b = TD(3.0, 0.0, 0.0);  q = TD()
+lib.rtd_div_fma(q, a, b)
+print("td 1/3 =", to_decimal(q))
+# 0.33333333333333333333333333333333333333333333333327...
+
+# simultaneous sin/cos (two results, then the input)
+sin_x = DD();  cos_x = DD()
+lib.rdd_sincos(sin_x, cos_x, x)
+
+# div/sqrt-safe FMA: the scalar multiplier is a plain c_double
+res = DD()
+lib.rdd_fma_safe(res, DD(3.0, 0.0), ct.c_double(-0.5), DD(1.5, 0.0))
+print("1.5 - 0.5*3 =", to_decimal(res))          # exactly 0
+\end{verbatim}
+
+\bi{Every exported function of Sec.~\ref{sec:rdtqfunc} is callable in the
+same style: \texttt{rXX\_add} / \texttt{sub} / \texttt{mul} / \texttt{div} /
+\texttt{sqrt}, \texttt{rXX\_fma} / \texttt{fma\_safe} / \texttt{div\_fma},
+and \texttt{rXX\_exp} / \texttt{expm1} / \texttt{log} / \texttt{log10} /
+\texttt{sin} / \texttt{cos} / \texttt{sincos} / \texttt{tan} /
+\texttt{nint}.}{\ref{sec:rdtqfunc}節でエクスポートされる全関数が同じ流儀で
+呼び出せます: \texttt{rXX\_add} / \texttt{sub} / \texttt{mul} /
+\texttt{div} / \texttt{sqrt}、\texttt{rXX\_fma} / \texttt{fma\_safe} /
+\texttt{div\_fma}、および \texttt{rXX\_exp} / \texttt{expm1} /
+\texttt{log} / \texttt{log10} / \texttt{sin} / \texttt{cos} /
+\texttt{sincos} / \texttt{tan} / \texttt{nint} です。}
+
+\section{\bi{Elementwise array functions with NumPy}{NumPyと要素毎の一括関数}}
+
+\bi{The elementwise array functions \texttt{bnc\_XX\_yy\_array}
+(Sec.~\ref{sec:bncelem}) operate on limb-planar (SoA) arrays: limb $k$ of
+all $n$ elements is one contiguous \texttt{double} array.  This maps
+directly onto separate NumPy arrays, one per limb, passed as a
+\texttt{double*[K]} pointer array --- no copying is involved, and one call
+replaces $n$ round trips through ctypes:}{要素ごとの一括関数
+\texttt{bnc\_XX\_yy\_array}
+（\ref{sec:bncelem}節）はlimb-planar（SoA）配列を扱います。全$n$要素の
+limb $k$ が1本の連続した \texttt{double} 配列です。これはlimbごとに
+1本のNumPy配列をそのまま割り当て、\texttt{double*[K]} のポインタ配列として
+渡す形に直接対応します（コピーは発生しません）。1回の呼び出しで、
+ctypes経由の$n$回の往復を置き換えられます:}
+
+\begin{verbatim}
+import numpy as np
+
+n = 100000
+x_hi = np.linspace(-10.0, 10.0, n)     # high limbs
+x_lo = np.zeros(n)                     # low limbs
+r_hi = np.empty(n);  r_lo = np.empty(n)
+
+def planar(*arrays):
+    """double*[k] view of k numpy arrays (limb-planar layout)"""
+    ptr = ct.POINTER(ct.c_double) * len(arrays)
+    return ptr(*[a.ctypes.data_as(ct.POINTER(ct.c_double))
+                 for a in arrays])
+
+lib.bnc_dd_exp_array(ct.c_long(n),
+                     planar(r_hi, r_lo), planar(x_hi, x_lo))
+
+err = np.max(np.abs((r_hi + r_lo) / np.exp(x_hi) - 1.0))
+print("max rel.err vs numpy =", err)   # ~2.2e-16 (binary64 comparison floor)
+\end{verbatim}
+
+\bi{The same pattern works for \texttt{bnc\_dd\_log\_array} /
+\texttt{sin} / \texttt{cos} and, with three or four limb arrays, for the
+\texttt{bnc\_td\_*\_array} / \texttt{bnc\_qd\_*\_array} functions.
+The array layout is identical to the library's
+\texttt{ddvector}/\texttt{tdvector}/\texttt{qdvector} types
+(\texttt{vec->element}), so results can be exchanged with C code without
+conversion.}{同じパターンが \texttt{bnc\_dd\_log\_array} /
+\texttt{sin} / \texttt{cos} に、そしてlimb配列を3本または4本にすれば
+\texttt{bnc\_td\_*\_array} / \texttt{bnc\_qd\_*\_array} にも使えます。
+配列レイアウトはライブラリの
+\texttt{ddvector}/\texttt{tdvector}/\texttt{qdvector} 型
+（\texttt{vec->element}）と同一なので、C側との結果のやり取りに変換は
+不要です。}
+
+\section{\bi{Notes and caveats}{注意事項}}
+
+\begin{itemize}
+\item \bi{Result arguments come first (the \texttt{rdd.h} convention);
+the C-level \texttt{c\_dd\_*} functions use the opposite (input-first)
+order.  Mixing them up produces silently wrong results, so keep to the
+\texttt{rXX\_*} API from Python.}{結果引数が先頭です（\texttt{rdd.h}の
+慣習）。C側の \texttt{c\_dd\_*} 関数は逆（入力が先頭）です。取り違えると
+静かに誤った結果になるため、Pythonからは \texttt{rXX\_*} APIを使って
+ください。}
+\item \bi{Scalar arguments must be wrapped explicitly
+(\texttt{ct.c\_double(...)} / \texttt{ct.c\_float(...)}), e.g.\ the scalar
+multiplier of \texttt{rXX\_fma\_safe}; bare Python floats passed by ctypes
+default to \texttt{int}-like conversion and corrupt the call.}{スカラー引数は
+明示的にラップしてください（\texttt{ct.c\_double(...)} /
+\texttt{ct.c\_float(...)}）。例えば \texttt{rXX\_fma\_safe} のスカラー
+被乗数です。素のPython floatはctypesの既定変換により呼び出しを壊します。}
+\item \bi{Inputs are expected as normalized limb tuples.  Values
+constructed as \texttt{(x, 0, ...)} from a Python float are always safe;
+results returned by the library are normalized.}{入力は正規化された
+limb組を想定しています。Python floatから \texttt{(x, 0, ...)} の形で
+作った値は常に安全で、ライブラリが返す結果は正規化されています。}
+\item \bi{For full-precision I/O beyond \texttt{to\_decimal}, the MPFR-based
+conversion functions of \texttt{mpfr\_dtq\_sd.c} (e.g.\
+\texttt{rdd\_get\_str}) are exported by the full
+\texttt{libbncmatmul-0.24*.so} libraries and by \texttt{librdd.so}
+(see \texttt{python/rdd.py}).}{\texttt{to\_decimal} 以上のフル精度入出力
+には、\texttt{mpfr\_dtq\_sd.c} のMPFRベース変換関数（例:
+\texttt{rdd\_get\_str}）がフルライブラリ \texttt{libbncmatmul-0.24*.so}
+および \texttt{librdd.so} からエクスポートされています
+（\texttt{python/rdd.py} を参照）。}
+\end{itemize}

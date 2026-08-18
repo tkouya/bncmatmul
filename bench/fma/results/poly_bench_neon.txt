@@ -1,0 +1,20 @@
+# backend=neon variant=Q
+# degree=1000  evaluation points=2000  POLYMUL: deg 1000 x deg 500, 20 reps
+# accuracy reference: MPFR 600 bits
+#
+type op           maxrelerr   meanrelerr     t[s/call]      calls
+dd   HORNER      1.2473e-32   1.9749e-33    7.0753e-06       2000
+dd   ESTRIN      4.4205e-32   7.0731e-33    1.4855e-06       2000
+dd   ESTRIN-V    4.4205e-32   7.0731e-33    1.3196e-06       2000
+dd   EVALDIFF    8.5993e-30   1.7610e-32    7.0768e-06       2000
+dd   POLYMUL     6.3762e-29   1.9160e-31    8.2157e-04         20
+td   HORNER      1.2078e-48   1.2310e-49    2.7279e-05       2000
+td   ESTRIN      1.5993e-48   2.1412e-49    1.2619e-05       2000
+td   ESTRIN-V    1.0153e-48   1.7961e-49    1.1324e-05       2000
+td   EVALDIFF    1.0064e-48   1.1331e-49    2.7477e-05       2000
+td   POLYMUL     1.2906e-45   6.9220e-48    1.5323e-02         20
+qd   HORNER      1.9579e-65   2.4157e-66    6.1857e-05       2000
+qd   ESTRIN      4.5571e-65   7.0483e-66    5.1420e-05       2000
+qd   ESTRIN-V    2.6156e-64   1.3863e-65    1.7194e-05       2000
+qd   EVALDIFF    2.9934e-65   2.8322e-66    6.8736e-05       2000
+qd   POLYMUL     7.1638e-63   9.6810e-65    2.7135e-02         20

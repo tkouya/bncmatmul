@@ -1,0 +1,208 @@
+\documentclass[a4j,report,english]{jsbook}
+\usepackage[dvipdfmx]{graphicx}
+\usepackage{url}
+% https://tex.stackexchange.com/questions/116534/lstlisting-line-wrapping
+\usepackage{lmodern}
+\usepackage{amsmath,amsfonts}
+\usepackage{xcolor}
+\usepackage{algorithm,algorithmic}
+\usepackage{listings}
+\lstset{
+    basicstyle=\ttfamily,
+    columns=fullflexible,
+    breaklines=true,
+    postbreak=\mbox{\textcolor{red}{$\hookrightarrow$}\space},
+    tabsize=2
+}
+\usepackage{makeidx}
+\makeindex
+\usepackage[T1]{fontenc}
+% definition of macro and function
+% \item[(Macro) DFMA($a$, $b$, $c$)]\index{DFMA}
+\newcommand{\macroitem}[2]{\item[(Macro)] \texttt{#1}(#2)\index{#1}}
+%\newcommand{\funcitem}[3]{\item[(Func) #1 #2(#3)]\index{#1}}
+\newcommand{\funcitem}[3]{%
+    %\catcode'\_=12 %
+    \item \textsf{#1}\ \texttt{#2}(#3) %
+    \index{#2}%
+    %\catcode'\_=8 %    
+}
+\newcommand{\macroname}[2]{\textsf{#1}(#2)\index{#1}}
+\newcommand{\macroconst}[1]{\textsf{#1}\index{#1}}
+\newcommand{\macroconstitem}[1]{\item[(Macro)] #1\index{#1}}
+\newcommand{\const}[2]{\textsf{#1} #2\index{#2}}
+\newcommand{\constitem}[2]{\item[(Const)] #1 #2\index{#2}}
+\newcommand{\funcname}[2]{\textsf{#1}{#2}\index{#1}}
+\newcommand{\varname}[2]{\textsf{#1}\ \texttt{#2}\index{#1}}
+\newcommand{\ALLDT}[1]{[DD,TD,QD,MPF]#1}
+\newcommand{\ALLDTMatrix}{\ALLDT{Matrix}}
+\newcommand{\ALLDTVector}{\ALLDT{Vector}}
+\newcommand{\varnameul}[1]{\varname{unsigned long}{#1}} % unsigned long
+\newcommand{\varnameli}[1]{\varname{long int}{#1}} % long int
+\newcommand{\varnamei}[1]{\varname{int}{#1}} % int
+\newcommand{\varnamedmat}[1]{\varname{DMatrix}{#1}} % DMatrix
+\newcommand{\varnameddmat}[1]{\varname{DDMatrix}{#1}} % DDMatrix
+\newcommand{\varnametdmat}[1]{\varname{TDMatrix}{#1}} % TDMatrix
+\newcommand{\varnameqdmat}[1]{\varname{QDMatrix}{#1}} % QDMatrix
+\newcommand{\varnamempfmat}[1]{\varname{MPFMatrix}{#1}} % MPFMatrix
+\newcommand{\varnamedvec}[1]{\varname{DVector}{#1}} % DVector
+\newcommand{\varnameddvec}[1]{\varname{DDVector}{#1}} % DDVector
+\newcommand{\varnametdvec}[1]{\varname{TDVector}{#1}} % TVector
+\newcommand{\varnameqdvec}[1]{\varname{QDVector}{#1}} % QDVector
+\newcommand{\varnamempfvec}[1]{\varname{MPFVector}{#1}} % MPFVector
+% --- bilingual toggle: \bi{English text}{Japanese text} -------------------
+% The English driver (manual.tex) keeps \JPfalse; the Japanese driver
+% (manual_ja.tex) sets \JPtrue.  Both \input the same chapter files so the two
+% manuals always carry the same content.  Function/argument lists are
+% language-neutral and are written once (outside \bi).
+\newif\ifJP \JPfalse   % English build (manual_ja.tex sets \JPtrue)
+\newcommand{\bi}[2]{\ifJP #2\else #1\fi}
+\begin{document}
+%------------------------------------------------%
+% Title
+%------------------------------------------------%
+\title{\bi{BNCmatmul User's Guide}{BNCmatmul ユーザーズガイド}}
+\author{Tomonori Kouya\\\url{https://github.com/tkouya/bncmatmul}}
+\date{Version 0.23: March 16, 2026}
+%\date{Version 0.22: May 31, 2024}
+%\date{Version 0.21: May 31, 2023}
+%\date{January 31, 2023} % Starting date to write this document
+
+\maketitle
+
+\frontmatter
+
+%------------------------------------------------%
+% tableofcontents
+%------------------------------------------------%
+\tableofcontents
+
+\mainmatter
+%------------------------------------------------%
+% Chap. 1 Introduction
+%------------------------------------------------%
+\input{chap01.tex}
+
+%------------------------------------------------%
+% Chap. 2 Basic Datatype and arithmetic
+%------------------------------------------------%
+\input{chap02.tex}
+
+%------------------------------------------------%
+% Chap. 3 Basic linear computation
+%------------------------------------------------%
+\input{chap03.tex}
+
+%------------------------------------------------%
+% Chap. 4 LU decomposition
+%------------------------------------------------%
+\input{chap04.tex}
+
+%------------------------------------------------%
+% Chap. 5 Polynomial
+%------------------------------------------------%
+\input{chap05.tex}
+
+%------------------------------------------------%
+% Chap. 6 Sparse matrix
+%------------------------------------------------%
+\input{chap06.tex}
+
+%------------------------------------------------%
+% Chap. 7 Single-based and complex precision families
+%------------------------------------------------%
+\input{chap07.tex}
+
+%------------------------------------------------%
+% Chap. 8 GPU computation with CUDA
+%------------------------------------------------%
+\input{chap08.tex}
+
+%------------------------------------------------%
+% Chap. 9 Using BNCmatmul from Python
+%------------------------------------------------%
+\input{chap09.tex}
+
+%------------------------------------------------%
+% Bibliography
+%------------------------------------------------%
+%\bibliographystyle{jplain}
+%\bibliography{tkouya_utf8}
+\begin{thebibliography}{10}
+
+    \bibitem{qd}
+    D.H. Bailey.
+    \newblock {QD}.
+    \newblock \url{https://www.davidhbailey.com/dhbsoftware/}.
+    
+    \bibitem{gmp}
+    T.~Granlaud and {GMP} development team.
+    \newblock The {GNU} {M}ultiple {P}recision arithmetic library.
+    \newblock \url{https://gmplib.org/}.
+    
+    \bibitem{campary_paper2016}
+    M.~Jolders, J-.~M. {Muller}, V.~Popescu, and W.Tucker.
+    \newblock Campary: Cuda mutiple precision arithmetic library and applications.
+    \newblock {\em 5th ICMS}, 2016.
+    
+    \bibitem{bnc}
+    Tomonori Kouya.
+    \newblock {BNC}pack.
+    \newblock \url{https://na-inet.jp/na/bnc/}.
+    
+    \bibitem{lapack}
+    LAPACK.
+    \newblock \url{http://www.netlib.org/lapack/}.
+    
+    \bibitem{mplapack}
+    MPLAPACK/MPBLAS.
+    \newblock Multiple precision arithmetic {LAPACK} and {BLAS}.
+    \newblock \url{https://github.com/nakatamaho/mplapack}.
+    
+    \bibitem{mukunoki_binary128}
+    Daichi Mukunoki, Katsuhisa Ozaki, Takeshi Ogita, and Toshiyuki Imamura.
+    \newblock Accurate matrix multiplication on binary128 format accelerated by
+      ozaki scheme.
+    \newblock In {\em 50th International Conference on Parallel Processing}, ICPP
+      2021, New York, NY, USA, 2021. Association for Computing Machinery.
+    
+    \bibitem{mpfr}
+    {MPFR} Project.
+    \newblock The {MPFR} library.
+    \newblock \url{https://www.mpfr.org/}.
+    
+    \bibitem{rump_k-fold_sum_1}
+    S.~M. Rump, T.~Ogita, and S.~Oishi.
+    \newblock Accurate floating-point summation part {I}: Faithful rounding.
+    \newblock {\em SIAM Journal on Scientific Computing}, Vol.~31, No.~1, pp.
+      189--224, 2008.
+    
+    \bibitem{rump_k-fold_sum_2}
+    S.~M. Rump, T.~Ogita, and S.~Oishi.
+    \newblock Accurate floating-point summation part {II}: Sign, k-fold faithful
+      and rounding to nearest.
+    \newblock {\em SIAM Journal on Scientific Computing}, Vol.~31, No.~2, pp.
+      1269--1302, 2008.
+    
+    \bibitem{utsugiri_arxiv2023}
+    Taiga Utsugiri and Tomonori Kouya.
+    \newblock Acceleration of multiple precision matrix multiplication using ozaki
+      scheme, 2023.
+    
+\end{thebibliography}
+    
+
+%------------------------------------------------%
+% Back matter: index
+%------------------------------------------------%
+\backmatter
+
+%------------------------------------------------%
+% Index
+%------------------------------------------------%
+\printindex
+
+%------------------------------------------------%
+% End of document
+%------------------------------------------------%
+\end{document}

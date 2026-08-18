@@ -1,0 +1,1185 @@
+%------------------------------------------------%
+% Chap. 2
+%------------------------------------------------%
+\chapter{\bi{Basic datatypes and arithmetic}{基本データ型と算術演算}}\label{chap:basicarith}
+
+\bi{In this chapter, we present and describe all basic data types and functions defined in BNCmatmul, and show how to use them in order to construct your programs including multiple-precsion computing.}{本章では、BNCmatmulで定義されているすべての基本データ型と関数を提示・説明し、多倍長精度計算を含むプログラムを構築するためのそれらの使い方を示します。}
+
+\bi{As shown in Chapter 1, all basic datatype and functions are written in ANSI C, not C++ way.}{第1章で示したとおり、すべての基本データ型と関数はC++流ではなくANSI Cで記述されています。}
+
+%------------------------------------------------%
+% rdd.h and c\_dd\_qd.h
+%------------------------------------------------%
+\section{c\_dd\_qd.h}
+ 
+\begin{itemize} %  // return a * b + c
+\macroitem{DFMA}{$a$, $b$, $c$} \bi{returns $a\times b + c$ in double precision}{倍精度で $a\times b + c$ を返します}
+\macroitem{SFMA}{$a$, $b$, $c$} \bi{returns $a\times b + c$ in single precision}{単精度で $a\times b + c$ を返します}
+\macroitem{QD\_FMA}{$a$, $b$, $c$} \bi{the same as}{次と同じです:} \macroname{DFMA}{$a$, $b$, $c$}
+\macroitem{QD\_FMS}{$a$, $b$, $c$} \bi{returns $a \times b - c$ in double precision}{倍精度で $a \times b - c$ を返します}
+\end{itemize}
+
+\begin{itemize}
+   \macroconstitem{DDSIZE} \bi{is 2, the number of binary64(double) variables in DD}{は2で、DD内のbinary64（double）変数の個数です}
+   \macroconstitem{TDSIZE} \bi{is 3, the number of binary64 variables in TD}{は3で、TD内のbinary64変数の個数です}
+   \macroconstitem{QDSIZE} \bi{is 4, the number of binary64 variables in QD}{は4で、QD内のbinary64変数の個数です}
+\end{itemize}
+
+
+\subsection{\bi{DD (double-double): 106-bit (53bits $\times$ 2) precision floating-point number}{DD（double-double）: 106ビット（53ビット $\times$ 2）精度浮動小数点数}}
+
+\begin{itemize}
+   \macroitem{DD\_HI}{a} is a[0]. 
+   \macroitem{DD\_LOW}{a} is a[1].
+   
+   \macroconstitem{DD\_TRUE} is 1UL.
+   \macroconstitem{TD\_TRUE}
+   \macroconstitem{QD\_TRUE}
+   \macroconstitem{DD\_FALSE} is 0UL.
+   \macroconstitem{TD\_FALSE}
+   \macroconstitem{QD\_FALSE}
+   
+   \macroitem{DD\_ISNAN}{a} \bi{checks if a includes NAN.}{a が NAN を含むかどうかを判定します。}
+   \macroitem{TD\_ISNAN}{a}
+   \macroitem{QD\_ISNAN}{a}
+   \macroitem{DD\_ISINF}{a} \bi{checks if a includes INF.}{a が INF を含むかどうかを判定します。}
+   \macroitem{TD\_ISINF}{a}
+   \macroitem{QD\_ISINF}{a}
+   \macroitem{DD\_ISZERO}{a} \bi{checks if a is zero.}{a がゼロかどうかを判定します。}
+   \macroitem{TD\_ISZERO}{a}
+   \macroitem{QD\_ISZERO}{a}
+   \macroitem{DD\_ISONE}{a} \bi{checks if a is one.}{a が1かどうかを判定します。}
+   \macroitem{TD\_ISONE}{a}
+   \macroitem{QD\_ISONE}{a}
+   \macroitem{DD\_ISNEGATIVE}{a} \bi{checks if a $< 0$.}{a $< 0$ かどうかを判定します。}
+   \macroitem{TD\_ISNEGATIVE}{a}
+   \macroitem{QD\_ISNEGATIVE}{a}
+   \macroconstitem{DD\_NAN} is \verb|FP\_NAN|.
+   \macroconstitem{TD\_NAN}
+   \macroconstitem{QD\_NAN}
+
+\end{itemize}
+
+\section{\bi{Error-free transformation}{誤差なし変換（error-free transformation）}}
+
+\begin{itemize}
+   \funcitem{double}{quick\_two\_sum}{\varname{double}{$a$}, \varname{double}{$b$}, \varname{double *}{err}} $\cdots$ \bi{Computes fl($a+b$) and err($a+b$).  Assumes $|a| \geq |b|$.}{fl($a+b$) と err($a+b$) を計算します。$|a| \geq |b|$ を仮定します。}
+
+   \funcitem{double}{quick\_two\_diff}{\varname{double}{a}, \varname{double}{b}, \varname{double *}{err}} $\cdots$  \bi{Computes fl($a-b$) and err($a-b$).  Assumes $|a| >= |b|$.}{fl($a-b$) と err($a-b$) を計算します。$|a| >= |b|$ を仮定します。}
+
+   \funcitem{double}{two\_sum}{\varname{double}{a}, \varname{double}{b}, \varname{double *}{err}}$ \cdots$  \bi{Computes fl($a+b$) and err($a+b$).}{fl($a+b$) と err($a+b$) を計算します。}
+   
+   \funcitem{double}{two\_diff}{\varname{double}{a}, \varname{double}{b}, \varname{double *}{err}} $\cdots$  \bi{Computes fl($a-b$) and err($a-b$).}{fl($a-b$) と err($a-b$) を計算します。}
+
+   \funcitem{void}{split}{\varname{double}{a}, double *hi, double *lo} $\cdots$ \bi{divide $a$ to hi and lo without error.}{$a$ を誤差なしで hi と lo に分割します。}
+
+   \funcitem{double}{two\_prod}{\varname{double}{a}, \varname{double}{b}, \varname{double *}{err}} $\cdots$  \bi{Computes fl($ab$) and err($ab$).}{fl($ab$) と err($ab$) を計算します。}
+   
+   \funcitem{double}{two\_sqr}{\varname{double}{a}, \varname{double *}{err}} $\cdots$ \bi{Computes fl($a^2$) and err($a^2$). Faster than the above method.}{fl($a^2$) と err($a^2$) を計算します。上記の方法より高速です。}
+   
+\end{itemize}
+
+\section{\bi{Double-double precision arithmetic}{double-double精度算術演算}}
+
+\begin{itemize}
+   \funcitem{dd\_bool}{dd\_is\_zero}{\varname{const double *}{x}} $\cdots$ \bi{Check if *x is zero.}{*x がゼロかどうかを判定します。}
+   
+   \funcitem{dd\_bool}{dd\_is\_one}{\varname{const double *}{x}}$\cdots$ \bi{Check if *x is one.}{*x が1かどうかを判定します。}
+   
+   \funcitem{void}{c\_dd\_set}{\varname{const double *}{x}, \varname{double}{*ret}}$\cdots$ $ret := x$
+   
+   \funcitem{void}{c\_dd\_set\_dd\_d}{\varname{const double}{x}, \varname{double *}{ret}} $\cdots$ $ret := (double)x$
+
+   
+   \funcitem{void}{c\_dd\_set0}{\varname{double *}{ret}} $\cdots$ $ret := 0$
+   
+   \funcitem{void}{c\_dd\_setnan}{\varname{double *}{ret}} $\cdots$ $ret := NaN$
+
+   \funcitem{void}{c\_dd\_neg}{\varname{const double *}{a}, \varname{double *}{b}} $\cdots$ $b := -a$
+   
+
+   \funcitem{dd\_bool}{dd\_is\_positive}{\varname{const double *}{x}} $\cdots$ *x > 0 ?
+   
+   \funcitem{dd\_bool}{dd\_is\_negative}{\varname{const double *}{x}} $\cdots$ *x < 0 ?
+
+   \funcitem{void}{c\_dd\_comp}{\varname{const double *}{a}, \varname{const double *}{b}, \varname{int *}{result}} $\cdots$ \bi{Compare with a and b, and store 0 if a == b, $+1$ else if a > b, $-1$ else if a < b.}{a と b を比較し、a == b なら 0、a > b なら $+1$、a < b なら $-1$ を格納します。}
+   \funcitem{void}{c\_dd\_comp\_dd\_d}{\varname{const double *}{a}, \varname{double}{b}, \varname{int *}{result}}
+   \funcitem{void}{c\_dd\_comp\_d\_dd}{\varname{double}{a}, \varname{const double *}{b}, \varname{int *}{result}}  
+   \funcitem{void}{c\_dd\_pi}{\varname{double *}{a}}
+   
+
+   \funcitem{void}{c\_d\_add}{\varname{double}{a}, \varname{double}{b}, \varname{double *}{c}} $\cdots$ double-double := double + double
+
+   \funcitem{void}{c\_dd\_add}{\varname{const double *}{a}, \varname{const double *}{b}, \varname{double *}{c}} $\cdots$ $ c:= a + b$
+   \funcitem{void}{c\_dd\_add\_sloppy}{\varname{const double *}{a}, \varname{const double *}{b}, \varname{double *}{c}}  
+   \funcitem{void}{c\_dd\_add\_dd\_d}{\varname{const double *}{a}, \varname{double}{b}, \varname{double *}{c}}
+   \funcitem{void}{c\_dd\_add\_d\_dd}{\varname{double}{a}, \varname{const double *}{b}, \varname{double *}{c}}
+   
+   \funcitem{void}{c\_d\_sub}{\varname{double}{a}, \varname{double}{b}, \varname{double *}{c}} $\cdots$ double-double = double - double
+   
+   \funcitem{void}{c\_dd\_sub}{\varname{const double *}{a}, \varname{const double *}{b}, \varname{double *}{c}} $\cdots$ $c := a - b$
+   \funcitem{void}{c\_dd\_sub\_sloppy}{\varname{const double *}{a}, \varname{const double *}{b}, \varname{double *}{c}}
+   \funcitem{void}{c\_dd\_sub\_dd\_d}{\varname{const double *}{a}, \varname{double}{b}, \varname{double *}{c}}
+   \funcitem{void}{c\_dd\_sub\_d\_dd}{\varname{double}{a}, \varname{const double *}{b}, \varname{double *}{c}}
+  
+   \funcitem{void}{c\_d\_mul}{\varname{double}{a}, \varname{double}{b}, \varname{double *}{c}} $\cdots$  double-double := double * double
+   
+   \funcitem{void}{c\_dd\_mul}{\varname{const double *}{a}, \varname{const double *}{b}, \varname{double *}{c}}
+   \funcitem{void}{c\_dd\_mul\_dd\_d}{\varname{const double *}{a}, \varname{double}{b}, \varname{double *}{c}}
+   \funcitem{void}{c\_dd\_mul\_d\_dd}{\varname{double}{a}, \varname{const double *}{b}, \varname{double *}{c}}
+
+   \funcitem{void}{c\_d\_div}{\varname{double}{a}, \varname{double}{b}, \varname{double *}{c}} $\cdots $ $c := a / b$
+  
+   \funcitem{void}{c\_dd\_div}{\varname{const double *}{a}, \varname{const double *}{b}, \varname{double *}{c}} $\cdots $ $c := a / b$
+   \funcitem{void}{c\_dd\_sloppy\_div}{\varname{double *}{a}, \varname{double *}{b}, \varname{double *}{c}}
+   \funcitem{void}{c\_dd\_div\_dd\_d}{\varname{const double *}{a}, \varname{double}{b}, \varname{double *}{c}}
+   \funcitem{void}{c\_dd\_div\_d\_dd}{\varname{double}{a}, \varname{const double *}{b}, \varname{double *}{c}}
+   
+   \funcitem{void}{c\_dd\_copy}{\varname{const double *}{a}, \varname{double *}{b}} $b := a$
+   \funcitem{void}{c\_dd\_copy\_d}{\varname{double}{a}, \varname{double *}{b}}
+   
+   \funcitem{void}{c\_d\_sqr}{\varname{double}{a}, \varname{double *}{b}} $\cdots$  $b := a^2$
+   \funcitem{void}{c\_dd\_sqr\_d}{\varname{double}{a}, \varname{double *}{ret}}
+   \funcitem{void}{c\_dd\_sqr}{\varname{const double *}{a}, \varname{double *}{b}}
+
+    \funcitem{void}{c\_dd\_sqrt}{\varname{const double *}{a}, \varname{double *}{b}} $\cdots $ $b := \sqrt(a)$
+  
+   \funcitem{void}{c\_dd\_abs}{\varname{const double *}{a}, \varname{double *}{b}} $\cdots $ $b := |a|$
+
+
+   \funcitem{void}{c\_dd\_floor}{\varname{const double *}{a}, \varname{double *}{b}} $\cdots$ $b := \mbox{floor}(a)$
+
+   \funcitem{void}{c\_dd\_ceil}{\varname{const double *}{a}, \varname{double *}{b}}$\cdots$ $b := \mbox{ceil}(a)$
+ 
+\end{itemize}
+
+
+
+\section{\bi{Quadruple-double precision arithmetic}{quadruple-double精度算術演算}}
+
+\begin{itemize}
+
+   \funcitem{void}{c\_qd\_copy}{\varname{const double *}{a}, \varname{double *}{b}} $\cdots$ $b := a$
+   \funcitem{void}{c\_qd\_copy\_dd}{\varname{const double *}{a}, \varname{double *}{b}}
+   \funcitem{void}{c\_qd\_copy\_d}{\varname{double}{a}, \varname{double *}{b}}
+   
+   \funcitem{void}{quick\_renorm}{\varname{double *}{c0}, \varname{double *}{c1}, \varname{double *}{c2}, \varname{double *}{c3}, \varname{double *}{c4}} $\cdots$ Renormalize c0 ... 
+   \funcitem{void}{renorm}{\varname{double *}{c0}, \varname{double *}{c1}, \varname{double *}{c2}, \varname{double *}{c3}}
+   \funcitem{void}{renorm4}{\varname{double *}{c0}, \varname{double *}{c1}, \varname{double *}{c2}, \varname{double *}{c3}, \varname{double *}{c4}}
+
+   \funcitem{void}{three\_sum}{\varname{double *}{a}, \varname{double *}{b}, \varname{double *}{c}}
+   
+   \funcitem{void}{three\_sum2}{\varname{double *}{a}, \varname{double *}{b}, \varname{double *}{c}}
+   
+   \funcitem{void}{c\_qd\_add\_qd\_dd}{\varname{const double *}{a}, \varname{const double *}{b}, \varname{double *}{c}} $\cdots$ $ c := a + b$
+   \funcitem{void}{c\_qd\_add}{\varname{const double *}{a}, \varname{const double *}{b}, \varname{double *}{c}}
+   \funcitem{void}{c\_qd\_add\_sloppy}{\varname{const double *}{a}, \varname{const double *}{b}, \varname{double *}{c}} $\cdots$ \bi{not so accurate but fast addition}{精度はやや劣るものの高速な加算} $c := a + b$
+   
+   \funcitem{void}{c\_td\_addq}{\varname{const double *}{a}, \varname{const double *}{b}, \varname{double *}{c}} $\cdots$ \bi{triple double addition based on quad-double way}{quad-double方式に基づくtriple double加算}
+   
+   \funcitem{void}{c\_qd\_selfadd}{\varname{const double *}{a}, \varname{double *}{b}} $\cdots$ $ b := b + a$ 
+   \funcitem{void}{c\_qd\_selfadd\_dd}{\varname{const double *}{a}, \varname{double *}{b}} 
+   \funcitem{void}{c\_qd\_selfadd\_d}{\varname{double}{a}, \varname{double *}{b}}
+
+    \funcitem{void}{c\_qd\_neg}{\varname{const double *}{a}, \varname{double *}{b}} $\cdots$ $b := -a$
+   \funcitem{void}{c\_qd\_neg\_dd}{\varname{const double *}{a}, \varname{double *}{b}}
+   \funcitem{void}{c\_qd\_neg\_d}{\varname{const double}{a}, \varname{double *}{b}}
+   
+   \funcitem{void}{c\_qd\_sub}{\varname{const double *}{a}, \varname{const double *}{b}, \varname{double *}{c}} $\cdots$ $c := a - b$
+   \funcitem{void}{c\_qd\_sub\_qd\_dd}{\varname{const double *}{a}, \varname{const double *}{b}, \varname{double *}{c}}
+   \funcitem{void}{c\_qd\_sub\_dd\_qd}{\varname{const double *}{a}, \varname{const double *}{b}, \varname{double *}{c}}
+   \funcitem{void}{c\_qd\_sub\_qd\_d}{\varname{const double *}{a}, \varname{double}{b}, \varname{double *}{c}}
+   \funcitem{void}{c\_qd\_sub\_d\_qd}{\varname{double}{a}, \varname{const double *}{b}, \varname{double *}{c}}
+  
+   \funcitem{void}{c\_qd\_selfsub}{\varname{const double *}{a}, \varname{double *}{b}} $\cdots$ $b := b + (-a) = b - a$
+   \funcitem{void}{c\_qd\_selfsub\_dd}{\varname{const double *}{a}, \varname{double *}{b}}
+   \funcitem{void}{c\_qd\_selfsub\_d}{\varname{double}{a}, \varname{double *}{b}}
+   
+   \funcitem{void}{c\_qd\_mul}{\varname{const double *}{a}, \varname{const double *}{b}, \varname{double *}{c}} $\cdots $ $c := a\times b$
+   \funcitem{void}{c\_qd\_mul\_qd\_dd}{\varname{const double *}{a}, \varname{const double *}{b}, \varname{double *}{c}}
+   \funcitem{void}{c\_qd\_mul\_dd\_qd}{\varname{const double *}{a}, \varname{const double *}{b}, \varname{double *}{c}}
+   \funcitem{void}{c\_qd\_mul\_qd\_d}{\varname{const double *}{a}, \varname{double}{b}, \varname{double *}{c}}
+   \funcitem{void}{c\_qd\_mul\_d\_qd}{\varname{double}{a}, \varname{const double *}{b}, \varname{double *}{c}}
+   \funcitem{void}{c\_qd\_mul\_sloppy}{\varname{const double *}{a}, \varname{const double *}{b}, \varname{double *}{c}}
+
+   \funcitem{void}{c\_qd\_sqr}{\varname{const double *}{a}, \varname{double *}{c}} $\cdots$ $c = a^2$
+
+   \funcitem{void}{c\_qd\_selfmul}{\varname{const double *}{a}, \varname{double *}{b}} $\cdots$ $b := a * b$
+   \funcitem{void}{c\_qd\_selfmul\_dd}{\varname{const double *}{a}, \varname{double *}{b}}
+   \funcitem{void}{c\_qd\_selfmul\_d}{\varname{double}{a}, \varname{double *}{b}}
+
+   \funcitem{void}{c\_qd\_div\_accurate}{\varname{const double *}{a}, \varname{const double *}{b}, \varname{double *}{c}} $\cdots$ $c:= a / b$
+   \funcitem{void}{c\_qd\_div\_sloppy}{\varname{const double *}{a}, \varname{const double *}{b}, \varname{double *}{c}} $\cdots$ \bi{not so accurate but fast division (default)}{精度はやや劣るものの高速な除算（デフォルト）}
+
+   \macroitem{USE\_QD\_DIV\_ACCURATE} $\cdots$ \bi{use accurate qd division if true}{真の場合、高精度なqd除算を使用します}
+   
+   \funcitem{void}{c\_qd\_div\_qd\_dd}{\varname{const double *}{a}, \varname{const double *}{b}, \varname{double *}{c}}
+   \funcitem{void}{c\_qd\_div\_qd\_d}{\varname{const double *}{a}, \varname{double}{b}, \varname{double *}{c}}
+   \funcitem{void}{c\_qd\_div\_d\_qd}{\varname{double}{a}, \varname{const double *}{b}, \varname{double *}{c}}
+
+   
+   \funcitem{void}{c\_qd\_selfdiv}{\varname{const double *}{a}, \varname{double *}{b}} $\cdots$ $ b := b / a$
+   \funcitem{void}{c\_qd\_selfdiv\_dd}{\varname{const double *}{a}, \varname{double *}{b}}
+   \funcitem{void}{c\_qd\_selfdiv\_d}{\varname{double}{a}, \varname{double *}{b}}
+   
+   \funcitem{void}{c\_qd\_mul\_pwr2}{\varname{const double *}{a}, \varname{double}{b}, \varname{double *}{c}} $\cdots$ $c := (a[0] * b, a[1] * b, a[2] * b, a[3] * b)$
+ 
+   \funcitem{void}{c\_qd\_set}{\varname{const double *}{x}, \varname{double *}{qdval}} $\cdots$ 
+    $qdval := c$
+
+   
+   \funcitem{void}{c\_qd\_set0{double *}{qdval}} $\cdots$ $qdval := 0$
+
+   \funcitem{void}{c\_qd\_sqrt}{\varname{const double *}{a}, \varname{double *}{b}} $\cdots$ $b := \sqrt{a}$
+
+   \funcitem{void}{c\_qd\_abs}{\varname{const double *}{a}, \varname{double *}{b}} $\cdots$ $b := |a|$
+   
+   \macroitem{nint}{a} $\cdots$ \bi{round($a$) as integer}{$a$ を整数に丸めます}
+   \funcitem{void}{c\_qd\_nint}{\varname{const double *}{a}, \varname{double *}{b}}
+   
+   \funcitem{void}{c\_qd\_floor}{\varname{const double *}{a}, \varname{double *}{b}}$\cdots$ $b := \mbox{floor}(a)$
+   \funcitem{void}{c\_qd\_ceil}{\varname{const double *}{a}, \varname{double *}{b}}$\cdots$ $b := \mbox{ceil}(a)$
+   
+  % \funcitem{void}{c\_qd\_aint}{\varname{const double *}{a}, \varname{double *}{b}}
+    
+   \funcitem{void}{c\_qd\_comp}{\varname{const double *}{a}, \varname{const double *}{b}, \varname{int *}{result}} $\cdots$ \bi{return -1 if $a < b$, 0 if $ a == b$, and +1 if $a > b$.}{$a < b$ なら -1、$ a == b$ なら 0、$a > b$ なら +1 を返します。}
+   \funcitem{void}{c\_qd\_comp\_qd\_d}{\varname{const double *}{a}, \varname{double}{b}, \varname{int *}{result}}
+   \funcitem{void}{c\_qd\_comp\_d\_qd}{\varname{double}{a}, \varname{const double *}{b}, \varname{int *}{result}}
+
+\end{itemize}
+
+\section{\bi{Triple-double precision arithmetic}{triple-double精度算術演算}}
+
+\begin{itemize}
+
+   \funcitem{void}{c\_td\_copy}{\varname{const double *}{a}, \varname{double *}{b}} $\cdots$ $b := a$
+   \funcitem{void}{c\_qd\_copy\_td}{\varname{const double *}{a}, \varname{double *}{c}}
+   \funcitem{void}{c\_td\_copy\_qd}{\varname{const double *}{a}, \varname{double *}{b}}
+   \funcitem{void}{c\_td\_copy\_dd}{\varname{const double *}{a}, \varname{double *}{b}}
+   \funcitem{void}{c\_td\_copy\_d}{\varname{double}{a}, \varname{double *}{b}}
+
+   \funcitem{void}{vec\_sum}{double *e, \varname{const double *}{x}, \varname{int}{n}} $\cdots$ $ e[n] :={vec}\_sum(x[n])$
+
+   \funcitem{void}{vseb}{\varname{double *}{y}, \varname{int}{ny}, \varname{const double *}{e}, \varname{int}{ne}} $\cdots$ $y[n] :={vec}\_sum\_err\_branch(vseb)(k)(e[n])$
+
+   \funcitem{void}{c\_to\_td}{\varname{double *}{r}, \varname{double}{a}, \varname{double}{b}, \varname{double}{c}} $\cdots$  $r[3] := to\_td(a, b, c)$
+
+   \funcitem{void}{merge}{\varname{double *}{c}, \varname{double *}{a}, int na, \varname{double *}{b}, \varname{int}{nb}} $\cdots$ \bi{Merge a[na] and b[nb] into c[na + nb]}{a[na] と b[nb] を c[na + nb] にマージします}
+
+   
+   \funcitem{void}{c\_td\_add}{\varname{double *}{a}, \varname{double *}{b}, \varname{double *}{c}} $\cdots$ $ c:= a + b$
+   \funcitem{void}{c\_td\_add\_td\_d}{\varname{double *}{a}, \varname{double}{b}, \varname{double *}{c}}
+
+   
+   \funcitem{void}{c\_td\_neg}{\varname{const double *}{a}, \varname{double *}{c}} $\cdots$ $c := -a$
+
+   //\funcitem{void}{c\_td\_sub}{\varname{double *}{c}, \varname{double *}{a}, \varname{double *}{b}} $\cdots$ $c := a - b$
+   \funcitem{void}{c\_td\_sub}{\varname{double *}{a}, \varname{double *}{b}, \varname{double *}{c}}
+   \funcitem{void}{c\_td\_subq}{\varname{const double *}{a}, \varname{const double *}{b}, \varname{double *}{c}}
+   \funcitem{void}{c\_td\_sub\_d\_td}{\varname{double}{a}, \varname{double *}{b}, \varname{double *}{c}}
+   //\funcitem{void}{c\_td\_sub\_td\_d}{\varname{double *}{c}, \varname{double *}{a}, \varname{double}{b}}
+   \funcitem{void}{c\_td\_sub\_td\_d}{\varname{double *}{a}, \varname{double}{b}, \varname{double *}{c}}
+
+   \funcitem{void}{c\_td\_mul\_accurate}{\varname{double *}{a}, \varname{double *}{b}, \varname{double *}{c}} $\cdots$ $c := a\times b$
+   \funcitem{void}{c\_td\_mul\_sloppy}{\varname{double *}{a}, \varname{double *}{b}, \varname{double *}{c}} $\cdots$ \bi{not so accurate but fast}{精度はやや劣るものの高速} $c := a\times b$
+
+   \macroitem{USE\_TD\_MUL\_ACCURATE} $\cdots$ \bi{Use accurate td multiplication if true}{真の場合、高精度なtd乗算を使用します}
+   
+   \funcitem{void}{c\_td\_mul\_dd\_td\_sloppy}{\varname{double *}{a}, \varname{double *}{b}, \varname{double *}{c}}
+   \funcitem{void}{c\_td\_mul\_dd\_td\_accurate}{\varname{double *}{a}, \varname{double *}{b}, \varname{double *}{c}}
+
+   
+   \macroitem{USE\_TD\_MUL\_DD\_TD\_ACCURATE} $\cdots$ \bi{Use accurate td-dd multiplication if true}{真の場合、高精度なtd-dd乗算を使用します}
+ 
+   
+   \funcitem{void}{c\_td\_mul\_d\_td}{\varname{const double}{a}, \varname{const double *}{b}, \varname{double *}{c}}
+  \funcitem{void}{c\_td\_mul\_td\_d}{\varname{const double *}{a}, const \varname{double}{b}, \varname{double *}{c}}
+
+   
+   \funcitem{void}{c\_td\_abs}{\varname{const double *}{a}, \varname{double *}{b}} $\cdots$ $b := |a|$
+
+   \funcitem{void}{c\_td\_comp}{\varname{const double *}{a}, \varname{const double *}{b}, \varname{int *}{result}} $\cdots$ \bi{return -1 if $a < b$, 0 if $a == b$, and +1 if $a > b$.}{$a < b$ なら -1、$a == b$ なら 0、$a > b$ なら +1 を返します。}
+   \funcitem{void}{c\_td\_comp\_td\_d}{\varname{const double *}{a}, \varname{double}{b}, \varname{int *}{result}}
+   \funcitem{void}{c\_td\_comp\_d\_td}{\varname{double}{a}, \varname{const double *}{b}, \varname{int *}{result}}
+
+   \funcitem{void}{c\_td\_2mtw\_dd\_td}{\varname{double}{a[DDSIZE]}, \varname{double}{b[TDSIZE]}, double c[TDSIZE]}
+   
+   \macroitem{ONE\_P\_2DBL\_EPS} $\cdots$ $1 + 2 \times$ DBL\_EPSILON $ = (1.00000000000000044e+00)$
+   \macroitem{ONE\_M\_2DBL\_EPS} $\cdots$ $1 - 2 \times$ DBL\_EPSILON $ = (9.99999999999999556e-01)$
+   
+   \funcitem{void}{c\_td\_reci}{\varname{double *}{a}, \varname{double *}{c}}
+
+   \funcitem{void}{c\_td\_divt}{\varname{double *}{a}, \varname{double *}{b}, \varname{double *}{c}}
+  
+   \macroitem{c\_td\_div} $\cdots$ \bi{the same as}{次と同じです:} \funcname{c\_td\_divtq}
+   %\funcitem{void}{c\_td\_divtq}{\varname{double *}{a}, \varname{double *}{b}, \varname{double *}{c}}
+   
+   \funcitem{void}{c\_td\_divq}{\varname{const double *}{a}, \varname{const double *}{b}, \varname{double *}{c}} $\cdots$ \bi{td division based on quad-double division.}{quad-double除算に基づくtd除算です。}
+   \funcitem{void}{c\_td\_div\_td\_d}{\varname{double *}{a}, \varname{double}{b}, \varname{double *}{c}}
+
+   \funcitem{void}{c\_td\_sqrt}{\varname{double *}{a}, \varname{double *}{c}} $\cdots$ $c := \sqrt{a}$
+   \funcitem{void}{c\_td\_sqrt\_d}{\varname{double}{a}, \varname{double *}{c}}   
+   
+   \funcitem{void}{c\_td\_sqr}{\varname{double *}{a}, \varname{double *}{c}} $\cdots$ $c := a^2$
+
+\end{itemize}
+
+%------------------------------------------------%
+% bncfma.h : branch-free FMA (added in 0.24)
+%------------------------------------------------%
+\section{\bi{Branch-free fused multiply-add (\texttt{bncfma.h})}{Branch-free融合積和演算（\texttt{bncfma.h}）}}\label{sec:bncfma}
+
+\bi{Version 0.24 provides certified branch-free fused multiply-add (FMA) kernels
+$z := x \times y + c$ for DD/TD/QD (double-based) and DS/TS/QS (single-based)
+arithmetic, ported operation-by-operation from the reference implementation of
+T.~Kouya, ``Performance evaluation of branch-free fused multiply-add algorithms
+for multi-component-type multiple-precision floating-point arithmetic''
+(arXiv:2607.11391).  Each kernel matches an FPANVerifier-certified netlist and
+carries a machine-proved error bound ($u = 2^{-p}$):}{バージョン0.24では、DD/TD/QD（double基）および
+DS/TS/QS（float基）算術向けの、証明付き branch-free 融合積和演算（FMA）カーネル
+$z := x \times y + c$ を提供します。T.~Kouya, ``Performance evaluation of
+branch-free fused multiply-add algorithms for multi-component-type
+multiple-precision floating-point arithmetic''（arXiv:2607.11391）の参照実装から
+演算単位で忠実に移植したもので、各カーネルは FPANVerifier で認証されたネットリストに
+一致し、機械証明された誤差限界（$u = 2^{-p}$）を持ちます。}
+
+\begin{center}
+\begin{tabular}{llll}
+\hline
+ & \bi{flops}{演算数} & \bi{certified error bound}{認証誤差限界} & \\
+\hline
+DW (DD/DS) & 17  & $|z - (xy+c)| \le 34 u^2 (|xy| + |c|)$ & \\
+TW (TD/TS) & 66  & $|z - (xy+c)| \le 184 u^3 (|xy| + |c|)$ & \\
+QW (QD/QS) & 146 & $|z - (xy+c)| \le 812 u^4 (|xy| + |c|)$ & \\
+\hline
+\end{tabular}
+\end{center}
+
+\begin{itemize}
+   \funcitem{void}{bnc\_dwfma}{\varname{double}{z[2]}, \varname{const double}{x[2]}, \varname{const double}{y[2]}, \varname{const double}{c[2]}} $\cdots$ $z := x \times y + c$ (DD)
+   \funcitem{void}{bnc\_twfma}{\varname{double}{z[3]}, \varname{const double}{x[3]}, \varname{const double}{y[3]}, \varname{const double}{c[3]}} $\cdots$ $z := x \times y + c$ (TD)
+   \funcitem{void}{bnc\_qwfma}{\varname{double}{z[4]}, \varname{const double}{x[4]}, \varname{const double}{y[4]}, \varname{const double}{c[4]}} $\cdots$ $z := x \times y + c$ (QD)
+   \funcitem{void}{bnc\_dwfmaf}{\varname{float}{z[2]}, \varname{const float}{x[2]}, \varname{const float}{y[2]}, \varname{const float}{c[2]}} $\cdots$ $z := x \times y + c$ (DS)
+   \funcitem{void}{bnc\_twfmaf}{\varname{float}{z[3]}, \varname{const float}{x[3]}, \varname{const float}{y[3]}, \varname{const float}{c[3]}} $\cdots$ $z := x \times y + c$ (TS)
+   \funcitem{void}{bnc\_qwfmaf}{\varname{float}{z[4]}, \varname{const float}{x[4]}, \varname{const float}{y[4]}, \varname{const float}{c[4]}} $\cdots$ $z := x \times y + c$ (QS)
+\end{itemize}
+
+\bi{The scalar kernels live in \texttt{bncfma\_d.h} / \texttt{bncfma\_f.h}
+(umbrella header \texttt{bncfma.h}).  SIMD-vectorized versions with identical
+semantics are provided for every backend: \texttt{neon/\_bncneon\_fma.h}
+(\texttt{\_bncneon\_\{dw,tw,qw\}fma[f]}, \texttt{float64x2\_t}/\texttt{float32x4\_t}),
+\texttt{sve2/\_bncsve2\_fma.h}, and --- new in 0.24 ---
+\texttt{avx2/\_bncavx\_fma.h} with both AVX2
+(\texttt{\_bncavx2\_\{dw,tw,qw\}fma[f]}, \texttt{\_\_m256d}/\texttt{\_\_m256}) and
+AVX-512 (\texttt{\_bncavx512\_\{dw,tw,qw\}fma[f]}, \texttt{\_\_m512d}/\texttt{\_\_m512})
+variants.  The NEON and AVX2 kernels have been verified bit-identical to the
+scalar certified kernels over random operands; the AVX-512 build is covered
+at the kernel level instead, by the whole-library bit-identity check of
+Sec.~\ref{sec:simdbackends}.  All of them require
+\texttt{-ffp-contract=off} (set by every BNCmatmul build): if the compiler
+contracts $a \times b + c$ on its own, the error-free transformations inside
+stop being error-free.}{スカラーカーネルは \texttt{bncfma\_d.h} / \texttt{bncfma\_f.h}
+（アンブレラヘッダ \texttt{bncfma.h}）にあります。同一仕様のSIMD版を全バックエンドに
+提供します: \texttt{neon/\_bncneon\_fma.h}
+（\texttt{\_bncneon\_\{dw,tw,qw\}fma[f]}、\texttt{float64x2\_t}/\texttt{float32x4\_t}）、
+\texttt{sve2/\_bncsve2\_fma.h}、および0.24で新規追加の \texttt{avx2/\_bncavx\_fma.h}
+（AVX2版 \texttt{\_bncavx2\_\{dw,tw,qw\}fma[f]}（\texttt{\_\_m256d}/\texttt{\_\_m256}）と
+AVX-512版 \texttt{\_bncavx512\_\{dw,tw,qw\}fma[f]}（\texttt{\_\_m512d}/\texttt{\_\_m512}））。
+NEON版とAVX2版はランダムな被演算数に対してスカラー認証版と全limbビット一致することを
+検証済みです。AVX-512ビルドについては、代わりに \ref{sec:simdbackends}節の
+ライブラリ全体のビット一致検査でカーネルレベルの一致を確認しています。
+いずれも \texttt{-ffp-contract=off} が必須です（BNCmatmulの全ビルドで
+設定済み）。コンパイラが $a \times b + c$ を勝手に縮約すると、内部の誤差なし変換が
+誤差なしでなくなるためです。}
+
+\paragraph{\bi{div/sqrt-safe variants}{div/sqrt-safe変種}}
+
+\bi{The certified bounds above are machine-proved for operands that are
+normalized (non-overlapping) expansions.  The Newton iterations of division
+and square root feed residuals that are \emph{not} non-overlapping, so no
+FastTwoSum (\texttt{quick\_two\_sum}) precondition can be asserted for any
+gate --- a FastTwoSum whose precondition fails does not even satisfy
+$s + e = a + b$.  For such operands the \emph{safe} variants (ports of dtq's
+\texttt{dw\_fma\_safe} / \texttt{tw\_fma\_safe} / \texttt{qw\_fma\_safe},
+with a plain scalar multiplicand) demote every FastTwoSum to a full TwoSum
+(DW: 20 flops); a safe variant is never cheaper, and never less accurate,
+than the standard one.  They are consumed by the FMA-driven divisions
+(Sec.~\ref{sec:bncelem}).}{上の認証誤差限界は、被演算数が正規化された
+（non-overlappingな）多倍長展開であることを前提に機械証明されています。
+除算・平方根のNewton反復に現れる残差はnon-overlappingとは限らないため、
+どのゲートについてもFastTwoSum（\texttt{quick\_two\_sum}）の前提条件を
+主張できません --- 前提条件が破れたFastTwoSumは $s + e = a + b$ すら
+満たしません。このような被演算数向けに、\emph{safe}変種（dtqの
+\texttt{dw\_fma\_safe} / \texttt{tw\_fma\_safe} / \texttt{qw\_fma\_safe} の
+移植。第2被乗数はスカラー）はすべてのFastTwoSumを完全なTwoSumに置き換えます
+（DW: 20 flops）。safe変種が標準版より速くなることはなく、また精度が落ちる
+こともありません。FMA駆動除算（\ref{sec:bncelem}節）から使用されます。}
+
+\begin{itemize}
+   \funcitem{void}{bnc\_dwfma\_safe}{\varname{double}{z[2]}, \varname{const double}{x[2]}, \varname{double}{y}, \varname{const double}{c[2]}} $\cdots$ $z := x \times y + c$ \bi{(DD, scalar $y$)}{（DD、スカラー$y$）}
+   \funcitem{void}{bnc\_twfma\_safe}{\varname{double}{z[3]}, \varname{const double}{x[3]}, \varname{double}{y}, \varname{const double}{c[3]}} $\cdots$ (TD)
+   \funcitem{void}{bnc\_qwfma\_safe}{\varname{double}{z[4]}, \varname{const double}{x[4]}, \varname{double}{y}, \varname{const double}{c[4]}} $\cdots$ (QD)
+   \funcitem{void}{bnc\_dwfmaf\_safe}{\varname{float}{z[2]}, \varname{const float}{x[2]}, \varname{float}{y}, \varname{const float}{c[2]}} $\cdots$ (DS)
+   \funcitem{void}{bnc\_twfmaf\_safe}{\varname{float}{z[3]}, \varname{const float}{x[3]}, \varname{float}{y}, \varname{const float}{c[3]}} $\cdots$ (TS)
+   \funcitem{void}{bnc\_qwfmaf\_safe}{\varname{float}{z[4]}, \varname{const float}{x[4]}, \varname{float}{y}, \varname{const float}{c[4]}} $\cdots$ (QS)
+\end{itemize}
+
+\bi{Defining \texttt{BNC\_USE\_NEW\_FMA} at library build time switches
+\texttt{rdd\_fma}/\texttt{rtd\_fma}/\texttt{rqd\_fma} (and the \texttt{rds}/%
+\texttt{rts}/\texttt{rqs} counterparts) plus the AXPY / dot product / GEMV /
+GEMM / polynomial-evaluation call sites in the serial, NEON and SVE2 paths to
+these kernels; without the macro the library is bit-for-bit unchanged.}{ライブラリの
+ビルド時に \texttt{BNC\_USE\_NEW\_FMA} を定義すると、
+\texttt{rdd\_fma}/\texttt{rtd\_fma}/\texttt{rqd\_fma}（および \texttt{rds}/%
+\texttt{rts}/\texttt{rqs} 系）と、serial・NEON・SVE2パスの AXPY・内積・GEMV・GEMM・
+多項式評価の呼び出し箇所がこれらのカーネルに切り替わります。マクロ未定義の場合、
+ライブラリはビット単位で従来と同一です。}
+
+%------------------------------------------------%
+% bncelem.h : FMA-based elementary functions (added in 0.24)
+%------------------------------------------------%
+\section{\bi{FMA-based elementary functions (\texttt{bncelem.h})}{FMAベース初等関数（\texttt{bncelem.h}）}}\label{sec:bncelem}
+
+\bi{Version 0.24 ports the FMA-fused elementary functions of dtq-0.0.3 to plain
+ANSI C: proper argument reduction ($\ln 2$ reduction with repeated squaring or
+two-level $\exp$ tables; $2\pi \to \pi/2 \to \pi/16$ or $\pi/1024$ reduction
+with 256-entry tables for trigonometric functions) followed by Taylor kernels
+whose terms are each accumulated with one certified branch-free FMA
+(Sec.~\ref{sec:bncfma}) instead of a separate multiply and add.  The coefficient
+tables (\texttt{bncelem\_tables.h}) are extracted mechanically from the
+dtq-0.0.3 sources; the TD tables reproduce dtq's \texttt{to\_td\_real()}
+folding of the QD tables exactly.  Accuracy has been validated against MPFR
+(512-bit) references: the average relative error is below $1\,\varepsilon$ of
+each type ($\varepsilon_{\rm DD} = 2^{-104}$, $\varepsilon_{\rm TD} = 2^{-157}$,
+$\varepsilon_{\rm QD} = 2^{-209}$), equivalent to dtq itself.}{バージョン0.24では、
+dtq-0.0.3のFMA融合初等関数を純粋なANSI Cに移植しました。適切な引数簡約
+（$\ln 2$簡約＋反復自乗、または2段の$\exp$表；三角関数は
+$2\pi \to \pi/2 \to \pi/16$ または $\pi/1024$ 簡約＋256エントリ表）の後、
+Taylor級数の各項を乗算・加算の分離実行ではなく、証明付き branch-free FMA
+（\ref{sec:bncfma}節）1回で積算します。係数表（\texttt{bncelem\_tables.h}）は
+dtq-0.0.3のソースから機械的に抽出したもので、TD用の表はQD表に対するdtqの
+\texttt{to\_td\_real()} 折り畳みを厳密に再現しています。精度はMPFR（512ビット）を
+基準に検証済みで、平均相対誤差は各型の $1\,\varepsilon$ 未満
+（$\varepsilon_{\rm DD} = 2^{-104}$、$\varepsilon_{\rm TD} = 2^{-157}$、
+$\varepsilon_{\rm QD} = 2^{-209}$）であり、dtq本体と同等です。}
+
+\subsection{\bi{Scalar functions}{スカラー関数}}
+
+\bi{For each double-based type the following functions are provided
+(\texttt{include/bncelem\_dd.h} / \texttt{\_td.h} / \texttt{\_qd.h}; umbrella
+header \texttt{bncelem.h}).  The prefix is \texttt{bnc\_dd\_}, \texttt{bnc\_td\_}
+or \texttt{bnc\_qd\_} and the limb count $K$ is 2, 3 or 4:}{各double基型に対して
+以下の関数を提供します（\texttt{include/bncelem\_dd.h} / \texttt{\_td.h} /
+\texttt{\_qd.h}、アンブレラヘッダは \texttt{bncelem.h}）。接頭辞は
+\texttt{bnc\_dd\_}、\texttt{bnc\_td\_}、\texttt{bnc\_qd\_}、limb数$K$はそれぞれ
+2、3、4です:}
+
+\begin{itemize}
+   \funcitem{void}{bnc\_dd\_exp}{\varname{const double *}{x}, \varname{double *}{ret}} $\cdots$ $ret := \exp(x)$
+   \funcitem{void}{bnc\_dd\_expm1}{\varname{const double *}{x}, \varname{double *}{ret}} $\cdots$ $ret := \exp(x) - 1$ \bi{(accurate for small $|x|$)}{（小さい$|x|$で高精度）}
+   \funcitem{void}{bnc\_dd\_log}{\varname{const double *}{x}, \varname{double *}{ret}} $\cdots$ $ret := \log_e(x)$ \bi{(one Newton step on $\exp$)}{（$\exp$に対するNewton法1回）}
+   \funcitem{void}{bnc\_dd\_log10}{\varname{const double *}{x}, \varname{double *}{ret}} $\cdots$ $ret := \log_{10}(x)$
+   \funcitem{void}{bnc\_dd\_sin}{\varname{const double *}{x}, \varname{double *}{ret}} $\cdots$ $ret := \sin(x)$
+   \funcitem{void}{bnc\_dd\_cos}{\varname{const double *}{x}, \varname{double *}{ret}} $\cdots$ $ret := \cos(x)$
+   \funcitem{void}{bnc\_dd\_sincos}{\varname{const double *}{x}, \varname{double *}{sin\_x}, \varname{double *}{cos\_x}} $\cdots$ \bi{computes $\sin(x)$ and $\cos(x)$ simultaneously}{$\sin(x)$と$\cos(x)$を同時に計算します}
+   \funcitem{void}{bnc\_dd\_nint}{\varname{const double *}{x}, \varname{double *}{ret}} $\cdots$ \bi{nearest integer}{最近接整数}
+\end{itemize}
+
+\bi{The same set exists as \texttt{bnc\_td\_*} and \texttt{bnc\_qd\_*} with
+3- and 4-limb arrays.  The single-based types delegate to the double-based
+implementations exactly as in dtq (\texttt{bncelem\_f.h}):
+\texttt{bnc\_ds\_*} $\to$ DD, \texttt{bnc\_ts\_*} $\to$ TD,
+\texttt{bnc\_qs\_*} $\to$ QD, with exact limb conversions in both
+directions.}{同じ関数群が3-limb/4-limb配列版の \texttt{bnc\_td\_*}・\texttt{bnc\_qd\_*}
+として存在します。float基型はdtqと同様にdouble基実装へ委譲します
+（\texttt{bncelem\_f.h}）: \texttt{bnc\_ds\_*} $\to$ DD、\texttt{bnc\_ts\_*} $\to$ TD、
+\texttt{bnc\_qs\_*} $\to$ QD。limb変換は双方向とも厳密です。}
+
+\subsection{\bi{Wiring into the \texttt{c\_dd\_*} / \texttt{c\_td\_*} / \texttt{c\_qd\_*} interfaces}{\texttt{c\_dd\_*}／\texttt{c\_td\_*}／\texttt{c\_qd\_*}インタフェースへの接続}}
+
+\bi{Up to version 0.23 most of the elementary functions declared in
+\texttt{c\_dd\_qd.h} and \texttt{c\_ds\_qs.h} were \emph{empty stubs} whose
+bodies were disabled by \texttt{\#if 0} (\texttt{c\_dd\_sin}, \texttt{c\_dd\_cos},
+\texttt{c\_dd\_tan}, \texttt{c\_dd\_sincos}, \texttt{c\_dd\_nint}, all
+\texttt{c\_qd\_*} and \texttt{c\_qs\_*}/\texttt{c\_ds\_*} elementary functions),
+and the \texttt{c\_td\_*}/\texttt{c\_ts\_*} elementary functions referenced from
+\texttt{rdd.h}/\texttt{rds.h} did not exist at all.  As of 0.24 every one of
+them delegates to the corresponding \texttt{bnc\_*} implementation.
+The previous working implementations are kept for comparison purposes under the
+names \texttt{c\_dd\_exp\_orig} (plain Taylor series without argument
+reduction), \texttt{c\_dd\_log\_orig} and \texttt{c\_dd\_log10\_orig}; the new
+\texttt{c\_dd\_exp} is about $10\times$ faster than \texttt{c\_dd\_exp\_orig}
+and \texttt{c\_dd\_log} about $5.7\times$ faster than \texttt{c\_dd\_log\_orig}
+(Arm Cortex-X925, gcc 13.3).}{バージョン0.23までは、\texttt{c\_dd\_qd.h} と
+\texttt{c\_ds\_qs.h} で宣言されている初等関数の大半は本体が \texttt{\#if 0} で
+無効化された「空スタブ」でした（\texttt{c\_dd\_sin}・\texttt{c\_dd\_cos}・
+\texttt{c\_dd\_tan}・\texttt{c\_dd\_sincos}・\texttt{c\_dd\_nint}、および
+\texttt{c\_qd\_*}・\texttt{c\_qs\_*}・\texttt{c\_ds\_*} の全初等関数）。また
+\texttt{rdd.h}/\texttt{rds.h} から参照される \texttt{c\_td\_*}/\texttt{c\_ts\_*}
+初等関数は実装自体が存在しませんでした。0.24ではこれらすべてが対応する
+\texttt{bnc\_*} 実装へ委譲されます。従来の動作していた実装は比較用に
+\texttt{c\_dd\_exp\_orig}（引数簡約なしの素朴Taylor級数）、
+\texttt{c\_dd\_log\_orig}、\texttt{c\_dd\_log10\_orig} の名前で残してあります。
+新しい \texttt{c\_dd\_exp} は \texttt{c\_dd\_exp\_orig} の約10倍、
+\texttt{c\_dd\_log} は \texttt{c\_dd\_log\_orig} の約5.7倍高速です
+（Arm Cortex-X925、gcc 13.3）。}
+
+\bi{Version 0.24 also fixes wrong constants that the stubs concealed:
+\texttt{const\_dd\_pi} held $\pi/16$, \texttt{const\_td\_pi} and
+\texttt{const\_qd\_pi} held $\pi/1024$, and the single-based
+\texttt{const\_ds\_pi}/\texttt{const\_ts\_pi}/\texttt{const\_qs\_pi} were all
+zero; \texttt{c\_dd\_pi()} etc.\ now return correctly rounded limb values of
+$\pi$.}{バージョン0.24では、スタブに隠れていた定数の誤りも修正しました:
+\texttt{const\_dd\_pi} は $\pi/16$、\texttt{const\_td\_pi} と
+\texttt{const\_qd\_pi} は $\pi/1024$ の値を保持しており、float基の
+\texttt{const\_ds\_pi}/\texttt{const\_ts\_pi}/\texttt{const\_qs\_pi} はすべて
+ゼロでした。\texttt{c\_dd\_pi()} 等は正しく丸められた$\pi$のlimb値を返すように
+なりました。}
+
+\subsection{\bi{Elementwise array functions (\texttt{bncelem\_vector.h})}{要素毎の一括関数（\texttt{bncelem\_vector.h}）}}
+
+\bi{For applying an elementary function to every element of a vector,
+\texttt{src/elem\_vector.c} provides array versions operating on limb-planar
+(SoA) arrays --- the same layout as \texttt{ddvector}/\texttt{tdvector}/%
+\texttt{qdvector}, so \texttt{vec->element} can be passed directly.  The array
+is walked in blocks of \texttt{\_BNC\_D\_WIDTH} elements, which is $8$ in an
+AVX-512 build, $4$ in an AVX2 build, $2$ under NEON/SVE2 and $1$ otherwise, so
+the limb gather/scatter around each element vectorizes and the staging buffers
+stay in registers.  The per-element kernels themselves remain the scalar
+\texttt{bnc\_dd\_*}/\texttt{bnc\_td\_*}/\texttt{bnc\_qd\_*} functions: unlike
+the $+,-,\times,\div$ error-free-transformation kernels, their argument
+reduction, table lookups and Newton corrections are branchy and have no
+lane-uniform SIMD form.  The results are therefore bitwise identical to
+calling the scalar function on each element, which
+\texttt{python/test\_rdtq.py} checks.}{ベクトルの全要素へ
+初等関数を適用するために、\texttt{src/elem\_vector.c} はlimb-planar（SoA）配列に
+対する一括版を提供します。レイアウトは \texttt{ddvector}/\texttt{tdvector}/%
+\texttt{qdvector} と同一のため、\texttt{vec->element} をそのまま渡せます。
+配列は \texttt{\_BNC\_D\_WIDTH} 要素のブロック単位で走査されます。この値は
+AVX-512ビルドで$8$、AVX2ビルドで$4$、NEON/SVE2で$2$、それ以外で$1$であり、
+各要素まわりのlimbのgather/scatterがベクトル化され、ステージング用バッファが
+レジスタに留まります。要素ごとのカーネル自体はスカラーの
+\texttt{bnc\_dd\_*}/\texttt{bnc\_td\_*}/\texttt{bnc\_qd\_*} 関数のままです。
+$+,-,\times,\div$ の誤差なし変換カーネルとは異なり、これらは引数の縮約・
+テーブル参照・Newton補正が分岐を含むため、レーン一様なSIMD形に置き換えられません。
+したがって結果は各要素にスカラー関数を適用した場合とビット単位で一致し、
+\texttt{python/test\_rdtq.py} がこれを検査します。}
+
+\begin{itemize}
+   \funcitem{void}{bnc\_dd\_exp\_array}{\varname{long}{n}, \varname{double * const}{ret[2]}, \varname{double * const}{x[2]}} $\cdots$ $ret_i := \exp(x_i),\ i = 0, \ldots, n-1$
+   \funcitem{void}{bnc\_dd\_log\_array}{\varname{long}{n}, \varname{double * const}{ret[2]}, \varname{double * const}{x[2]}}
+   \funcitem{void}{bnc\_dd\_sin\_array}{\varname{long}{n}, \varname{double * const}{ret[2]}, \varname{double * const}{x[2]}}
+   \funcitem{void}{bnc\_dd\_cos\_array}{\varname{long}{n}, \varname{double * const}{ret[2]}, \varname{double * const}{x[2]}}
+   \funcitem{void}{bnc\_td\_exp\_array}{\varname{long}{n}, \varname{double * const}{ret[3]}, \varname{double * const}{x[3]}} \bi{(likewise \texttt{log}/\texttt{sin}/\texttt{cos})}{（\texttt{log}/\texttt{sin}/\texttt{cos}も同様）}
+   \funcitem{void}{bnc\_qd\_exp\_array}{\varname{long}{n}, \varname{double * const}{ret[4]}, \varname{double * const}{x[4]}} \bi{(likewise \texttt{log}/\texttt{sin}/\texttt{cos})}{（\texttt{log}/\texttt{sin}/\texttt{cos}も同様）}
+\end{itemize}
+
+\subsection{\bi{FMA-driven division}{FMA駆動除算}}\label{sec:fmadiv}
+
+\bi{The divisions of dtq-0.0.3 (\texttt{fma\_div}) are also ported: the same
+long-division correction sequence as the classic accurate division, but each
+residual $r \leftarrow r - q \cdot b$ is one fused safe FMA
+(Sec.~\ref{sec:bncfma}) instead of a multiply followed by a subtraction,
+which removes one renormalization per step.  Measured against MPFR (512-bit)
+references the accuracy class is unchanged ($\le 0.5\,\varepsilon$ for
+DD/TD/QD, $\le 2.4\,\varepsilon$ for DS/TS/QS) while the double-based
+divisions run $1.2\times$ (DD), $2.8\times$ (TD) and $2.2\times$ (QD) faster
+than \texttt{c\_dd\_div} / \texttt{c\_td\_divq} / \texttt{c\_qd\_div\_sloppy}
+on Arm Cortex-X925 (see \texttt{bench/fma/test\_fma\_safe.c} and
+\texttt{bench/fma/results/test\_fma\_safe.txt}).}{dtq-0.0.3の除算
+（\texttt{fma\_div}）も移植しました。従来のaccurate除算と同じ筆算型の補正列
+ですが、各残差 $r \leftarrow r - q \cdot b$ を乗算＋減算の代わりに1回の融合
+safe FMA（\ref{sec:bncfma}節）で計算するため、ステップごとに正規化が1回
+減ります。MPFR（512ビット）基準での実測では精度クラスは不変
+（DD/TD/QDで$\le 0.5\,\varepsilon$、DS/TS/QSで$\le 2.4\,\varepsilon$）のまま、
+double基の除算はArm Cortex-X925上で \texttt{c\_dd\_div} /
+\texttt{c\_td\_divq} / \texttt{c\_qd\_div\_sloppy} に比べ
+$1.2$倍（DD）・$2.8$倍（TD）・$2.2$倍（QD）高速です
+（\texttt{bench/fma/test\_fma\_safe.c} と
+\texttt{bench/fma/results/test\_fma\_safe.txt} を参照）。}
+
+\begin{itemize}
+   \funcitem{void}{bnc\_dd\_div\_fma}{\varname{const double *}{a}, \varname{const double *}{b}, \varname{double *}{ret}} $\cdots$ $ret := a / b$ (DD)
+   \funcitem{void}{bnc\_td\_div\_fma}{\varname{const double *}{a}, \varname{const double *}{b}, \varname{double *}{ret}} $\cdots$ (TD)
+   \funcitem{void}{bnc\_qd\_div\_fma}{\varname{const double *}{a}, \varname{const double *}{b}, \varname{double *}{ret}} $\cdots$ (QD)
+   \funcitem{void}{bnc\_ds\_div\_fma}{\varname{const float *}{a}, \varname{const float *}{b}, \varname{float *}{ret}} $\cdots$ \bi{(DS; likewise \texttt{bnc\_ts\_div\_fma} / \texttt{bnc\_qs\_div\_fma})}{（DS。\texttt{bnc\_ts\_div\_fma} / \texttt{bnc\_qs\_div\_fma} も同様）}
+\end{itemize}
+
+\bi{Defining \texttt{BNC\_USE\_FMA\_DIV} at build time reroutes the default
+division entry points \texttt{c\_dd\_div}, \texttt{c\_td\_div},
+\texttt{c\_qd\_div}, \texttt{c\_ds\_div}, \texttt{c\_ts\_div},
+\texttt{c\_qs\_div} (and the \texttt{RTD\_DIV} / \texttt{RTS\_DIV} macros of
+\texttt{rdd.h} / \texttt{rds.h}) to these functions; the previous DD/DS
+bodies remain available as \texttt{c\_dd\_div\_orig} /
+\texttt{c\_ds\_div\_orig}.  Without the macro the library is bit-for-bit
+unchanged.  Note that dtq itself calls the safe FMA only in its double-based
+\texttt{fma\_div}; the BNCmatmul float-based ports use the safe variants as
+well, following the rationale dtq documents for the double-based case.}{ビルド時に
+\texttt{BNC\_USE\_FMA\_DIV} を定義すると、既定の除算エントリポイント
+\texttt{c\_dd\_div}・\texttt{c\_td\_div}・\texttt{c\_qd\_div}・
+\texttt{c\_ds\_div}・\texttt{c\_ts\_div}・\texttt{c\_qs\_div}
+（および \texttt{rdd.h} / \texttt{rds.h} の \texttt{RTD\_DIV} /
+\texttt{RTS\_DIV} マクロ）がこれらの関数に切り替わります。従来のDD/DS版の
+本体は \texttt{c\_dd\_div\_orig} / \texttt{c\_ds\_div\_orig} として残ります。
+マクロ未定義ならライブラリはビット単位で従来と同一です。なお、dtq本体で
+safe FMAを呼ぶのはdouble基の \texttt{fma\_div} のみですが、BNCmatmulの
+float基移植では、dtqがdouble基について記した根拠に従いsafe変種を使用して
+います。}
+
+\subsection{\bi{Accuracy and performance benchmarks}{精度・性能ベンチマーク}}
+
+\bi{Accuracy and performance benchmarks (against MPFR references) are provided
+in \texttt{bench/elem/}; the measured results of the porting session are stored
+under \texttt{bench/elem/results/}.}{精度・性能ベンチマーク（MPFR基準）は
+\texttt{bench/elem/} にあり、移植作業時の実測結果は
+\texttt{bench/elem/results/} に保存されています。}
+
+%------------------------------------------------%
+% rdtq_func.h : DLL-ready exported functions (added in 0.24)
+%------------------------------------------------%
+\section{\bi{Exported function API for DLL/Python (\texttt{rdtq\_func.h})}{DLL／Python向け関数エクスポートAPI（\texttt{rdtq\_func.h}）}}\label{sec:rdtqfunc}
+
+\bi{The \texttt{rdd\_*} / \texttt{rtd\_*} / \texttt{rqd\_*} (and
+\texttt{rds\_*} / \texttt{rts\_*} / \texttt{rqs\_*}) interfaces of
+\texttt{rdd.h} / \texttt{rds.h} are macros and static-inline functions, which
+exist only inside a C translation unit and export no symbols.  For
+shared-library (DLL) consumers such as Python/ctypes, \texttt{src/rdtq\_func.c}
+compiles real external symbols that alias the dtq-0.0.3 ports one-to-one
+(99 functions; prototypes in \texttt{include/rdtq\_func.h}, with a
+\texttt{BNC\_API} decoration macro prepared for Windows
+\texttt{\_\_declspec(dllexport)}).  The argument order follows the
+\texttt{rdd.h} convention: result first.}{\texttt{rdd.h} / \texttt{rds.h} の
+\texttt{rdd\_*} / \texttt{rtd\_*} / \texttt{rqd\_*}（および
+\texttt{rds\_*} / \texttt{rts\_*} / \texttt{rqs\_*}）インタフェースはマクロと
+static inline関数であり、Cの翻訳単位内にのみ存在してシンボルを
+エクスポートしません。Python/ctypesのような共有ライブラリ（DLL）利用者の
+ために、\texttt{src/rdtq\_func.c} がdtq-0.0.3移植と1対1に対応する実体
+シンボル（99関数）をコンパイルします（プロトタイプは
+\texttt{include/rdtq\_func.h}。Windowsの
+\texttt{\_\_declspec(dllexport)} に備えた \texttt{BNC\_API} 修飾マクロ付き）。
+引数順は\texttt{rdd.h}の慣習に従い、結果が先頭です。}
+
+\bi{For each type \texttt{XX} $\in$ \{\texttt{rdd}, \texttt{rtd},
+\texttt{rqd}\} (double limbs) and \{\texttt{rds}, \texttt{rts}, \texttt{rqs}\}
+(float limbs) the following are exported:}{各型 \texttt{XX} $\in$
+\{\texttt{rdd}, \texttt{rtd}, \texttt{rqd}\}（doubleのlimb）および
+\{\texttt{rds}, \texttt{rts}, \texttt{rqs}\}（floatのlimb）について、
+以下がエクスポートされます:}
+
+\begin{itemize}
+   \funcitem{void}{rdd\_fma}{\varname{double *}{ret}, \varname{const double *}{a}, \varname{const double *}{b}, \varname{const double *}{c}} $\cdots$ $ret := a \times b + c$ \bi{(certified branch-free FMA)}{（証明付きbranch-free FMA）}
+   \funcitem{void}{rdd\_fma\_safe}{\varname{double *}{ret}, \varname{const double *}{a}, \varname{double}{b}, \varname{const double *}{c}} $\cdots$ \bi{div/sqrt-safe FMA (scalar $b$)}{div/sqrt-safe FMA（スカラー$b$）}
+   \funcitem{void}{rdd\_div\_fma}{\varname{double *}{ret}, \varname{const double *}{a}, \varname{const double *}{b}} $\cdots$ $ret := a / b$
+   \funcitem{void}{rdd\_exp}{\varname{double *}{ret}, \varname{const double *}{x}} $\cdots$ \bi{likewise \texttt{expm1}, \texttt{log}, \texttt{log10}, \texttt{sin}, \texttt{cos}, \texttt{tan}}{\texttt{expm1}・\texttt{log}・\texttt{log10}・\texttt{sin}・\texttt{cos}・\texttt{tan} も同様}
+   \funcitem{void}{rdd\_sincos}{\varname{double *}{sin\_ret}, \varname{double *}{cos\_ret}, \varname{const double *}{x}}
+   \funcitem{void}{rdd\_nint}{\varname{double *}{ret}, \varname{const double *}{x}} \bi{(double-based types only)}{（double基の型のみ）}
+\end{itemize}
+
+\bi{The SIMD-vectorized array functions \texttt{bnc\_XX\_yy\_array}
+(Sec.~\ref{sec:bncelem}) are already real symbols and equally callable from
+Python.  A shared library for Python is built by the legacy targets
+\texttt{make -C src -f Makefile.legacy librdtq} (or \texttt{librdtq\_neon}),
+producing \texttt{python/librdtq.so} from \texttt{rdtq\_func.c} +
+\texttt{elem\_vector.c}; \texttt{python/test\_rdtq.py} is a ctypes test
+driver covering all six precision families and the array functions.
+Note for C users: do not include \texttt{rdtq\_func.h} together with
+\texttt{rdd.h} / \texttt{rds.h} unless \texttt{USE\_RDD\_FUNCTIONS} etc.\ are
+defined first, since the lowercase macro aliases there would mangle the
+prototypes (the header enforces this with \texttt{\#error}).}{SIMDベクトル化
+された一括関数 \texttt{bnc\_XX\_yy\_array}（\ref{sec:bncelem}節）はもともと
+実体シンボルであり、同様にPythonから呼び出せます。Python向け共有ライブラリは
+レガシーターゲット \texttt{make -C src -f Makefile.legacy librdtq}
+（または \texttt{librdtq\_neon}）でビルドされ、\texttt{rdtq\_func.c} +
+\texttt{elem\_vector.c} から \texttt{python/librdtq.so} が生成されます。
+\texttt{python/test\_rdtq.py} は全6精度ファミリと一括関数をカバーする
+ctypesテストドライバです。C利用者への注意: \texttt{USE\_RDD\_FUNCTIONS} 等を
+先に定義しない限り、\texttt{rdtq\_func.h} を \texttt{rdd.h} /
+\texttt{rds.h} と同一翻訳単位でincludeしないでください。小文字のマクロ別名が
+プロトタイプを壊すためです（ヘッダは \texttt{\#error} でこれを強制します）。}
+
+%------------------------------------------------%
+% rdd.h and c\_dd\_qd.h
+%------------------------------------------------%
+\section{rdd.h}\label{sec:rdd}
+
+\begin{verbatim}
+// ddfloat, tdfloat, qdfloat
+typedef struct { double val[DDSIZE]; } ddfloat; // 53 * 2 = 106
+typedef struct { double val[TDSIZE]; } tdfloat; // 53 * 3 = 159
+typedef struct { double val[QDSIZE]; } qdfloat; // 53 * 4 = 212
+\end{verbatim}
+
+\begin{itemize}
+
+    \macroitem{SET0\_DD}{val} $\cdots$ $val := 0$ { val[0] = (double)0.0; val[1] = (double)0.0; }
+    \macroitem{SET0\_TD}{val}
+    \macroitem{SET0\_QD}{val}  
+
+    \funcitem{void}{rdd\_out\_str\_base}{\varname{FILE *}{fp}, \varname{int}{base}, \varname{int}{ length}, \varname{double}{val[DDSIZE]}} $\cdots$ \bi{DD print(no appending CR)}{DDの出力（改行を付加しません）}
+    
+    \funcitem{int}{rdd\_cmp}{\varname{double}{a[DDSIZE]}, \varname{double}{b[DDSIZE]}} $\cdots$ \bi{return -1 if $a < b$, 0 if $a == b$, and -1 if $a < b$.}{$a < b$ なら -1、$a == b$ なら 0、$a < b$ なら -1 を返します。}
+    \funcitem{int}{rdd\_cmp\_d}{\varname{double}{a[DDSIZE]}, \varname{double}{b}}
+    
+    \funcitem{void}{rdd\_sqrt\_d}{\varname{double}{ret[DDSIZE]}, \varname{double}{a}} $\cdots$ return $\sqrt{ret}$
+    
+    \funcitem{void}{rdd\_fma}{\varname{double}{ret[DDSIZE]}, \varname{double}{a[DDSIZE]}, \varname{double}{b[DDSIZE]}, double c[DDSIZE]} $\cdots$ $ret := a \times b + c$
+    
+    \funcitem{void}{rdd\_pow}{\varname{double}{ret[DDSIZE]}, \varname{double}{base[DDSIZE]}, double power[DDSIZE]} $\cdots$ $\mbox{ret} := \mbox{base}^{\mbox{power}}$
+        
+    \funcitem{void}{rqd\_out\_str\_base}{FILE *fp, int base, int length, double val[QDSIZE]} $\cdots$ \bi{print(no appending CR)}{出力します（改行を付加しません）}
+    
+    \funcitem{int}{rqd\_cmp}{\varname{double}{a[QDSIZE]}, \varname{double}{b[QDSIZE]}}  $\cdots$ \bi{return $-1$ if $a < b$, 0 if $a == b$, and -1 if $a < b$.}{$a < b$ なら $-1$、$a == b$ なら 0、$a < b$ なら -1 を返します。}
+    \funcitem{int}{rqd\_cmp\_d}{\varname{double}{a[QDSIZE]}, \varname{double}{b}}
+    
+    \funcitem{void}{rqd\_sqrt\_d}{double ret[QDSIZE], \varname{double}{a}} $\cdots$ return $\sqrt{ret}$
+    
+    \funcitem{void}{rqd\_fma}{double ret[QDSIZE], \varname{double}{a[QDSIZE]}, \varname{double}{b[QDSIZE]}, double c[QDSIZE]} $\cdots$ $ret := a \times b + c$
+    
+    \funcitem{void}{rqd\_pow}{double ret[QDSIZE], \varname{double}{b}ase[QDSIZE], double power[QDSIZE]} $\cdots$  $\mbox{ret} := \mbox{base}^{\mbox{power}}$
+    
+    \funcitem{void}{rtd\_out\_str\_base}{FILE *fp, int base, int length, double val[TDSIZE]}
+
+    \funcitem{int}{rtd\_cmp}{\varname{double}{a[TDSIZE]}, \varname{double}{b[TDSIZE]}}   $\cdots$ \bi{return -1 if $a < b$, 0 if $a == b$, and -1 if $a < b$.}{$a < b$ なら -1、$a == b$ なら 0、$a < b$ なら -1 を返します。}
+    \funcitem{int}{rtd\_cmp\_d}{\varname{double}{a[TDSIZE]}, \varname{double}{b}}
+    
+    \funcitem{void}{rtd\_sqrt\_d}{double ret[TDSIZE], \varname{double}{a}} $\cdots$ return $\sqrt{ret}$
+    
+    \funcitem{void}{rtd\_fma}{double ret[TDSIZE], \varname{double}{a[TDSIZE]}, \varname{double}{b[TDSIZE]}, double c[TDSIZE]} $\cdots$ $ret := a \times b + c$
+    
+    \funcitem{void}{rtd\_pow}{double ret[TDSIZE], \varname{double}{base[TDSIZE]}, double power[TDSIZE]} $\cdots$  $\mbox{ret} := \mbox{base}^{\mbox{power}}$
+    
+    
+    
+        \macroitem{set0\_dd}{val} $val: = 0$
+        \macroitem{rdd\_set0}{val}
+        \macroitem{rdd\_add}{ret, a, b} $ret := a + b$
+        \macroitem{rdd\_sub}{ret, a, b} $ret := a - b$
+        \macroitem{rdd\_mul}{ret, a, b} $ret := a \times b$
+        \macroitem{rdd\_div}{ret, a, b} $ret := a / b$
+        \macroitem{rdd\_sqrt}{ret, a} $ret := \sqrt{a}$
+        \macroitem{rdd\_sqrt\_d}{ret, a} 
+        \macroitem{rdd\_sqrt\_ui}{ret, a} 
+        \macroitem{rdd\_get\_d}{a}
+        \macroitem{rdd\_set\_d}{ret, d} $ret := d$
+        \macroitem{rdd\_set\_ui}{ret, d}
+        \macroitem{rdd\_set}{ret, d}
+        \macroitem{rdd\_neg}{ret, a} $ret := -a$
+        \macroitem{rdd\_abs}{ret, a} $ret := |a|$
+        \macroitem{rdd\_cmp\_ui}{a, b} \bi{return $-1$ if $a > b$, $0$ if $a == b$, and $-1$ if $a < b$}{$a > b$ なら $-1$、$a == b$ なら $0$、$a < b$ なら $-1$ を返します}
+        \macroitem{rdd\_ui\_div}{ret, a, b} $ret := a / b$
+        \macroitem{rdd\_ui\_sub}{ret, a, b} $ret := a - b$
+        \macroitem{rdd\_div\_d}{ret, a, b} $ret := a / b$
+        \macroitem{rdd\_add\_d}{ret, a, b} $ret := a + b$
+        \macroitem{rdd\_sub\_d}{ret, a, b} $ret := a - b$
+        \macroitem{rdd\_mul\_d}{ret, a, b} $ret := a \times b$
+        \macroitem{rdd\_div\_ui}{ret, a, b} $ret := a / b$
+        \macroitem{rdd\_add\_ui}{ret, a, b} $ret := a + b$
+        \macroitem{rdd\_sub\_ui}{ret, a, b} $ret := a - b$
+        \macroitem{rdd\_mul\_ui}{ret, a, b} $ret := a \times b$
+    
+        \macroitem{set0\_td}{val} SET0\_TD(val)
+        \macroitem{rtd\_set0}{val} SET0\_TD(val)
+        \macroitem{rtd\_add}{ret, a, b} $ret := a + b$
+        \macroitem{rtd\_addt}{ret, a, b}
+        \macroitem{rtd\_addq}{ret, a, b}
+        \macroitem{rtd\_sub}{ret, a, b} $ret := a - b$
+        \macroitem{rtd\_subt}{ret, a, b} $ret := a - b$
+        \macroitem{rtd\_subq}{ret, a, b} $ret := a - b$
+        \macroitem{rtd\_mul}{ret, a, b} $ret := a \times b$
+        \macroitem{rtd\_divt}{ret, a, b} $ret := a / b$
+        \macroitem{rtd\_divtq}{ret, a, b} 
+        \macroitem{rtd\_divq}{ret, a, b} 
+        \macroitem{rtd\_div}{ret, a, b} 
+        \macroitem{rtd\_sqrt}{ret, a} $ret := \sqrt{a}$
+        \macroitem{rtd\_sqrt\_d}{ret, a} 
+        \macroitem{rtd\_sqrt\_ui}{ret, a} 
+        \macroitem{rtd\_get\_d}{a} return (double)a
+        \macroitem{rtd\_set\_d}{ret, d} $ret := d$
+        \macroitem{rtd\_set\_ui}{ret, d}
+        \macroitem{rtd\_set}{ret, d}
+        \macroitem{rtd\_neg}{ret, a} $ret := -a$
+        \macroitem{rtd\_abs}{ret, a} $ret := |a|$
+        \macroitem{rtd\_cmp\_ui}{a, b} \bi{return $-1$ if $a > b$, $0$ if $a == b$, and $-1$ if $a < b$}{$a > b$ なら $-1$、$a == b$ なら $0$、$a < b$ なら $-1$ を返します}
+        \macroitem{rtd\_ui\_div}{ret, a, b} $ret := a / b$
+        \macroitem{rtd\_ui\_sub}{ret, a, b} $ret := a - b$
+        \macroitem{rtd\_div\_d}{ret, a, b} $\cdots$ $c := a / b$
+        \macroitem{rtd\_add\_d}{ret, a, b} $\cdots$ $c := a + b$
+        \macroitem{rtd\_sub\_d}{ret, a, b} $\cdots$ $c := a - b$
+        \macroitem{rtd\_mul\_d}{ret, a, b} $\cdots$ $c := a \times b$
+        \macroitem{rtd\_div\_ui}{ret, a, b} $\cdots$ $c := a / b$
+        \macroitem{rtd\_add\_ui}{ret, a, b} $\cdots$ $c := a + b$
+        \macroitem{rtd\_sub\_ui}{ret, a, b} $\cdots$ $c := a - b$
+        \macroitem{rtd\_mul\_ui}{ret, a, b} $\cdots$ $c := a \times b$
+    
+        \macroitem{set0\_qd}{val} $\cdots$ $ val:= 0$
+        \macroitem{rqd\_set0}{val}
+        \macroitem{rqd\_add}{ret, a, b} $\cdots$ $c := a + b$
+        \macroitem{rqd\_sub}{ret, a, b} $\cdots$ $c := a - b$
+        \macroitem{rqd\_mul}{ret, a, b} $\cdots$ $c := a \times b$
+        \macroitem{rqd\_div}{ret, a, b} $\cdots$ $c := a / b$
+        \macroitem{rqd\_sqrt}{ret, a} $\cdots$ $ret := \sqrt{a}$
+        \macroitem{rqd\_sqrt\_d}{ret, a} $ret := \sqrt{a}$
+        \macroitem{rqd\_sqrt\_ui}{ret, a} 
+        \macroitem{rqd\_get\_d}{a} return (double)a
+        \macroitem{rqd\_set\_d}{ret, d} $ret := d$
+        \macroitem{rqd\_set\_ui}{ret, d}
+        \macroitem{rqd\_set}{ret, d}
+        \macroitem{rqd\_neg}{ret, a} $ret := -a$
+        \macroitem{rqd\_abs}{ret, a} $ret := |a|$
+        \macroitem{rqd\_cmp\_ui}{a, b} \bi{return $-1$ if $a > b$, $0$ if $a == b$, and $-1$ if $a < b$}{$a > b$ なら $-1$、$a == b$ なら $0$、$a < b$ なら $-1$ を返します}
+        \macroitem{rqd\_ui\_div}{ret, a, b} $ret := a / b$
+        \macroitem{rqd\_ui\_sub}{ret, a, b} $ret := a - b$
+        \macroitem{rqd\_div\_d}{ret, a, b} $\cdots$ $c := a / b$
+        \macroitem{rqd\_add\_d}{ret, a, b} $\cdots$ $c := a + b$
+        \macroitem{rqd\_sub\_d}{ret, a, b} $\cdots$ $c := a - b$
+        \macroitem{rqd\_mul\_d}{ret, a, b} $\cdots$ $c := a \times b$
+        \macroitem{rqd\_div\_ui}{ret, a, b} $\cdots$ $c := a / b$
+        \macroitem{rqd\_add\_ui}{ret, a, b} $\cdots$ $c := a + b$
+        \macroitem{rqd\_sub\_ui}{ret, a, b} $\cdots$ $c := a - b$
+        \macroitem{rqd\_mul\_ui}{ret, a, b} $\cdots$ $c := a \times b$
+
+\end{itemize}
+
+\section{AVX2}
+
+\subsection{float}
+\begin{itemize}
+    \funcitem{\_\_m256}{\_bncavx2\_fabsf}{\varname{\_\_m256}{val8}} $\cdots$ $\mbox{val8} := \max{\mbox{val8}, 0 - \mbox{val8}}$
+    
+    \funcitem{\_\_m256}{\_bncavx2\_fneg}{\varname{\_\_m256}{a}} $\cdots$ return $-a$ 
+
+    \funcitem{void}{\_bncavx2\_ffma}{\varname{float}{ret[]}, \varname{float}{a[]}, \varname{float}{b[]}, \varname{float}{c[]}, \varname{int}{dim}} $\cdots$ $\mbox{ret} := a \times b + c$
+
+    \funcitem{void}{\_bncavx2\_fmul}{\varname{float}{ret[]}, \varname{float}{a[]}, \varname{float}{b[]}, \varname{int}{dim}} $\cdots$ $\mbox{ret} := a \times b$
+
+\end{itemize}
+
+\subsection{double}
+
+\begin{itemize}
+
+\funcitem{\_\_m256d}{\_bncavx2\_fabs}{\varname{\_\_m256d}{val4}} $\cdots$ $\mbox{val4} := \max{\mbox{val4}, -\mbox{val4}}$
+
+\funcitem{\_\_m256d}{\_bncavx2\_dneg}{\varname{\_\_m256d a}} $\cdots$ $-a$
+
+\funcitem{void}{\_bncavx2\_dfma}{\varname{double}{ret[]}, \varname{double}{a[]}, \varname{double}{ b[]}, \varname{double}{c[]}, \varname{int}{dim}} $\cdots$ $\mbox{ret} := a \times b + c$
+\funcitem{void}{\_bncavx2\_dmul}{\varname{double}{ret[]}, \varname{double}{a[]}, \varname{double}{b[]}, \varname{int}{dim}} $\cdots$ $\mbox{ret} := a \times b$
+\funcitem{void}{\_bncavx2\_ddiv}{\varname{double}{ret[]}, \varname{double}{a[]}, \varname{double}{b[]}, \varname{int}{dim}} $\cdots$ $\mbox{ret} := a / b$
+\funcitem{void}{\_bncavx2\_dadd}{\varname{double}{ret[]}, \varname{double}{a[]}, \varname{double}{b[]}, \varname{int}{dim}} $\cdots$ $\mbox{ret} := a + b$
+\funcitem{void}{\_bncavx2\_dsub}{\varname{double}{ret[]}, \varname{double}{a[]}, \varname{double}{b[]}, \varname{int}{dim}} $\cdots$ $\mbox{ret} := a - b$
+\funcitem{double}{\_bncavx2\_ddotp}{\varname{double}{a[]}, \varname{double}{b[]}, \varname{int}{dim}}
+$\cdots$ $\mbox{ret} := \sum^{\mathrm{dim}-1}_{i = 0} a[i] \times b[i]$
+\end{itemize}
+
+\subsection{\bi{Error-free transformation}{誤差なし変換（error-free transformation）}}
+
+\begin{itemize}
+        \funcitem{\_\_m256d}{\_bncavx2\_dquick\_two\_sum}{\varname{\_\_m256d}{a}, \varname{\_\_m256d}{b}, \varname{\_\_m256d *}{err}} $\cdots$ \bi{Computes fl($a+b$) and err($a+b$). Assume $|a| >\geq |b|$.}{fl($a+b$) と err($a+b$) を計算します。$|a| >\geq |b|$ を仮定します。}
+    
+    \funcitem{\_\_m256d}{\_bncavx2\_dquick\_two\_diff}{\varname{\_\_m256d}{a}, \varname{\_\_m256d}{b}, \varname{\_\_m256d *}{err}} $\cdots$ \bi{Computes fl($a-b$) and err($a-b$). Assume $|a| \geq |b|$.}{fl($a-b$) と err($a-b$) を計算します。$|a| \geq |b|$ を仮定します。}
+
+    \funcitem{\_\_m256d}{\_bncavx2\_dtwo\_sum}{\varname{\_\_m256d}{a}, \varname{\_\_m256d}{b}, \varname{\_\_m256d *}{err}} $\cdots$ \bi{Computes fl($a+b$) and err($a+b$).}{fl($a+b$) と err($a+b$) を計算します。}
+
+    \funcitem{\_\_m256d}{\_bncavx2\_dtwo\_diff}{\varname{\_\_m256d}{a}, \varname{\_\_m256d}{b}, \varname{\_\_m256d *}{err}} $\cdots$ \bi{Computes fl($a-b$) and err($a-b$).}{fl($a-b$) と err($a-b$) を計算します。}
+
+    \funcitem{\_\_m256d}{\_bncavx2\_dtwo\_prod}{\varname{\_\_m256d}{a}, \varname{\_\_m256d}{b}, \varname{\_\_m256d *}{err}} $\cdots$ \bi{Computes fl($a\times b$) and err($a\times b$).}{fl($a\times b$) と err($a\times b$) を計算します。}
+    
+\end{itemize}
+
+\subsection{\bi{Double-double precision arithmetic}{double-double精度算術演算}}
+
+\begin{itemize}
+    \funcitem{void}{\_bncavx2\_set0\_dd}{\_\_m256d}{ret[DDSIZE]} $\cdots$ ret $:= 0$
+    \macroitem{\_bncavx2\_rdd\_set0}{ret} $\cdots$ \bi{is the same as}{次と同じです:} \funcname{\_bncavx2\_set0\_dd}(ret)
+
+    \funcitem{void}{\_bncavx2\_get\_dd\_m256d\_i}{ddfloat *ret, \varname{\_\_m256d}{ret4[DDSIZE]}, \varname{int}{avx\_index}} $\cdots$ ret := ret4[][avx\_index]
+    
+    \funcitem{void}{\_bncavx2\_rdd\_sum256d}{double ret[DDSIZE], \varname{\_\_m256d}{ret4[DDSIZE]}} $\cdots$ $\mathrm{ret} := \mathrm{ret4[0]} + \mathrm{ret4[1]} + \mathrm{ret4[2]} + \mathrm{ret4[3]}$
+    
+    \funcitem{void}{\_bncavx2\_rdd\_abssum256d}{\varname{double}{ret[DDSIZE]}, \varname{\_\_m256d}{ret4[DDSIZE]}} $\cdots$ $\mathrm{ret} := |\mathrm{ret4[0]}| + |\mathrm{ret4[1]}| + |\mathrm{ret4[2]}| + |\mathrm{ret4[3]}|$
+    
+    \funcitem{void}{\_bncavx2\_rdd\_absmax256d}{\varname{double}{ret[DDSIZE]}, \varname{\_\_m256d}{ret4[DDSIZE]}} $\cdots$ $\mathrm{ret} := \max(|\mathrm{ret4[0]}|, |\mathrm{ret4[1]}|,  |\mathrm{ret4[2]}|, |\mathrm{ret4[3]}|)$    
+    
+    \funcitem{void}{\_bncavx2\_rdd\_norm256d}{\varname{double}{ret[DDSIZE]}, \varname{\_\_m256d}{ret4[DDSIZE]}} $\cdots$ $\mathrm{ret} := \| \mathrm{ret4[0]}^2 + \mathrm{ret4[1]}^2 + \mathrm{ret4[2]}^2 + \mathrm{ret4[3]}^2 \|_2$
+    
+    \funcitem{void}{\_bncavx2\_rdd\_add}{\varname{\_\_m256d}{ret[DDSIZE]}, \varname{\_\_m256d}{a[DDSIZE]}, \varname{\_\_m256d}{b[DDSIZE]}} $\cdots$ $\mathrm{ret} := a + b$
+    
+    \funcitem{void}{\_bncavx2\_rdd\_sub}{\varname{\_\_m256d}{ret[DDSIZE]}, \varname{\_\_m256d}{a[DDSIZE]}, \varname{\_\_m256d}{b[DDSIZE]}} $\cdots$ $\mathrm{ret} := a - b$
+
+    \funcitem{void}{\_bncavx2\_rdd\_mul}{\varname{\_\_m256d}{ret[DDSIZE]}, \varname{\_\_m256d}{a[DDSIZE]}, \varname{\_\_m256d}{b[DDSIZE]}} $\cdots$ $\mathrm{ret} := a \times b$
+    
+    \funcitem{void}{\_bncavx2\_rdd\_div}{\varname{\_\_m256d}{ret[DDSIZE]}, \varname{\_\_m256d}{a[DDSIZE]}, \varname{\_\_m256d}{b[DDSIZE]}} $\cdots$ $\mathrm{ret} := a / b$
+
+    \funcitem{void}{\_bncavx2\_rdd\_abs}{\varname{\_\_m256d}{ret[DDSIZE]}, \varname{\_\_m256d}{a[DDSIZE]}} $\cdots$ $\mathrm{ret} := |a|$
+    
+\end{itemize}
+
+% ---------------------------
+% 
+% ---------------------------
+\subsection{\bi{Triple-double precision arithmetic}{triple-double精度算術演算}}
+
+\begin{itemize}
+    \funcitem{void}{\_bncavx2\_set0\_td}{\varname{\_\_m256d}{ret[TDSIZE]}} $\cdots$ ret $:= 0$
+  
+
+    \funcitem{void}{\_bncavx2\_get\_td\_m256d\_i}{\varname{tdfloat *}{ret}, \varname{\_\_m256d}{ret4[TDSIZE]}, \varname{int}{avx\_index}} $\cdots$ ret $:=$ ret4[][avx\_index]
+    
+
+    \funcitem{void}{\_bncavx2\_rtd\_sum256d}{double ret[TDSIZE], \varname{\_\_m256d}{ret4[TDSIZE]}} $\cdots$ $\mathrm{ret} := \mathrm{ret4[0]} + \mathrm{ret4[1]} + \mathrm{ret4[2]}$
+
+    \funcitem{void}{\_bncavx2\_rtd\_abs}{\varname{\_\_m256d}{ret[TDSIZE]}, \varname{\_\_m256d}{a[TDSIZE]}} $\cdots$ $\mathrm{ret} := |a|$
+
+
+    \funcitem{void}{\_bncavx2\_rtd\_abssum256d}{\varname{double}{ret[TDSIZE]}, \varname{\_\_m256d}{ret4[TDSIZE]}} $\cdots$ $\mathrm{ret} := |\mathrm{ret4[0]}| + |\mathrm{ret4[1]}| + |\mathrm{ret4[2]}| + |\mathrm{ret4[3]}|$
+    
+
+    \funcitem{void}{\_bncavx2\_rtd\_absmax256d}{\varname{double}{ret[TDSIZE]}, \varname{\_\_m256d}{ret4[TDSIZE]}} $\cdots$ $\mathrm{ret} := \max(|\mathrm{ret4[0]}|, |\mathrm{ret4[1]}|, |\mathrm{ret4[2]}|, |\mathrm{ret4[3]}|)$
+    
+
+    \funcitem{void}{\_bncavx2\_rtd\_norm256d}{\varname{double}{ret[TDSIZE]}, \varname{\_\_m256d}{ret4[TDSIZE]}}
+    
+    \funcitem{void}{\_bncavx2\_vec\_sum}{\varname{\_\_m256d}{e[]}, \varname{const \_\_m256d}{x[]}, \varname{int}{n}} $\cdots$ $\mathrm{e} := \mathrm{vec\_sum}(x)$
+    
+
+    \funcitem{void}{\_bncavx2\_vseb}{\varname{\_\_m256d}{y[]}, \varname{int}{ny}, \varname{const \_\_m256d}{e[]}, \varname{int}{ne}} $\cdots$ $\mathrm{y} := \mathrm{vec\_sum}$$\mathrm{\_err\_branch}$$(\mathrm{vseb}(k))(e)$
+      
+    \funcitem{void}{\_bncavx2\_merge}{\varname{\_\_m256d}{c[]}, \varname{\_\_m256d}{a[]}, int na, \varname{\_\_m256d}{b[]}, \varname{int}{nb}} $\cdots$ \bi{Merge a[na] \& b[nb] into c[na + nb]}{a[na] と b[nb] を c[na + nb] にマージします}
+    
+    \macroitem{\_bncavx2\_rtd\_add}{} \funcname{\_bncavx2\_rtd\_addq}
+    
+    \funcitem{void}{\_bncavx2\_rtd\_addq}{\varname{\_\_m256d}{ret[TDSIZE]}, \varname{\_\_m256d}{a[TDSIZE]}, \varname{\_\_m256d}{b[TDSIZE]}} $\cdots$ $\mathrm{ret} := a + b$
+    
+    \funcitem{void}{\_bncavx2\_rtd\_addt}{\varname{\_\_m256d}{ret[TDSIZE]}, \varname{\_\_m256d}{a[TDSIZE]}, \varname{\_\_m256d}{b[TDSIZE]}}
+    
+    \funcitem{void}{\_bncavx2\_rtd\_mulq}{\varname{\_\_m256d}{ret[TDSIZE]}, \varname{\_\_m256d}{a[TDSIZE]}, \varname{\_\_m256d}{b[TDSIZE]}} $\cdots$ $\mathrm{ret} := a \times b$
+    
+    \funcitem{void}{\_bncavx2\_rtd\_mul}{\varname{\_\_m256d}{ret[TDSIZE]}, \varname{\_\_m256d}{a[TDSIZE]}, \varname{\_\_m256d}{b[TDSIZE]}}
+    
+    \funcitem{void}{\_bncavx2\_rtd\_neg}{\varname{\_\_m256d}{c[TDSIZE]}, \varname{\_\_m256d}{a[TDSIZE]}} $\cdots$ $c := -a$
+    
+    \funcitem{void}{\_bncavx2\_rtd\_sub}{\varname{\_\_m256d}{c[TDSIZE]}, \varname{\_\_m256d}{a[TDSIZE]}, \varname{\_\_m256d}{b[TDSIZE]}} $\cdots$ $c := a - b$
+
+    \funcitem{void}{\_bncavx2\_rtd\_subq}{\varname{\_\_m256d}{c[TDSIZE]}, \varname{\_\_m256d}{a[TDSIZE]}, \varname{\_\_m256d}{b[TDSIZE]}}
+    
+    \funcitem{void}{\_bncavx2\_rtd\_divq}{\varname{\_\_m256d}{ret[TDSIZE]}, \varname{\_\_m256d}{a[TDSIZE]}, \varname{\_\_m256d}{b[TDSIZE]}} $\cdots$ $c := a / b$
+    
+    \funcitem{void}{\_bncavx2\_to\_td}{\varname{\_\_m256d}{r[TDSIZE]}, \varname{\_\_m256d}{a}, \varname{\_\_m256d}{b}, \varname{\_\_m256d}{c}} $\cdots$ $r := \mathrm{TD}(a, b, c)$
+    
+    \funcitem{void}{\_bncavx2\_rtd\_mul\_d}{\varname{\_\_m256d}{c[TDSIZE]}, \_\_m256d a, \varname{\_\_m256d}{b[TDSIZE]}} $\cdots$ $c := a \times b$
+    
+    \funcitem{void}{\_bncavx2\_rtd\_mul\_dd}{\varname{\_\_m256d}{c[TDSIZE]}, \varname{\_\_m256d}{a[DDSIZE]}, \varname{\_\_m256d}{b[TDSIZE]}} $\cdots$ $c := a \times b$
+    
+    \macroitem{\_bncavx2\_rtd\_div}{}$\cdots$ \funcname{\_bncavx2\_rtd\_divtq}
+    
+    \funcitem{void}{\_bncavx2\_rtd\_divt}{\varname{\_\_m256d}{ret[TDSIZE]}, \varname{\_\_m256d}{a[TDSIZE]}, \varname{\_\_m256d}{b[TDSIZE]}} $\cdots$ $c := a /s b$
+
+    \funcitem{void}{\_bncavx2\_rtd\_divtq}{\varname{\_\_m256d}{ret[TDSIZE]}, \varname{\_\_m256d}{a[TDSIZE]}, \varname{\_\_m256d}{b[TDSIZE]}}
+\end{itemize}
+
+\subsection{\bi{Quadruple-double precision arithmetic}{quadruple-double精度算術演算}}
+
+\begin{itemize}
+    \funcitem{void}{\_bncavx2\_set0\_qd}{\varname{\_\_m256d}{ret[QDSIZE]}} $\cdots$ ret $:= 0$
+    
+    \funcitem{void}{\_bncavx2\_get\_qd\_m256d\_i}{\varname{qdfloat *}{ret}, \varname{\_\_m256d}{ret4[QDSIZE]}, \varname{int}{avx\_index}} ret $:= \mathrm{ret4[][avx\_index]}$
+    
+    \funcitem{void}{\_bncavx2\_rqd\_sum256d}{\varname{double}{ret[QDSIZE]}, \varname{\_\_m256d}{ret4[QDSIZE]}} $\cdots$ ret := mmval[0] + ... + mmval[7]
+    
+    \funcname{void}{\_bncavx2\_rqd\_abs}{\varname{\_\_m256d}{ret[QDSIZE]}, \varname{\_\_m256d}{a[QDSIZE]}} $\cdots$ ret := |a|
+    \funcitem{void}{\_bncavx2\_rqd\_abssum256d}{\varname{double}{ret[QDSIZE]}, \varname{\_\_m256d}{ret4[QDSIZE]}} $\cdots$ ret := |ret4[0]| + |ret4[1]| + |ret4[2]| + |ret4[3]|
+    \funcitem{void}{\_bncavx2\_rqd\_absmax256d}{\varname{double}{ret[QDSIZE]}, \varname{\_\_m256d}{ret4[QDSIZE]}}$\cdots$ ret := max(|ret4[0]|, |ret4[1]|, |ret4[2]|, |ret4[3]|)
+
+    \funcitem{void}{\_bncavx2\_rqd\_norm256d}{\varname{double}{ret[QDSIZE]}, \varname{\_\_m256d}{ret4[QDSIZE]}} $\cdots$ $\mathrm{ret} := \| \mathrm{ret4[0]}^2 + \mathrm{ret4[1]}^2 + \mathrm{ret4[2]}^2 + \mathrm{ret4[3]}^2 \|_2$
+    
+    \funcitem{void}{\_bncavx2\_renorm}{\varname{\_\_m256d *}{c0}, \varname{\_\_m256d *}{c1}, \varname{\_\_m256d *}{c2}, \varname{\_\_m256d*}{c3}} $\cdots$ renorm(double *c0, double *c1, double *c2, double *c3)
+
+    \funcitem{void}{\_bncavx2\_renorm4}{\varname{\_\_m256d *}{c0}, \varname{\_\_m256d *}{c1}, \varname{\_\_m256d *}{c2}, \varname{\_\_m256d*}{c3}, \varname{\_\_m256d *}{c4}} $\cdots$ renorm4(double *c0, double *c1, double *c2, double *c3, double *c4)
+   
+    \funcitem{void}{\_bncavx2\_three\_sum}{\varname{\_\_m256d *}{a}, \varname{\_\_m256d *}{b}, \varname{\_\_m256d *}{c}} $\cdots$ three\_sum(double *a, double *b, double *c)
+    
+    \funcitem{void}{\_bncavx2\_three\_sum2}{\varname{\_\_m256d *}{a}, \varname{\_\_m256d *}{b}, \varname{\_\_m256d *}{c}} $\cdots$ void three\_sum2(double *a, double *b, double *c)
+
+    \funcitem{void}{\_bncavx2\_rqd\_add}{\varname{\_\_m256d}{ret[QDSIZE]}, \varname{\_\_m256d}{a[QDSIZE]}, \varname{\_\_m256d}{b[QDSIZE]}} $\cdots$ ret $:= a + b$
+    
+    \funcitem{void}{\_bncavx2\_rtd\_addq}{\varname{\_\_m256d}{ret[TDSIZE]}, \varname{\_\_m256d}{a[TDSIZE]}, \varname{\_\_m256d}{b[TDSIZE]}} $\cdots$ ret $:= a + b$
+    
+    \funcitem{void}{\_bncavx2\_rtd\_mulq}{\varname{\_\_m256d}{ret[TDSIZE]}, \varname{\_\_m256d}{a[TDSIZE]}, \varname{\_\_m256d}{b[TDSIZE]}} $\cdots$ ret $:= a \times b$
+    
+    \funcitem{void}{\_bncavx2\_rqd\_mul}{\varname{\_\_m256d}{ret[QDSIZE]}, \varname{\_\_m256d}{a[QDSIZE]}, \varname{\_\_m256d}{b[QDSIZE]}} $\cdots$ ret $:= a \times b$
+
+    \funcitem{void}{\_bncavx2\_rqd\_sub}{\varname{\_\_m256d}{c[QDSIZE]}, \varname{\_\_m256d}{a[QDSIZE]}, \varname{\_\_m256d}{b[QDSIZE]}} $\cdots$ ret $:= a - b$
+    
+    \funcitem{void}{\_bncavx2\_rqd\_mul\_d}{\varname{\_\_m256d}{c[QDSIZE]}, const \varname{\_\_m256d}{a[QDSIZE]}, \varname{\_\_m256d}{b}} $\cdots$ ret $:= a \times b$
+    
+    \funcitem{void}{\_bncavx2\_rtd\_divq}{\varname{\_\_m256d}{c[TDSIZE]}, \varname{\_\_m256d}{ a[TDSIZE]}, \varname{\_\_m256d}{b[TDSIZE]}} $\cdots$ $c := a / b$ \bi{in the manner of quad-double division}{quad-double除算の方式で}
+    \funcitem{void}{\_bncavx2\_rqd\_div}{\varname{\_\_m256d}{c[QDSIZE]}, \varname{\_\_m256d}{a[QDSIZE]}, \varname{\_\_m256d}{b[QDSIZE]}} $\cdots$ $c := a / b$
+
+\end{itemize}
+
+% ---------------------------
+% Miscellaneous functions 
+% 2024-03-12 (Tue)
+% ---------------------------
+\section{\bi{Miscellaneous functions}{その他の関数}}
+
+\bi{The following functions are defined in \texttt{bnc\_common.h}, which are coded in \texttt{bnc\_common\_func.c} and \texttt{algebraic\_eq.c}.}{以下の関数は \texttt{bnc\_common.h} で定義されており、\texttt{bnc\_common\_func.c} と \texttt{algebraic\_eq.c} に実装されています。}
+
+% ---------------------------
+% Basic functions 
+% ---------------------------
+\subsection{\bi{common functions}{共通関数}}
+
+\begin{itemize}
+
+    \funcitem{void}{bnc\_print\_env\_all}{void} $\cdots$ \bi{Print all environmental variables of bncmatmul library.}{bncmatmulライブラリのすべての環境変数を出力します。}
+
+    \funcitem{double}{mylog2}{\varname{double}{x}} $\cdots$ \bi{Return $\log_2 (x)$.}{$\log_2 (x)$ を返します。}
+
+    \funcitem{double}{matmul\_gflops}{\varname{double}{comp\_sec}, \varname{int}{dim}} $\cdots$ \bi{Return giga flops when calculating a \texttt{dim}-dimensional dense square matrix product from comp\_sec (computational time in second).}{comp\_sec（秒単位の計算時間）から、\texttt{dim} 次元の密な正方行列積を計算する際のギガフロップス値を返します。}
+
+    \funcitem{int}{byte\_double\_sqmat}{\varname{int}{dim}} $\cdots$ \bi{Return the number of bytes to store a \texttt{dim}-dimensional square matrix.}{\texttt{dim} 次元の正方行列を格納するのに必要なバイト数を返します。}
+
+    \funcitem{void}{set\_bnc\_default\_prec}{\varname{unsigned long}{precision}}
+    \funcitem{void}{set\_bnc\_default\_prec\_decimal}{\varname{unsigned long}{ precision}}$\cdots$ \bi{Set the default precsision in bit or in decimal digit.}{デフォルト精度をビット単位または十進桁数で設定します。}
+
+    \funcitem{mp\_rnd\_t}{get\_bnc\_default\_rounding\_mode}{void} $\cdots$ \bi{Return the current rounding mode.}{現在の丸めモードを返します。}
+    \funcitem{void}{set\_bnc\_rounding\_mode}{\varname{mp\_rnd\_t}{rounding\_mode}}$\cdots$ \bi{Set \texttt{rounding\_mode} as default rounding mode.}{\texttt{rounding\_mode} をデフォルトの丸めモードとして設定します。}
+
+
+    \funcitem{unsigned long int}{get\_bnc\_default\_prec}{void} $\cdots$ \bi{Return the current default precision in bit.}{現在のデフォルト精度をビット単位で返します。}
+
+    \funcitem{void}{mpf\_fma}{\varname{mpf\_t}{rop}, \varname{mpf\_t}{op1}, \varname{mpf\_t}{op2}, \varname{mpf\_t}{op3}} $\cdots$ $\mathrm{rop} := \mathrm{op1} \times \mathrm{op2} + \mathrm{op3}$
+
+    \funcitem{void}{mpf\_log10}{\varname{mpf\_t}{ret}, \varname{mpf\_t}{x}} $\cdots$ $\log_{10}(x)$
+    \funcitem{void}{mpf\_exp}{\varname{mpf\_t}{ret}, \varname{mpf\_t}{x}} $\cdots$ $\exp(x)$
+    \funcitem{void}{mpf\_log}{\varname{mpf\_t}{ret}, \varname{mpf\_t}{x}} $\cdots$ $\log_{e}(x)$
+    \funcitem{void}{mpf\_sin}{\varname{mpf\_t}{ret}, \varname{mpf\_t}{x}} $\cdots$ $\sin(x)$
+    \funcitem{void}{void}{mpf\_cos}{\varname{mpf\_t}{ret}, \varname{mpf\_t}{x}} $\cdots$ $\cos(x)$
+    \funcitem{void}{mpf\_tan}{\varname{mpf\_t}{ret}, \varname{mpf\_t}{x}} $\cdots$ $\tan(x)$
+    \funcitem{void}{mpf\_atan}{\varname{mpf\_t}{ret}, \varname{mpf\_t}{x}} $\cdots$ $\arctan(x)$
+
+\end{itemize}
+
+% ---------------------------
+% Random functions 
+% --------------------------
+\subsection{\bi{Random functions}{乱数関数}}
+
+\begin{itemize}
+
+\funcitem{void}{rdd\_srand}{\varname{unsigned long}{seed}}
+\funcitem{void}{rtd\_srand}{\varname{unsigned long}{seed}}
+\funcitem{void}{rqd\_srand}{\varname{unsigned long}{seed}}
+\funcitem{void}{mpf\_srand}{\varname{unsigned long}{seed}} $\cdots$ \bi{Set random seed and initialize the current random state for each precision.}{乱数シードを設定し、各精度について現在の乱数状態を初期化します。}
+
+\funcitem{void}{rdd\_urand}{\varname{double}{ret[DDSIZE]}}
+\funcitem{void}{rtd\_urand}{\varname{double}{ret[TDSIZE]}}
+\funcitem{void}{rqd\_urand}{\varname{double}{ret[QDSIZE]}}
+\funcitem{void}{mpf\_urand}{\varname{mpf\_t}{ret}} $\cdots$ \bi{Return a random number on $[0, 1]$.}{$[0, 1]$ 上の乱数を返します。}
+
+\funcitem{void}{rdd\_nrand}{\varname{double}{ret[DDSIZE]}}
+\funcitem{void}{rtd\_nrand}{\varname{double}{ret[TDSIZE]}}
+\funcitem{void}{rqd\_nrand}{\varname{double}{ret[QDSIZE]}}
+\funcitem{void}{mpf\_nrand}{\varname{mpf\_t}{ret}} $\cdots$ \bi{Return a random number following standard normal distribution $[-1, 1]$.}{標準正規分布 $[-1, 1]$ に従う乱数を返します。}
+
+\end{itemize}
+
+%*************************************************************/
+%* algebraic_eq.c: Algebraic Solvers for Algebraic Equations */
+%*************************************************************/
+\subsection{\bi{Solver for algebraic equation}{代数方程式ソルバ}}
+
+\begin{itemize}
+
+    \funcitem{int}{dquadratic\_eq}{\varname{double}{ans\_re[2]}, \varname{double}{ans\_im[2]}, \varname{double}{coef[3]}} 
+    \funcitem{int}{mpfquadratic\_eq}{\varname{mpf\_t}{ans\_re[2]}, \varname{mpf\_t}{ans\_im[2]}, \varname{mpf\_t}{coef[3]}} 
+        $\cdots$ \bi{Solve $\mathrm{coef[2]}\cdot x^2 + \mathrm{coef[1]} \cdot x + \mathrm{coef[0]} = 0$ and store the roots as $x = \mathrm{ans\_re[0]} + \mathrm{ans\_im[0]}\cdot \mathrm{i}$ and $\mathrm{ans\_re[1]}
+ + \mathrm{ans\_im[1]}\cdot\mathrm{i}$}{$\mathrm{coef[2]}\cdot x^2 + \mathrm{coef[1]} \cdot x + \mathrm{coef[0]} = 0$ を解き、根を $x = \mathrm{ans\_re[0]} + \mathrm{ans\_im[0]}\cdot \mathrm{i}$ および $\mathrm{ans\_re[1]}
+ + \mathrm{ans\_im[1]}\cdot\mathrm{i}$ として格納します。}
+
+\end{itemize}
+
+%----------------------------
+% Benchmark tools
+%----------------------------
+\section{\bi{Tool functions for benchmarking}{ベンチマーク用ツール関数}}
+
+\bi{There some useful functions for benchmarking in BNCmatmul.}{BNCmatmulには、ベンチマークに役立つ関数がいくつか用意されています。}
+
+%----------------------------
+% time functions
+%----------------------------
+\subsection{\bi{Time estimation}{時間計測}}
+
+\begin{itemize}
+
+    \funcitem{float}{fget\_sec}{\varname{int}{flag}}
+    \funcitem{double}{get\_sec}{\varname{int}{flag}} $\cdots$ \bi{Return the current real, user, system time as double prec. in second if flag $\not=0$, and the sum of the current user and system time in second if flag $=0$.}{flag $\not=0$ の場合は現在の実時間・ユーザ時間・システム時間を倍精度で秒単位として返し、flag $=0$ の場合は現在のユーザ時間とシステム時間の合計を秒単位で返します。}
+    \funcitem{double}{get\_secv}{void}  
+    \funcitem{float}{fget\_secv}{void} $\cdots$ \bi{The same as \texttt{[f]get\_sec(0)}.}{\texttt{[f]get\_sec(0)} と同じです。}
+
+    \funcitem{double}{get\_real\_sec}{\varname{int}{flag}}
+    \funcitem{float}{fget\_real\_sec}{\varname{int}{flag}} $\cdots$ \bi{Return the current tv\_sec (in second) and tv\_usec (in micro-second) as double prec. in second if flag $\not=0$, and the sum of $\mbox{tv\_sec} + \mbox{tv\_usec} / 10^6$.}{flag $\not=0$ の場合は現在の tv\_sec（秒単位）と tv\_usec（マイクロ秒単位）を倍精度で秒単位として返し、それ以外の場合は $\mbox{tv\_sec} + \mbox{tv\_usec} / 10^6$ の合計を返します。}
+    \funcitem{double}{get\_real\_secv}{void}
+    \funcitem{float}{fget\_real\_secv}{void} $\cdots$ \bi{The same as \texttt{[f]get\_real\_sec(0)}.}{\texttt{[f]get\_real\_sec(0)} と同じです。}
+\end{itemize}
+
+%----------------------------
+% Relative error of{vec}tor and matrix
+%----------------------------
+\subsection{\bi{Relative error of{vec}tor and matrix}{ベクトルおよび行列の相対誤差}}
+
+\paragraph{\bi{Relative error of{vec}tor}{ベクトルの相対誤差}}
+
+\begin{itemize}
+
+    \funcitem{void}{relerr3\_dvector}{\varname{double *}{max\_relerr}, \varname{double *}{min\_relerr}, \varname{double *}{norm\_relerr}, \varname{DVector}{vec}, \varname{DVector}{vec\_true}, \varname{int}{kind\_of\_norm}}
+    \funcitem{void}{relerr3\_ddvector}{\varname{double}{max\_relerr[DDSIZE]}, \varname{double}{min\_relerr[DDSIZE]}, \varname{double}{norm\_relerr[DDSIZE]}, \varname{DDVector}{vec}, \varname{DDVector}{vec\_true}, \varname{int}{kind\_of\_norm}}
+    \funcitem{void}{relerr3\_tdvector}{\varname{double}{max\_relerr[TDSIZE]}, \varname{double}{min\_relerr[TDSIZE]}, \varname{double}{norm\_relerr[TDSIZE]}, \varname{TDVector}{vec}, TDVector{vec\_true}, \varname{int}{kind\_of\_norm}}
+    \funcitem{void}{relerr3\_tdvector\_qdvec}{\varname{double}{max\_relerr[TDSIZE]}, \varname{double}{min\_relerr[TDSIZE]}, \varname{double}{norm\_relerr[TDSIZE]}, \varname{TDVector}{vec}, QDVector{vec\_true}, \varname{int}{kind\_of\_norm}}
+    \funcitem{void}{relerr3\_qdvector}{\varname{double}{max\_relerr[QDSIZE]}, \varname{double}{min\_relerr[QDSIZE]}, \varname{double}{norm\_relerr[QDSIZE]}, \varname{QDVector}{vec}, \varname{QDVector}{vec\_true}, \varname{int}{kind\_of\_norm}}
+    
+
+    \funcitem{void}{relerr3\_cddvector}{\varname{double}{max\_relerr[DDSIZE]}, \varname{double}{min\_relerr[DDSIZE]}, \varname{double}{max\_real\_relerr[DDSIZE]}, \varname{double}{min\_real\_relerr[DDSIZE]}, \varname{double}{max\_image\_relerr[DDSIZE]}, \varname{double}{min\_image\_relerr[DDSIZE]}, \varname{double}{norm\_relerr[DDSIZE]}, \varname{CDDVector}{vec}, \varname{CDDVector}{vec\_true}, \varname{int}{kind\_of\_norm}}
+    \funcitem{void}{relerr3\_ctdvector}{\varname{double}{max\_relerr[TDSIZE]}, \varname{double}{min\_relerr[TDSIZE]}, \varname{double}{max\_real\_relerr[TDSIZE]}, \varname{double}{min\_real\_relerr[TDSIZE]}, \varname{double}{max\_image\_relerr[TDSIZE]}, \varname{double}{min\_image\_relerr[TDSIZE]}, \varname{double}{norm\_relerr[TDSIZE]}, \varname{CTDVector}{vec}, \varname{CTDVector}{vec\_true}, \varname{int}{kind\_of\_norm}}
+    \funcitem{void}{relerr3\_cqdvector}{\varname{double}{max\_relerr[QDSIZE]}, \varname{double}{min\_relerr[QDSIZE]}, \varname{double}{max\_real\_relerr[QDSIZE]}, \varname{double}{min\_real\_relerr[QDSIZE]}, \varname{double}{max\_image\_relerr[QDSIZE]}, \varname{double}{min\_image\_relerr[QDSIZE]}, \varname{double}{norm\_relerr[QDSIZE]}, \varname{CQDVector}{vec}, \varname{CQDVector}{vec\_true}, \varname{int}{kind\_of\_norm}}
+
+    \funcitem{void}{relerr3\_mpfvector}{\varname{mpf\_t}{max\_relerr}, \varname{mpf\_t}{min\_relerr}, \varname{mpf\_t}{norm\_relerr}, \varname{MPFVector}{vec}, \varname{MPFVector}{vec\_true}, \varname{int}{kind\_of\_norm}}
+
+    \funcitem{void}{relerr3\_cmpfvector}{\varname{mpf\_t}{max\_abs\_relerr}, \varname{mpf\_t}{min\_abs\_relerr}, \varname{mpf\_t}{max\_real\_relerr}, \varname{mpf\_t}{min\_real\_relerr}, \varname{mpf\_t}{max\_image\_relerr}, \varname{mpf\_t}{min\_image\_relerr}, \varname{mpf\_t}{norm\_relerr}, \varname{CMPFVector}{vec}, \varname{CMPFVector}{vec\_true}, \varname{int}{kind\_of\_norm}}
+\end{itemize}
+    
+\paragraph{\bi{Relative error of matrix}{行列の相対誤差}}
+
+
+\begin{description}
+    \item[{\tt kind\_of\_norm} $= 0$] $\|A\|_\infty$
+    \item[{\tt kind\_of\_norm} $= 1$] $\|A\|_1$
+    \item[{\tt kind\_of\_norm} $= 2$] $\|A\|_F$
+\end{description}
+
+
+\begin{itemize}
+    \funcitem{void}{relerr3\_dmatrix}{\varname{double *}{max\_relerr}, \varname{double *}{min\_relerr}, \varname{double *}{norm\_relerr}, \varname{DMatrix}{mat}, \varname{DMatrix}{mat\_true}, \varname{int}{kind\_of\_norm}}
+
+    \funcitem{void}{relerr3\_ddmatrix}{\varname{double}{max\_relerr[DDSIZE]}, \varname{double}{min\_relerr[DDSIZE]}, \varname{double}{norm\_relerr[DDSIZE]}, \varname{DDMatrix}{mat}, \varname{DDMatrix}{mat\_true}, \varname{int}{kind\_of\_norm}}
+
+    \funcitem{void}{relerr3\_tdmatrix}{\varname{double}{max\_relerr[TDSIZE]}, \varname{double}{min\_relerr[TDSIZE]}, \varname{double}{norm\_relerr[TDSIZE]}, \varname{TDMatrix}{mat}, \varname{TDMatrix}{mat\_true}, \varname{int}{kind\_of\_norm}}
+
+    \funcitem{void}{relerr3\_qdmatrix}{\varname{double}{max\_relerr[QDSIZE]}, \varname{double}{min\_relerr[QDSIZE]}, \varname{double}{norm\_relerr[QDSIZE]}, \varname{QDMatrix}{mat}, \varname{QDMatrix}{mat\_true}, \varname{int}{kind\_of\_norm}}
+    
+    \funcitem{void}{relerr3\_mpfmatrix}{\varname{mpf\_t}{max\_relerr}, \varname{mpf\_t}{min\_relerr}, \varname{mpf\_t}{norm\_relerr}, \varname{MPFMatrix}{mat}, \varname{MPFMatrix}{mat\_true}, \varname{int}{kind\_of\_norm}}
+
+    \funcitem{void}{relerr3\_cddmatrix}{\varname{double}{max\_relerr[DDSIZE]}, \varname{double}{min\_relerr[DDSIZE]}, \varname{double}{max\_real\_relerr[DDSIZE]}, \varname{double}{min\_real\_relerr[DDSIZE]}, \varname{double}{max\_image\_relerr[DDSIZE]}, \varname{double}{min\_image\_relerr[DDSIZE]}, \varname{double}{norm\_relerr[DDSIZE]}, \varname{CDDMatrix}{mat}, \varname{CDDMatrix}{mat\_true}, \varname{int}{kind\_of\_norm}}
+
+    \funcitem{void}{relerr3\_ctdmatrix}{\varname{double}{max\_relerr[TDSIZE]}, \varname{double}{min\_relerr[TDSIZE]}, \varname{double}{max\_real\_relerr[TDSIZE]}, \varname{double}{min\_real\_relerr[TDSIZE]}, \varname{double}{max\_image\_relerr[TDSIZE]}, \varname{double}{min\_image\_relerr[TDSIZE]}, \varname{double}{norm\_relerr[TDSIZE]}, \varname{CTDMatrix}{mat}, \varname{CTDMatrix}{mat\_true}, \varname{int}{kind\_of\_norm}}
+
+    \funcitem{void}{relerr3\_cqdmatrix}{\varname{double}{max\_relerr[QDSIZE]}, \varname{double}{min\_relerr[QDSIZE]}, \varname{double}{max\_real\_relerr[QDSIZE]}, \varname{double}{min\_real\_relerr[QDSIZE]}, \varname{double}{max\_image\_relerr[QDSIZE]}, \varname{double}{min\_image\_relerr[QDSIZE]}, \varname{double}{norm\_relerr[QDSIZE]}, \varname{CQDMatrix}{mat}, \varname{CQDMatrix}{mat\_true}, \varname{int}{kind\_of\_norm}}
+
+    \funcitem{void}{relerr3\_cmpfmatrix}{\varname{mpf\_t}{max\_abs\_relerr}, \varname{mpf\_t}{min\_abs\_relerr}, \varname{mpf\_t}{max\_real\_relerr}, \varname{mpf\_t}{min\_real\_relerr}, \varname{mpf\_t}{max\_image\_relerr}, \varname{mpf\_t}{min\_image\_relerr}, \varname{mpf\_t}{norm\_relerr}, \varname{CMPFMatrix}{mat}, \varname{CMPFMatrix}{mat\_true}, \varname{int}{kind\_of\_norm}}
+
+\end{itemize}
+%------------------------------------------------%
+% End of Document
+%------------------------------------------------%

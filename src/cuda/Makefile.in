@@ -1,0 +1,389 @@
+# src/cuda/Makefile.in
+# ---------------------------------------------------------------------
+# Hand-written Makefile for CUDA / gdtq GPU sources of bncmatmul.
+# Processed by `configure` into src/cuda/Makefile via @VAR@ substitution.
+# Outputs `libbncmm_cuda.a`, which `../Makefile` links into
+# libbncmatmul.la as a regular static archive.
+#
+# This directory is intentionally NOT processed by automake: nvcc has
+# its own rules for .cu and we don't want libtool to second-guess them.
+# Source files (.cu / .cc / .c) physically live in src/; this Makefile
+# finds them via VPATH.
+# ---------------------------------------------------------------------
+
+# Reset suffixes to disable GNU make's built-in rules.  In the past, a
+# `%.cu.o: %.cu` pattern rule combined with the built-in chain produced
+# "Circular gddlinear.cu <- gddlinear.cu.o dependency dropped" warnings.
+# We now use explicit rules per source file.
+.SUFFIXES:
+
+# ---- Tools / flags injected by configure ---------------------------
+NVCC       = @NVCC@
+NVCC_FLAGS = @NVCC_FLAGS@
+CUDA_ARCH  = @CUDA_ARCH@
+AR         = @AR@
+RANLIB     = @RANLIB@
+RM         = rm -f
+
+CUDA_CPPFLAGS = @CUDA_CPPFLAGS@
+GDTQ_CPPFLAGS = @GDTQ_CPPFLAGS@
+QD_CPPFLAGS   = @QD_CPPFLAGS@
+GMP_CPPFLAGS  = @GMP_CPPFLAGS@
+MPFR_CPPFLAGS = @MPFR_CPPFLAGS@
+MPC_CPPFLAGS  = @MPC_CPPFLAGS@
+# Header-only mpc_cuda include (cu_freal.cuh / cu_fcomplex.cuh) used by
+# mpflinear_cu.cu / cmpflinear_cu.cu.  No library link is required.
+MPC_CUDA_CPPFLAGS = @MPC_CUDA_CPPFLAGS@
+
+# Mirror the -D flags the CPU build uses (see src/Makefile.am AM_CPPFLAGS).
+# Required because bnc.h declares MPQMatrix using mpq_t outside its
+# USE_GMP guard, and bncomp.h / matmul_strassen.h pull in CPU container
+# types whose prototypes assume these macros.
+BNC_DEFINES = \
+	-DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR \
+	-DUSE_DSLINEAR -DUSE_TSLINEAR -DUSE_QSLINEAR \
+	-DUSE_MPFLINEAR \
+	-DUSE_TD_BF -DUSE_QD_BF \
+	-DUSE_GMP -DUSE_MPFR -DUSE_DD -DUSE_QD \
+	-DUSE_CUDA
+
+# ---- Paths ---------------------------------------------------------
+srcdir       = @srcdir@
+top_srcdir   = @top_srcdir@
+top_builddir = @top_builddir@
+
+# Source files live in src/ (one level up from src/cuda/).
+VPATH = $(srcdir)/..
+
+INCLUDES = \
+	-I$(top_srcdir)/include \
+	$(CUDA_CPPFLAGS) \
+	$(GDTQ_CPPFLAGS) \
+	$(QD_CPPFLAGS) \
+	$(GMP_CPPFLAGS) \
+	$(MPFR_CPPFLAGS) \
+	$(MPC_CPPFLAGS) \
+	$(MPC_CUDA_CPPFLAGS) \
+	$(BNC_DEFINES)
+
+# -Xcompiler -fPIC so the resulting objects are PIC and can be embedded
+# into libbncmatmul.so (the libtool shared library).
+#
+# -rdc=true (Relocatable Device Code): individual .cu translation units
+# can reference __device__ functions defined in other TUs.  Required
+# because matmul_strassen_general_g{dd,qd}.cu only see the gqd.cuh
+# declarations of two_sum / two_prod / etc., while gddlinear.cu owns
+# the actual definitions via #include "gqd.cu".  A separate
+# `nvcc -dlink` pass at the end of this Makefile resolves all the
+# device cross-references into a single object that is then archived
+# into libbncmm_cuda.a.
+NVCC_BUILD_FLAGS = $(NVCC_FLAGS) -arch=$(CUDA_ARCH) -Xcompiler -fPIC -rdc=true
+
+# ---- Object names (unique per source file) -------------------------
+# Use _cu / _cc / _c suffixes (NOT '.cu.o') so that GNU make can't
+# mistake the dot as part of a suffix transformation.  This also
+# avoids name collisions between e.g. matmul_strassen_general_gdd.cu
+# and matmul_strassen_general_gdd.cc, which would both map to
+# `matmul_strassen_general_gdd.o` if we used the bare .o suffix.
+CU_OBJS = \
+	gddlinear_cu.o \
+	gqdlinear_cu.o \
+	gtdlinear_cu.o \
+	gdslinear_cu.o \
+	gqslinear_cu.o \
+	gtslinear_cu.o \
+	mpflinear_cu.o \
+	cmpflinear_cu.o \
+	matmul_strassen_general_gdd_cu.o \
+	matmul_strassen_general_gqd_cu.o \
+	matmul_strassen_general_gtd_cu.o \
+	matmul_strassen_general_gds_cu.o \
+	matmul_strassen_general_gqs_cu.o \
+	matmul_strassen_general_gts_cu.o
+
+HOST_CC_OBJS = \
+	matmul_strassen_general_gdd_cc.o \
+	matmul_strassen_general_gqd_cc.o \
+	matmul_strassen_general_gtd_cc.o \
+	matmul_strassen_general_gds_cc.o \
+	matmul_strassen_general_gqs_cc.o \
+	matmul_strassen_general_gts_cc.o
+
+HOST_C_OBJS = \
+	bncuda_linear_cublas_c.o
+# Note: bncuda_linear.c is intentionally NOT compiled.  It defines the
+# same helpers (_bncuda_init_d, _bncuda_free_d, _bncuda_get_d, ...) as
+# bncuda_linear_cublas.c, which causes "multiple definition" at host
+# link time.  bncuda_linear_cublas.c is the superset (adds cuBLAS
+# wrappers on top of the basic helpers), so we keep only that one.
+
+ALL_OBJS = $(CU_OBJS) $(HOST_CC_OBJS) $(HOST_C_OBJS)
+
+# Device-link object produced by `nvcc -dlink` over all -rdc=true
+# objects.  It contains the resolved cross-TU __device__ references and
+# is archived alongside the per-TU objects into libbncmm_cuda.a.
+DEVICE_LINK_OBJ = device_link.cuda.o
+
+LIB = libbncmm_cuda.a
+
+# ====================================================================
+# Standard targets recognized by automake's recursion
+# ====================================================================
+all: check-nvcc $(LIB)
+
+# Bail out early with a clear message if configure didn't set NVCC.
+# This happens when --enable-cuda was forgotten on ./configure, but
+# `make` still recurses here because src/Makefile saw ENABLE_CUDA from
+# a previous configure run, or the user invoked make in src/cuda/
+# directly.
+check-nvcc:
+	@if test -z "$(NVCC)"; then \
+	  echo "*** ERROR: NVCC is empty.  Re-run ./configure with --enable-cuda" >&2; \
+	  echo "***        and --with-cuda=PATH (and --with-gdtq=PATH)."          >&2; \
+	  exit 1; \
+	fi
+
+# Device link: collapse cross-TU __device__ references into one object.
+# Must run after all per-TU compiles, before archiving.
+$(DEVICE_LINK_OBJ): $(ALL_OBJS)
+	$(NVCC) -arch=$(CUDA_ARCH) -Xcompiler -fPIC -dlink \
+	    $(ALL_OBJS) -o $@
+
+$(LIB): $(ALL_OBJS) $(DEVICE_LINK_OBJ)
+	$(RM) $@
+	$(AR) cru $@ $(ALL_OBJS) $(DEVICE_LINK_OBJ)
+	$(RANLIB) $@
+
+# ---- Explicit per-file rules (no pattern matching) -----------------
+# .cu kernel files
+gddlinear_cu.o: gddlinear.cu
+	$(NVCC) $(NVCC_BUILD_FLAGS) $(INCLUDES) -c $< -o $@
+
+gqdlinear_cu.o: gqdlinear.cu
+	$(NVCC) $(NVCC_BUILD_FLAGS) $(INCLUDES) -c $< -o $@
+
+gtdlinear_cu.o: gtdlinear.cu
+	$(NVCC) $(NVCC_BUILD_FLAGS) $(INCLUDES) -c $< -o $@
+
+gdslinear_cu.o: gdslinear.cu
+	$(NVCC) $(NVCC_BUILD_FLAGS) $(INCLUDES) -c $< -o $@
+
+gqslinear_cu.o: gqslinear.cu
+	$(NVCC) $(NVCC_BUILD_FLAGS) $(INCLUDES) -c $< -o $@
+
+gtslinear_cu.o: gtslinear.cu
+	$(NVCC) $(NVCC_BUILD_FLAGS) $(INCLUDES) -c $< -o $@
+
+# GPU multiple-precision MPFR (real) / MPC (complex) linear kernels.
+# Header-only w.r.t. mpc_cuda (cu_freal<>/cu_fcomplex<>): no libmpc_cuda.a link;
+# device-links alongside the g* objects via the shared $(DEVICE_LINK_OBJ) pass.
+mpflinear_cu.o: mpflinear_cu.cu
+	$(NVCC) $(NVCC_BUILD_FLAGS) $(INCLUDES) -c $< -o $@
+
+cmpflinear_cu.o: cmpflinear_cu.cu
+	$(NVCC) $(NVCC_BUILD_FLAGS) $(INCLUDES) -c $< -o $@
+
+matmul_strassen_general_gdd_cu.o: matmul_strassen_general_gdd.cu
+	$(NVCC) $(NVCC_BUILD_FLAGS) $(INCLUDES) -c $< -o $@
+
+matmul_strassen_general_gqd_cu.o: matmul_strassen_general_gqd.cu
+	$(NVCC) $(NVCC_BUILD_FLAGS) $(INCLUDES) -c $< -o $@
+
+matmul_strassen_general_gtd_cu.o: matmul_strassen_general_gtd.cu
+	$(NVCC) $(NVCC_BUILD_FLAGS) $(INCLUDES) -c $< -o $@
+
+matmul_strassen_general_gds_cu.o: matmul_strassen_general_gds.cu
+	$(NVCC) $(NVCC_BUILD_FLAGS) $(INCLUDES) -c $< -o $@
+
+matmul_strassen_general_gqs_cu.o: matmul_strassen_general_gqs.cu
+	$(NVCC) $(NVCC_BUILD_FLAGS) $(INCLUDES) -c $< -o $@
+
+matmul_strassen_general_gts_cu.o: matmul_strassen_general_gts.cu
+	$(NVCC) $(NVCC_BUILD_FLAGS) $(INCLUDES) -c $< -o $@
+
+# .cc host drivers (compiled by nvcc as cu so any kernel-launch
+# syntax `<<<...>>>` or device qualifiers parse cleanly)
+matmul_strassen_general_gdd_cc.o: matmul_strassen_general_gdd.cc
+	$(NVCC) $(NVCC_BUILD_FLAGS) -x cu $(INCLUDES) -c $< -o $@
+
+matmul_strassen_general_gqd_cc.o: matmul_strassen_general_gqd.cc
+	$(NVCC) $(NVCC_BUILD_FLAGS) -x cu $(INCLUDES) -c $< -o $@
+
+matmul_strassen_general_gtd_cc.o: matmul_strassen_general_gtd.cc
+	$(NVCC) $(NVCC_BUILD_FLAGS) -x cu $(INCLUDES) -c $< -o $@
+
+matmul_strassen_general_gds_cc.o: matmul_strassen_general_gds.cc
+	$(NVCC) $(NVCC_BUILD_FLAGS) -x cu $(INCLUDES) -c $< -o $@
+
+matmul_strassen_general_gqs_cc.o: matmul_strassen_general_gqs.cc
+	$(NVCC) $(NVCC_BUILD_FLAGS) -x cu $(INCLUDES) -c $< -o $@
+
+matmul_strassen_general_gts_cc.o: matmul_strassen_general_gts.cc
+	$(NVCC) $(NVCC_BUILD_FLAGS) -x cu $(INCLUDES) -c $< -o $@
+
+# .c bridge code (also compiled by nvcc -x cu, since these include
+# cuda_runtime.h / cublas_v2.h and may use device qualifiers).
+# bncuda_linear.c is intentionally not built — see HOST_C_OBJS comment.
+bncuda_linear_cublas_c.o: bncuda_linear_cublas.c
+	$(NVCC) $(NVCC_BUILD_FLAGS) -x cu $(INCLUDES) -c $< -o $@
+
+# ====================================================================
+# Smoke test program: test_gdd_strassen
+# ====================================================================
+# Self-contained test that exercises mul_gddmatrix_dev and
+# _bncuda_mul_gddmatrix_strassen against a CPU dd_real reference.
+# Depends only on libbncmm_cuda.a + libqd + cudart + cublas.
+#
+# Build with:  make test_gdd_strassen
+# Run with:    ./test_gdd_strassen [N_naive] [N_strassen] [cutoff]
+#              (defaults: 32, 64, 16)
+QD_LIBS        = @QD_LDFLAGS@ -lqd
+CUDA_LIBS_LINK = -L@CUDA_LIBDIR@ -lcudart -lcublas
+
+# CPU-side bncmatmul — required by the bench program, which calls
+# mul_ddmatrix_strassen / mul_qdmatrix_strassen.  Built at the top
+# level by `make` (or installed under @prefix@/lib by `make install`).
+#
+# Note: libtool builds the library with -release X.Y, which produces
+#   libbncmatmul-X.Y.so.N      (SONAME)
+#   libbncmatmul-X.Y.so.N.M.P  (real file)
+#   libbncmatmul.so            (linker symlink) <-- this is what -l finds
+# So the correct linker name is plain `-lbncmatmul`, NOT
+# `-lbncmatmul-X.Y` (the latter would need a libbncmatmul-X.Y.so
+# symlink, which libtool does not create).
+BNCMATMUL_LIBS = -L$(top_builddir)/src/.libs -L$(top_builddir)/src \
+                 -lbncmatmul
+
+GMP_LIBS_LINK  = @GMP_LDFLAGS@ @GMP_LIBS@
+MPFR_LIBS_LINK = @MPFR_LDFLAGS@ @MPFR_LIBS@
+MPC_LIBS_LINK  = @MPC_LDFLAGS@ @MPC_LIBS@
+
+test_gdd_strassen: test_gdd_strassen.cu $(LIB)
+	$(NVCC) $(NVCC_FLAGS) -arch=$(CUDA_ARCH) \
+	    -Xcudafe --diag_suppress=20044 \
+	    $(INCLUDES) \
+	    $(srcdir)/test_gdd_strassen.cu \
+	    -L. -lbncmm_cuda \
+	    $(QD_LIBS) $(CUDA_LIBS_LINK) \
+	    -o $@
+
+test_gqd_strassen: test_gqd_strassen.cu $(LIB)
+	$(NVCC) $(NVCC_FLAGS) -arch=$(CUDA_ARCH) \
+	    -Xcudafe --diag_suppress=20044 \
+	    $(INCLUDES) \
+	    $(srcdir)/test_gqd_strassen.cu \
+	    -L. -lbncmm_cuda \
+	    $(QD_LIBS) $(CUDA_LIBS_LINK) \
+	    -o $@
+
+test_gtd_strassen: test_gtd_strassen.cu $(LIB)
+	$(NVCC) $(NVCC_FLAGS) -arch=$(CUDA_ARCH) \
+	    -Xcudafe --diag_suppress=20044 \
+	    $(INCLUDES) \
+	    $(srcdir)/test_gtd_strassen.cu \
+	    -L. -lbncmm_cuda \
+	    $(QD_LIBS) $(CUDA_LIBS_LINK) \
+	    -o $@
+
+bench_gdtq_strassen: bench_gdtq_strassen.cu $(LIB)
+	$(NVCC) $(NVCC_FLAGS) -arch=$(CUDA_ARCH) \
+	    -Xcudafe --diag_suppress=20044 \
+	    -std=c++14 \
+	    $(INCLUDES) \
+	    $(srcdir)/bench_gdtq_strassen.cu \
+	    -L. -lbncmm_cuda \
+	    $(BNCMATMUL_LIBS) \
+	    $(QD_LIBS) \
+	    $(MPC_LIBS_LINK) $(MPFR_LIBS_LINK) $(GMP_LIBS_LINK) \
+	    $(CUDA_LIBS_LINK) \
+	    -lpthread -lm -lstdc++ \
+	    -o $@
+
+# float-element multi-float benchmark (gds / gts / gqs).
+bench_gdtqs_strassen: bench_gdtqs_strassen.cu $(LIB)
+	$(NVCC) $(NVCC_FLAGS) -arch=$(CUDA_ARCH) \
+	    -Xcudafe --diag_suppress=20044 \
+	    -std=c++14 \
+	    $(INCLUDES) \
+	    $(srcdir)/bench_gdtqs_strassen.cu \
+	    -L. -lbncmm_cuda \
+	    $(BNCMATMUL_LIBS) \
+	    $(QD_LIBS) \
+	    $(MPC_LIBS_LINK) $(MPFR_LIBS_LINK) $(GMP_LIBS_LINK) \
+	    $(CUDA_LIBS_LINK) \
+	    -lpthread -lm -lstdc++ \
+	    -o $@
+
+# All 6 multi-precision GPU cmul_<P>vector benchmark (gdd/gtd/gqd + gds/gts/gqs).
+bench_gdtqs_cmul_vector: bench_gdtqs_cmul_vector.cu $(LIB)
+	$(NVCC) $(NVCC_FLAGS) -arch=$(CUDA_ARCH) \
+	    -Xcudafe --diag_suppress=20044 \
+	    -std=c++14 \
+	    $(INCLUDES) \
+	    $(srcdir)/bench_gdtqs_cmul_vector.cu \
+	    -L. -lbncmm_cuda \
+	    $(BNCMATMUL_LIBS) \
+	    $(QD_LIBS) \
+	    $(MPC_LIBS_LINK) $(MPFR_LIBS_LINK) $(GMP_LIBS_LINK) \
+	    $(CUDA_LIBS_LINK) \
+	    -lpthread -lm -lstdc++ \
+	    -o $@
+
+# All 6 multi-precision GPU mul_<P>matrix_<P>vec benchmark (gdd/gtd/gqd + gds/gts/gqs).
+bench_gdtqs_matvec: bench_gdtqs_matvec.cu $(LIB)
+	$(NVCC) $(NVCC_FLAGS) -arch=$(CUDA_ARCH) \
+	    -Xcudafe --diag_suppress=20044 \
+	    -std=c++14 \
+	    $(INCLUDES) \
+	    $(srcdir)/bench_gdtqs_matvec.cu \
+	    -L. -lbncmm_cuda \
+	    $(BNCMATMUL_LIBS) \
+	    $(QD_LIBS) \
+	    $(MPC_LIBS_LINK) $(MPFR_LIBS_LINK) $(GMP_LIBS_LINK) \
+	    $(CUDA_LIBS_LINK) \
+	    -lpthread -lm -lstdc++ \
+	    -o $@
+
+# ---- Cleanup -------------------------------------------------------
+clean:
+	$(RM) $(ALL_OBJS) $(DEVICE_LINK_OBJ) $(LIB) \
+	      test_gdd_strassen test_gqd_strassen test_gtd_strassen \
+	      bench_gdtq_strassen bench_gdtqs_strassen \
+	      bench_gdtqs_cmul_vector bench_gdtqs_matvec
+
+distclean: clean
+	$(RM) Makefile
+
+mostlyclean: clean
+maintainer-clean: distclean
+
+# ---- No-op targets so `make install`, `make check`, `make dist`,
+#      etc. from the parent directory don't fail when they recurse
+#      here.  libbncmm_cuda.a is bundled into libbncmatmul.la and
+#      installed by the parent libtool target. -----------------------
+install install-data install-exec installdirs:
+	@:
+uninstall:
+	@:
+check check-am installcheck:
+	@:
+dist distdir:
+	@:
+tags ctags TAGS CTAGS:
+	@:
+# Documentation targets — `make distcheck` recurses here for `dvi` (and the
+# parent runs ps/pdf/info/html/install-* variants).  This static GPU lib has
+# no docs, so they are no-ops; without them `make dvi` aborts with
+# "No rule to make target 'dvi'" and distcheck (with --enable-cuda) fails.
+dvi ps pdf info html:
+	@:
+install-dvi install-ps install-pdf install-html install-info:
+	@:
+install-strip install-am:
+	@:
+
+.PHONY: all check-nvcc clean distclean mostlyclean maintainer-clean \
+        install install-data install-exec installdirs uninstall \
+        check check-am installcheck dist distdir tags ctags TAGS CTAGS \
+        dvi ps pdf info html install-dvi install-ps install-pdf \
+        install-html install-info install-strip install-am

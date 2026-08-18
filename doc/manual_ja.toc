@@ -1,0 +1,114 @@
+\contentsline {chapter}{\numberline {第1章}BNCmatmulとは何か}{1}{}%
+\contentsline {section}{\numberline {1.1}著作権と配布条件}{2}{}%
+\contentsline {section}{\numberline {1.2}BNCmatmulのコンパイル方法}{2}{}%
+\contentsline {section}{\numberline {1.3}数学的記法}{2}{}%
+\contentsline {section}{\numberline {1.4}なぜ多倍長精度浮動小数点演算ライブラリが必要なのか}{2}{}%
+\contentsline {section}{\numberline {1.5}最適化された行列乗算のアルゴリズムと性能}{3}{}%
+\contentsline {section}{\numberline {1.6}BNCmatmulのソフトウェア層}{5}{}%
+\contentsline {section}{\numberline {1.7}バージョン履歴とTodoリスト}{7}{}%
+\contentsline {paragraph}{バージョン履歴}{7}{}%
+\contentsline {paragraph}{Todoリスト}{7}{}%
+\contentsline {chapter}{\numberline {第2章}基本データ型と算術演算}{9}{}%
+\contentsline {section}{\numberline {2.1}c\_dd\_qd.h}{9}{}%
+\contentsline {subsection}{\numberline {2.1.1}DD（double-double）: 106ビット（53ビット $\times $ 2）精度浮動小数点数}{9}{}%
+\contentsline {section}{\numberline {2.2}誤差なし変換（error-free transformation）}{10}{}%
+\contentsline {section}{\numberline {2.3}double-double精度算術演算}{10}{}%
+\contentsline {section}{\numberline {2.4}quadruple-double精度算術演算}{11}{}%
+\contentsline {section}{\numberline {2.5}triple-double精度算術演算}{13}{}%
+\contentsline {section}{\numberline {2.6}Branch-free融合積和演算（\texttt {bncfma.h}）}{14}{}%
+\contentsline {paragraph}{div/sqrt-safe変種}{15}{}%
+\contentsline {section}{\numberline {2.7}FMAベース初等関数（\texttt {bncelem.h}）}{16}{}%
+\contentsline {subsection}{\numberline {2.7.1}スカラー関数}{16}{}%
+\contentsline {subsection}{\numberline {2.7.2}\texttt {c\_dd\_*}／\texttt {c\_td\_*}／\texttt {c\_qd\_*}インタフェースへの接続}{16}{}%
+\contentsline {subsection}{\numberline {2.7.3}SIMDベクトル化された要素毎関数（\texttt {bncelem\_vector.h}）}{17}{}%
+\contentsline {subsection}{\numberline {2.7.4}FMA駆動除算}{17}{}%
+\contentsline {subsection}{\numberline {2.7.5}精度・性能ベンチマーク}{18}{}%
+\contentsline {section}{\numberline {2.8}DLL／Python向け関数エクスポートAPI（\texttt {rdtq\_func.h}）}{18}{}%
+\contentsline {section}{\numberline {2.9}rdd.h}{19}{}%
+\contentsline {section}{\numberline {2.10}AVX2}{22}{}%
+\contentsline {subsection}{\numberline {2.10.1}float}{22}{}%
+\contentsline {subsection}{\numberline {2.10.2}double}{22}{}%
+\contentsline {subsection}{\numberline {2.10.3}誤差なし変換（error-free transformation）}{22}{}%
+\contentsline {subsection}{\numberline {2.10.4}double-double精度算術演算}{23}{}%
+\contentsline {subsection}{\numberline {2.10.5}triple-double精度算術演算}{23}{}%
+\contentsline {subsection}{\numberline {2.10.6}quadruple-double精度算術演算}{24}{}%
+\contentsline {section}{\numberline {2.11}その他の関数}{25}{}%
+\contentsline {subsection}{\numberline {2.11.1}共通関数}{25}{}%
+\contentsline {subsection}{\numberline {2.11.2}乱数関数}{26}{}%
+\contentsline {subsection}{\numberline {2.11.3}代数方程式ソルバ}{26}{}%
+\contentsline {section}{\numberline {2.12}ベンチマーク用ツール関数}{26}{}%
+\contentsline {subsection}{\numberline {2.12.1}時間計測}{27}{}%
+\contentsline {subsection}{\numberline {2.12.2}ベクトルおよび行列の相対誤差}{27}{}%
+\contentsline {paragraph}{ベクトルの相対誤差}{27}{}%
+\contentsline {paragraph}{行列の相対誤差}{28}{}%
+\contentsline {chapter}{\numberline {第3章}基本的な線形計算}{29}{}%
+\contentsline {section}{\numberline {3.1}D, DD, TD, QD および MPFR のベクトルと行列のデータ型}{29}{}%
+\contentsline {section}{\numberline {3.2}ベクトル演算}{30}{}%
+\contentsline {section}{\numberline {3.3}行列演算}{33}{}%
+\contentsline {section}{\numberline {3.4}行列とベクトルのファイル入出力}{37}{}%
+\contentsline {section}{\numberline {3.5}テスト行列の生成}{38}{}%
+\contentsline {section}{\numberline {3.6}単純法・ブロック法・Strassen 法による行列乗算と関連関数}{39}{}%
+\contentsline {subsection}{\numberline {3.6.1}OpenMP}{41}{}%
+\contentsline {section}{\numberline {3.7}ベクトルと行列の相対誤差の取得}{41}{}%
+\contentsline {section}{\numberline {3.8}尾崎スキームと関連関数}{42}{}%
+\contentsline {chapter}{\numberline {第4章}LU分解}{45}{}%
+\contentsline {section}{\numberline {4.1}関数一覧}{45}{}%
+\contentsline {chapter}{\numberline {第5章}配列・多項式と代数方程式のソルバ}{47}{}%
+\contentsline {section}{\numberline {5.1}配列と多項式のデータ型}{47}{}%
+\contentsline {subsection}{\numberline {5.1.1}多項式型}{47}{}%
+\contentsline {subsubsection}{単精度（\texttt {FPoly}）と単精度複素数（\texttt {CFPoly}）}{47}{}%
+\contentsline {subsubsection}{倍精度（\texttt {DPoly}）と倍精度複素数（\texttt {CDPoly}）}{47}{}%
+\contentsline {subsubsection}{double-double（\texttt {DDPoly}）と複素 double-double（\texttt {CDDPoly}）}{47}{}%
+\contentsline {subsubsection}{triple-double（\texttt {TDPoly}）と複素 triple-double（\texttt {CTDPoly}）}{48}{}%
+\contentsline {subsubsection}{quadruple-double（\texttt {QDPoly}）と複素 quadruple-double（\texttt {CQDPoly}）}{48}{}%
+\contentsline {subsubsection}{多倍長精度（\texttt {MPFPoly}）と複素多倍長精度（\texttt {CMPFPoly}）}{48}{}%
+\contentsline {subsection}{\numberline {5.1.2}配列型}{48}{}%
+\contentsline {section}{\numberline {5.2}関数一覧}{49}{}%
+\contentsline {subsection}{\numberline {5.2.1}単精度多項式関数（\texttt {poly.c} --- \texttt {FPoly}）}{49}{}%
+\contentsline {subsection}{\numberline {5.2.2}倍精度多項式関数（\texttt {poly.c} --- \texttt {DPoly}）}{49}{}%
+\contentsline {subsection}{\numberline {5.2.3}倍精度複素多項式関数（\texttt {poly.c} --- \texttt {CDPoly}）}{50}{}%
+\contentsline {subsection}{\numberline {5.2.4}double-double 多項式関数（\texttt {poly.c} --- \texttt {DDPoly}, \texttt {CDDPoly}、\texttt {USE\_DDLINEAR} が必要）}{51}{}%
+\contentsline {subsection}{\numberline {5.2.5}triple-double 多項式関数（\texttt {poly.c} --- \texttt {TDPoly}、\texttt {USE\_TDLINEAR} が必要）}{52}{}%
+\contentsline {subsection}{\numberline {5.2.6}quadruple-double 多項式関数（\texttt {poly.c} --- \texttt {QDPoly}、\texttt {USE\_QDLINEAR} が必要）}{53}{}%
+\contentsline {subsection}{\numberline {5.2.7}多倍長精度多項式関数（\texttt {poly.c} --- \texttt {MPFPoly}、\texttt {USE\_GMP} が必要）}{54}{}%
+\contentsline {subsection}{\numberline {5.2.8}配列関数（\texttt {array.c}）}{56}{}%
+\contentsline {subsection}{\numberline {5.2.9}DKA 求根法（\texttt {dka.c}）}{57}{}%
+\contentsline {subsection}{\numberline {5.2.10}平野法（\texttt {hirano.c}, \texttt {dd\_hirano.c}）}{59}{}%
+\contentsline {subsection}{\numberline {5.2.11}ファイル入出力関数（\texttt {fread\_write\_complex.c}、\texttt {USE\_GMP} が必要）}{61}{}%
+\contentsline {chapter}{\numberline {第6章}疎行列および関連関数}{62}{}%
+\contentsline {section}{\numberline {6.1}CRS行列の構造体}{62}{}%
+\contentsline {subsection}{\numberline {6.1.1}\texttt {DRSMatrix} --- 倍精度疎行列}{62}{}%
+\contentsline {subsection}{\numberline {6.1.2}\texttt {CDRSMatrix} --- 複素倍精度疎行列}{63}{}%
+\contentsline {subsection}{\numberline {6.1.3}\texttt {DDRSMatrix} および \texttt {CDDRSMatrix} --- double-double疎行列（\texttt {USE\_DDLINEAR} が必要）}{64}{}%
+\contentsline {subsection}{\numberline {6.1.4}\texttt {TDRSMatrix} および \texttt {CTDRSMatrix} --- triple-double疎行列（\texttt {USE\_TDLINEAR} が必要）}{66}{}%
+\contentsline {subsection}{\numberline {6.1.5}\texttt {QDRSMatrix} および \texttt {CQDRSMatrix} --- quadruple-double疎行列（\texttt {USE\_QDLINEAR} が必要）}{67}{}%
+\contentsline {subsection}{\numberline {6.1.6}\texttt {MPFRSMatrix} および \texttt {CMPFRSMatrix} --- 多倍長精度疎行列（\texttt {USE\_GMP} が必要）}{69}{}%
+\contentsline {section}{\numberline {6.2}クリロフ部分空間反復解法}{71}{}%
+\contentsline {subsection}{\numberline {6.2.1}共役勾配法 (\texttt {FCG}, \texttt {DCG}, \texttt {DDCG}, \texttt {TDCG}, \texttt {QDCG}, \texttt {MPFCG})}{71}{}%
+\contentsline {subsection}{\numberline {6.2.2}BiCG, CGS, BiCGSTAB, GPBiCG 法（倍精度）}{73}{}%
+\contentsline {subsection}{\numberline {6.2.3}BiCG, CGS, BiCGSTAB, GPBiCG 法（double-double。\texttt {USE\_DDLINEAR} が必要）}{74}{}%
+\contentsline {subsection}{\numberline {6.2.4}BiCG, CGS, BiCGSTAB, GPBiCG 法（triple-double。\texttt {USE\_TDLINEAR} が必要）}{76}{}%
+\contentsline {subsection}{\numberline {6.2.5}BiCG, CGS, BiCGSTAB, GPBiCG 法（quadruple-double。\texttt {USE\_QDLINEAR} が必要）}{78}{}%
+\contentsline {subsection}{\numberline {6.2.6}BiCG, CGS, BiCGSTAB, GPBiCG 法（多倍長精度。\texttt {USE\_GMP} が必要）}{81}{}%
+\contentsline {chapter}{\numberline {第7章}単精度系および複素数系の精度ファミリ}{84}{}%
+\contentsline {section}{\numberline {7.1}単精度系マルチコンポーネント型 (DS, TS, QS)}{84}{}%
+\contentsline {section}{\numberline {7.2}複素数型 (CD およびマルチコンポーネント複素数)}{85}{}%
+\contentsline {subsection}{\numberline {7.2.1}ネイティブ複素 double (CD)}{85}{}%
+\contentsline {subsection}{\numberline {7.2.2}マルチコンポーネント複素数 (CDD, CTD, CQD, CDS, CTS, CQS)}{85}{}%
+\contentsline {section}{\numberline {7.3}利用可能なファミリの一覧}{86}{}%
+\contentsline {chapter}{\numberline {第8章}CUDAによるGPU計算}{87}{}%
+\contentsline {section}{\numberline {8.1}命名規則とデータ型}{87}{}%
+\contentsline {section}{\numberline {8.2}デバイスメモリとホスト・デバイス間転送}{88}{}%
+\contentsline {section}{\numberline {8.3}ベクトルと行列の演算}{89}{}%
+\contentsline {section}{\numberline {8.4}行列乗算と行列ベクトル積}{89}{}%
+\contentsline {section}{\numberline {8.5}GPU上のLU分解と線形ソルバ}{90}{}%
+\contentsline {section}{\numberline {8.6}疎行列ベクトル乗算（SpMV）}{90}{}%
+\contentsline {section}{\numberline {8.7}任意精度行列乗算（CUDA MPFR / MPC）}{91}{}%
+\contentsline {section}{\numberline {8.8}GPUスイートのビルドと実行}{91}{}%
+\contentsline {chapter}{\numberline {第9章}PythonからのBNCmatmulの利用}{92}{}%
+\contentsline {section}{\numberline {9.1}共有ライブラリのビルド}{92}{}%
+\contentsline {section}{\numberline {9.2}ライブラリのロードとフル精度表示}{92}{}%
+\contentsline {section}{\numberline {9.3}算術演算・FMA・初等関数}{93}{}%
+\contentsline {section}{\numberline {9.4}NumPyとSIMD一括関数}{94}{}%
+\contentsline {section}{\numberline {9.5}注意事項}{95}{}%
+\contentsline {chapter}{参考文献}{96}{}%

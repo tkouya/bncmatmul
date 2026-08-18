@@ -1,0 +1,87 @@
+# OMP_NUM_THREADS=32 band=15 2026年  7月  2日 木曜日 17:25:44 JST
+# gpu_omp_bench(dense): NVIDIA H100 NVL sm_90 | OMP=32 | reps=3 | grid=256x256
+== matvec ==
+  matvec N=512 done
+  matvec N=1024 done
+  matvec N=2048 done
+  matvec N=4096 done
+# gpu_omp_bench(dense): NVIDIA H100 NVL sm_90 | OMP=32 | reps=2 | grid=256x256
+== matmul ==
+  matmul N=256 done
+  matmul N=512 done
+  matmul N=1024 done
+  matmul N=2048 done
+  spmv dd N=4096 done
+  spmv dd N=16384 done
+  spmv dd N=65536 done
+  spmv dd N=262144 done
+  spmv td N=4096 done
+  spmv td N=4096 done
+  spmv td N=16384 done
+  spmv td N=16384 done
+  spmv td N=65536 done
+  spmv td N=65536 done
+  spmv dd N=4096 done
+  spmv dd N=16384 done
+  spmv dd N=65536 done
+  spmv td N=262144 done
+  spmv td N=262144 done
+  spmv qd N=4096 done
+  spmv qd N=4096 done
+  spmv qd N=16384 done
+  spmv qd N=16384 done
+  spmv qd N=65536 done
+  spmv qd N=65536 done
+  spmv dd N=4096 done
+  spmv dd N=16384 done
+  spmv dd N=65536 done
+  spmv qd N=262144 done
+  spmv qd N=262144 done
+  spmv dd N=262144 done
+dd done
+  spmv td N=4096 done
+  spmv td N=16384 done
+  spmv td N=65536 done
+  spmv td N=262144 done
+td done
+  spmv qd N=4096 done
+  spmv qd N=16384 done
+  spmv qd N=65536 done
+  spmv qd N=262144 done
+qd done
+  spmv ds N=4096 done
+  spmv ds N=16384 done
+  spmv ds N=65536 done
+  spmv ds N=262144 done
+ds done
+  spmv ts N=4096 done
+  spmv ts N=16384 done
+  spmv ts N=65536 done
+  spmv ts N=262144 done
+ts done
+  spmv qs N=4096 done
+  spmv qs N=16384 done
+  spmv qs N=65536 done
+  spmv qs N=262144 done
+qs done
+SPMV_DONE total=72
+  spmv qd N=1048576 done
+  spmv ds N=4096 done
+  spmv ds N=16384 done
+  spmv ds N=65536 done
+  spmv ds N=262144 done
+  spmv qd N=1048576 done
+  spmv ds N=4096 done
+  spmv ds N=16384 done
+  spmv ds N=65536 done
+  spmv ds N=262144 done
+  spmv ds N=1048576 done
+  spmv ts N=4096 done
+  spmv ts N=16384 done
+  spmv ts N=65536 done
+  spmv ts N=262144 done
+  spmv ds N=1048576 done
+  spmv ts N=4096 done
+  spmv ts N=16384 done
+  spmv ts N=65536 done
+  spmv ts N=262144 done

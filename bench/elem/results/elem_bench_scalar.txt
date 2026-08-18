@@ -1,0 +1,25 @@
+BNCmatmul elementary functions: accuracy vs MPFR(512 bits), 4096 samples
+eps(dd) = 2^-104, eps(td) = 2^-157, eps(qd) = 2^-209
+
+---- DD (double-double) ----
+dd exp  (orig, Taylor)    max err      2.373 eps   avg err    0.428 eps      1097.2 ns/call
+dd exp  (new, FMA)        max err      3.667 eps   avg err    0.580 eps       108.5 ns/call
+dd log  (orig)            max err    531.692 eps   avg err    0.404 eps       739.5 ns/call
+dd log  (new, FMA)        max err     55.741 eps   avg err    0.168 eps       130.0 ns/call
+dd sin  (new, FMA)        max err   2000.810 eps   avg err    3.672 eps       103.0 ns/call
+dd cos  (new, FMA)        max err   2217.015 eps   avg err    3.879 eps       101.5 ns/call
+(dd sin/cos had no previous C implementation: empty stubs)
+
+---- TD (triple-double) ----
+td exp  (new, FMA)        max err      0.663 eps   avg err    0.109 eps       308.9 ns/call
+td log  (new, FMA)        max err     66.470 eps   avg err    0.058 eps       536.3 ns/call
+td sin  (new, FMA)        max err    271.569 eps   avg err    0.674 eps      1125.9 ns/call
+td cos  (new, FMA)        max err    369.077 eps   avg err    0.785 eps      1126.3 ns/call
+(all td elementary functions were previously missing in C)
+
+---- QD (quad-double) ----
+qd exp  (new, FMA)        max err      0.321 eps   avg err    0.051 eps       660.0 ns/call
+qd log  (new, FMA)        max err     32.810 eps   avg err    0.072 eps       905.5 ns/call
+qd sin  (new, FMA)        max err     11.211 eps   avg err    0.116 eps      1557.1 ns/call
+qd cos  (new, FMA)        max err     70.467 eps   avg err    0.143 eps      1551.7 ns/call
+(all qd elementary functions were previously empty stubs)

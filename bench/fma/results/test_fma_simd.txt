@@ -1,0 +1,10 @@
+=== branch-free FMA: backend bitwise agreement ===
+scalar reference vs NEON SVE2 
+NEON lanes (double) = 2, (float) = 4
+  NEON double  DD/TD/QD mismatches: 0 / 0 / 0  (of 200000 each)
+  NEON float   DS/TS/QS mismatches: 0 / 0 / 0  (of 400000 each)
+SVE2 lanes (double) = 2, (float) = 4
+  SVE2 double  DD/TD/QD mismatches: 0 / 0 / 0  (of 200000 each)
+  SVE2 float   DS/TS/QS mismatches: 0 / 0 / 0  (of 400000 each)
+
+ALL BACKENDS BITWISE IDENTICAL TO THE SCALAR REFERENCE

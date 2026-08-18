@@ -1,0 +1,20 @@
+CPU OpenMP baseline threads: 20
+######## DENSE: native real (d/f) ########
+>>> bench/cuda/cuda_dense_nr --sizes 128,256,512,1024 --axpy-sizes 4096,16384,65536,262144,1048576 --max-cpu 256
+######## DENSE: native complex (cd/cf) ########
+>>> bench/cuda/cuda_dense_ncx --sizes 128,256,512,1024 --max-cpu 256
+######## DENSE: matmul / matvec / axpy (multi-component real) ########
+>>> bench/cuda/cuda_matmul_mr --sizes 128,256,512,1024 --max-cpu 256
+>>> bench/cuda/cuda_matvec_mr --sizes 128,256,512,1024
+>>> bench/cuda/cuda_axpy_mr --sizes 4096,16384,65536,262144,1048576
+######## DENSE: complex multi-component (cdd/ctd/cqd OMP; cds/cts/cqs serial) ########
+>>> bench/cuda/cuda_dense_cdd --sizes 128,256,512,1024 --max-cpu 256
+>>> bench/cuda/cuda_dense_ctd --sizes 128,256,512,1024 --max-cpu 256
+>>> bench/cuda/cuda_dense_cqd --sizes 128,256,512,1024 --max-cpu 256
+>>> bench/cuda/cuda_dense_cds --sizes 128,256,512,1024 --max-cpu 256
+>>> bench/cuda/cuda_dense_cts --sizes 128,256,512,1024 --max-cpu 256
+>>> bench/cuda/cuda_dense_cqs --sizes 128,256,512,1024 --max-cpu 256
+######## SpMV (sparse matrix-vector) ########
+  (skip, not built: bench/cuda/cuda_spmv_d)
+######## (remaining SpMV precisions append here as added) ########
+Wrote bench/cuda/out/cuda_results.csv (168 rows)

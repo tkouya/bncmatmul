@@ -1,0 +1,39 @@
+=== proposed branch-free FMA: certified error bound check ===
+reference: MPFR 600 bits;  eta = |z-(xy+c)| / ((|xy|+|c|) u^K)
+
+EFT self-check (two_prod exactness): OK
+
+DD    K=2  trials=200000   certified bound C_K = 34
+      variant     max eta/u^K     max relerr    mean relerr
+      Q                 4.066     3.3852e-28     6.5420e-33
+      BF                4.066     4.5026e-29     4.8608e-33
+      FMA               4.371     3.3852e-28     7.1263e-33   [bound OK]
+
+TD    K=3  trials=200000   certified bound C_K = 184
+      variant     max eta/u^K     max relerr    mean relerr
+      Q                  3.91     7.5947e-46     2.4992e-49
+      BF                 3.91     6.0083e-46     2.7148e-49
+      FMA                5.13     7.5697e-46     3.3732e-49   [bound OK]
+
+QD    K=4  trials=200000   certified bound C_K = 812
+      variant     max eta/u^K     max relerr    mean relerr
+      Q                0.3677     4.8811e-60     2.7593e-65
+      BF                3.027     4.8811e-60     4.1690e-65
+      FMA               4.029     4.9979e-59     2.6933e-64   [bound OK]
+
+--- commutativity  fma(x,y,c) == fma(y,x,c) bitwise ---
+      DD mismatches: 0 / 200000
+      TD mismatches: 0 / 200000
+      QD mismatches: 0 / 200000
+
+--- single-precision base (binary32) ---
+
+DS    K=2  trials=200000   certified bound C_K = 34
+      FMA               4.497     2.2538e-11     2.0699e-15   [bound OK]
+
+TS    K=3  trials=200000   certified bound C_K = 184
+      FMA                5.53     1.5349e-19     6.0786e-23   [bound OK]
+
+QS    K=4  trials=200000   certified bound C_K = 812
+      FMA               3.385     1.1157e-26     2.0677e-30   [bound OK]
+

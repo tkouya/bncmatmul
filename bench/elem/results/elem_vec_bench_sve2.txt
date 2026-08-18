@@ -1,0 +1,17 @@
+BNCmatmul vectorized elementary functions (n=100000)
+SIMD path: NEON (W=2)
+
+dd exp         scalar    118.0 ns/el   vector     67.7 ns/el   speedup  1.74x   max|vec-scalar|   0.00 eps
+dd log         scalar    134.3 ns/el   vector     74.8 ns/el   speedup  1.80x   max|vec-scalar|   0.00 eps
+dd sin         scalar    109.7 ns/el   vector     67.1 ns/el   speedup  1.64x   max|vec-scalar|   2.67 eps
+dd cos         scalar    108.8 ns/el   vector     67.2 ns/el   speedup  1.62x   max|vec-scalar|   2.49 eps
+
+td exp         scalar    275.0 ns/el   vector    125.5 ns/el   speedup  2.19x   max|vec-scalar|   1.40 eps
+td log         scalar    499.7 ns/el   vector    344.3 ns/el   speedup  1.45x   max|vec-scalar|   0.47 eps
+td sin         scalar    990.1 ns/el   vector    397.9 ns/el   speedup  2.49x   max|vec-scalar|   0.25 eps
+td cos         scalar    984.7 ns/el   vector    392.3 ns/el   speedup  2.51x   max|vec-scalar|   0.19 eps
+
+qd exp         scalar    585.8 ns/el   vector    250.9 ns/el   speedup  2.33x   max|vec-scalar|   0.51 eps
+qd log         scalar    834.8 ns/el   vector    518.3 ns/el   speedup  1.61x   max|vec-scalar|   0.51 eps
+qd sin         scalar   1372.7 ns/el   vector    697.6 ns/el   speedup  1.97x   max|vec-scalar|   0.14 eps
+qd cos         scalar   1366.9 ns/el   vector    695.3 ns/el   speedup  1.97x   max|vec-scalar|   0.15 eps

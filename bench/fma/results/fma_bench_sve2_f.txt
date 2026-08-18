@@ -1,0 +1,41 @@
+# backend=sve2 lanes=4 threads=20
+# AXPY n=1000000  GEMV n=2048  GEMM n=512   reference: MPFR 600 bits
+# t1 = 1 thread, tOMP = 20 threads; omp column = bitwise equality of the two runs
+#
+type op    var     maxrelerr   meanrelerr    t1[s/call]  tOMP[s/call]  ompspd    omp
+ds   AXPY  Q      1.7927e-10   1.9438e-15    6.7885e-04    7.5103e-04    0.90     ok
+ds   GEMV  Q      3.4084e-11   1.2280e-13    6.4697e-03    1.9932e-03    3.25     ok
+ds   GEMM  Q      1.4772e-11   6.2187e-14    1.2646e-01    1.3605e-02    9.30     ok
+ds   AXPY  BF     1.7927e-10   1.6812e-15    8.7464e-04    9.5346e-04    0.92     ok
+ds   GEMV  BF     2.0972e-11   1.1195e-13    7.9458e-03    1.7892e-03    4.44     ok
+ds   GEMM  BF     2.3006e-11   5.8522e-14    1.7790e-01    1.6124e-02   11.03     ok
+ds   AXPY  FMA    1.0034e-10   1.9263e-15    6.3170e-04    1.0060e-03    0.63     ok
+ds   GEMV  FMA    4.1733e-11   1.3162e-13    6.4662e-03    2.7457e-03    2.35     ok
+ds   GEMM  FMA    1.3826e-11   6.5007e-14    1.2736e-01    1.4717e-02    8.65     ok
+# ds speedup of FMA  (1 thread) : AXPY FMA/Q=1.07 FMA/BF=1.38 | GEMV FMA/Q=1.00 FMA/BF=1.23 | GEMM FMA/Q=0.99 FMA/BF=1.40
+# ds speedup of FMA  (20 thr)   : AXPY FMA/Q=0.75 FMA/BF=0.95 | GEMV FMA/Q=0.73 FMA/BF=0.65 | GEMM FMA/Q=0.92 FMA/BF=1.10
+#
+ts   AXPY  Q      3.3805e-19   1.3204e-23    5.4549e-03    1.9321e-03    2.82     ok
+ts   GEMV  Q      5.9045e-20   9.1915e-22    2.5085e-02    3.5281e-03    7.11     ok
+ts   GEMM  Q      1.3964e-17   7.4892e-21    7.0602e-01    8.5326e-02    8.27     ok
+ts   AXPY  BF     2.8103e-18   3.8672e-23    2.5575e-03    1.6633e-03    1.54     ok
+ts   GEMV  BF     3.7358e-19   2.0808e-21    1.4654e-02    2.7632e-03    5.30     ok
+ts   GEMM  BF     1.6958e-17   1.0067e-20    3.9361e-01    4.5176e-02    8.71     ok
+ts   AXPY  FMA    8.1620e-18   5.7647e-23    1.6046e-03    1.5320e-03    1.05     ok
+ts   GEMV  FMA    8.9668e-19   3.1832e-21    1.1442e-02    2.1936e-03    5.22     ok
+ts   GEMM  FMA    3.5583e-18   3.8704e-21    2.7403e-01    2.9318e-02    9.35     ok
+# ts speedup of FMA  (1 thread) : AXPY FMA/Q=3.40 FMA/BF=1.59 | GEMV FMA/Q=2.19 FMA/BF=1.28 | GEMM FMA/Q=2.58 FMA/BF=1.44
+# ts speedup of FMA  (20 thr)   : AXPY FMA/Q=1.26 FMA/BF=1.09 | GEMV FMA/Q=1.61 FMA/BF=1.26 | GEMM FMA/Q=2.91 FMA/BF=1.54
+#
+qs   AXPY  Q      1.2619e-25   1.2807e-30    9.0694e-03    2.3285e-03    3.89     ok
+qs   GEMV  Q      6.2153e-25   3.4458e-28    4.0779e-02    4.9697e-03    8.21     ok
+qs   GEMM  Q      4.5518e-26   5.7469e-29    1.1999e+00    9.6804e-02   12.40     ok
+qs   AXPY  BF     1.2619e-25   1.2713e-30    5.1148e-03    1.7601e-03    2.91     ok
+qs   GEMV  BF     4.1042e-24   2.0824e-27    2.3873e-02    3.2550e-03    7.33     ok
+qs   GEMM  BF     2.1442e-26   5.0605e-29    6.4693e-01    7.5841e-02    8.53     ok
+qs   AXPY  FMA    1.2619e-25   1.5340e-30    2.9192e-03    1.9837e-03    1.47     ok
+qs   GEMV  FMA    1.7224e-24   9.2822e-28    1.6218e-02    2.8797e-03    5.63     ok
+qs   GEMM  FMA    8.3260e-27   5.5294e-29    3.9893e-01    5.4361e-02    7.34     ok
+# qs speedup of FMA  (1 thread) : AXPY FMA/Q=3.11 FMA/BF=1.75 | GEMV FMA/Q=2.51 FMA/BF=1.47 | GEMM FMA/Q=3.01 FMA/BF=1.62
+# qs speedup of FMA  (20 thr)   : AXPY FMA/Q=1.17 FMA/BF=0.89 | GEMV FMA/Q=1.73 FMA/BF=1.13 | GEMM FMA/Q=1.78 FMA/BF=1.40
+#

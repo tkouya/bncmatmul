@@ -1,0 +1,585 @@
+\documentclass[a4j,dvipdfmx,11pt]{jsarticle}
+\usepackage[dvipdfmx]{graphicx}
+\usepackage{amsmath,amsfonts,amssymb}
+\usepackage{booktabs}
+\usepackage{url}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.17}
+
+\title{BNCmatmulにおけるLU分解・前進後退代入の\\分岐なしFMA+SIMDによる高速化\\
+{\large --- DS/TS/QS/DD/TD/QD 6精度での実装と性能評価 ---}}
+\author{}
+\date{2026年8月16日(改訂: 前進・後退代入のFMA+SIMD化を追加)}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+多倍長精度線形計算ライブラリBNCmatmulの直接解法について,
+(1) LU分解(部分ピボット選択付き $PA=LU$)における後続部分行列の更新
+$a_{jk} \leftarrow a_{jk} - a_{ji}\, a_{ik}$,および
+(2) 前進・後退代入(三角方程式の求解)の内積計算を,
+分岐なし融合積和演算(branch-free FMA, arXiv:2607.11391)による
+融合演算に置き換え,そのSIMDベクトル版(AVX2 / AVX-512 / NEON / SVE2)を
+DS, TS, QS, DD, TD, QDの全6実数精度に実装した。
+従来SIMD化されていなかった単精度系(DS/TS/QS)では特に効果が大きく,
+NEON/SVE2においてLU分解でDS約$4.5$--$5.2$倍,TS約$8$--$9$倍,
+QS約$11$--$14$倍,前進・後退代入でもDS約$3.6$--$4.3$倍,TS約$5$--$6$倍,
+QS約$9$--$11$倍の高速化を達成した(次元512--1024)。
+倍精度系(DD/TD/QD)でもLU分解$1.4$--$2.8$倍,前進・後退代入は
+NEON/SVE2で$2.1$--$4.0$倍(serialで$1.1$--$1.8$倍)となった。
+良条件・ピボット付きの検証では数値精度は従来実装と同等かそれ以上であった。
+さらにHilbert行列・Frank行列による悪条件事例でも,誤差が条件数
+$\kappa_\infty(A)$ に比例して増大する古典的挙動と,精度破綻次元が
+従来版とほぼ一致することを確認した(誤差定数は問題依存で従来版と前後する)。
+\end{abstract}
+
+\section{はじめに}
+
+BNCmatmulは,double 2/3/4個で構成するDD/TD/QD精度およびfloat 2/3/4個で構成する
+DS/TS/QS精度をサポートする多成分型多倍長精度線形計算ライブラリである。
+先行して,分岐なしDW/TW/QW-FMAアルゴリズム(arXiv:2607.11391,以下「新FMA」)が
+コンパイル時スイッチ \texttt{BNC\_USE\_NEW\_FMA} の下でライブラリに統合され,
+AXPY・内積・GEMV・GEMM・多項式評価等の演算に配線済みであった。
+またそのSIMDベクトル版(\texttt{\_bncneon\_dwfma},
+\texttt{\_bncavx512\_qwfmaf} など,AVX2 / AVX-512 / NEON / SVE2 の
+4命令セット$\times$6精度)が整備されていたが,LU分解と前進・後退代入は
+これらを利用していなかった。
+
+本レポートでは,LU分解および前進・後退代入へ新FMA(スカラー版・ベクトル版)を
+適用した実装と,その正当性検証および性能評価の結果をまとめる。
+
+\section{手法}
+
+\subsection{LU分解: 後続部分行列更新の融合FMA化}
+
+部分ピボット選択付きLU分解の計算量の主要部($\frac{2}{3}n^3$項)は,
+各段$i$における後続部分行列の更新
+\begin{equation}
+a_{jk} \leftarrow a_{jk} - a_{ji}\, a_{ik},
+\qquad j, k = i+1, \ldots, n
+\label{eq:update}
+\end{equation}
+である。従来実装ではこれを多倍長乗算 $t \leftarrow a_{ji}\,a_{ik}$ と
+多倍長減算 $a_{jk} \leftarrow a_{jk} - t$ の2演算で計算しており,
+それぞれの演算内部で誤差項の正規化(renormalization)を行うため冗長であった。
+
+多成分型浮動小数点数の符号反転は各成分の符号反転のみで厳密に行えることから,
+式(\ref{eq:update})は丸め誤差の増加なしに
+\begin{equation}
+a_{jk} \leftarrow \mathrm{fma}(-a_{ji},\, a_{ik},\, a_{jk})
+\label{eq:fma}
+\end{equation}
+と書き換えられる。新FMAはこの3項演算を1回の融合演算として計算し,
+演算量はDW/TW/QWでそれぞれ17/66/146 flops,誤差上界はそれぞれ
+$34u^2$, $184u^3$, $812u^4$である。乗算+減算の2段構成に対して
+正規化パスが1回で済むため演算量が大きく削減され,
+さらに融合化により中間丸めが減るため精度はむしろ改善する。
+$-a_{ji}$ は行$j$の更新開始前に1回だけ符号反転して全SIMDレーンへ
+ブロードキャストするため,追加コストは無視できる。
+行方向に連続な $a_{ik}$, $a_{jk}$ をSIMDレーンに載せ,更新全体を
+ベクトルFMA 1回で計算する。
+
+\subsection{前進・後退代入: 行方向内積への再構成と融合FMA化}
+\label{sec:solve-method}
+
+LU分解後の求解は前進代入 $Ly = b$ と後退代入 $Ux = y$ からなり,
+計算量はそれぞれ $O(n^2)$ である。後退代入
+\begin{equation}
+x_i \leftarrow \Bigl( y_i - \sum_{j=i+1}^{n} u_{ij}\, x_j \Bigr) \Big/ u_{ii}
+\end{equation}
+は行 $u_{i,i+1:n}$ と解ベクトルの内積であり,行優先格納では
+メモリ連続アクセスとなるためそのままSIMD化できる。
+一方,従来実装の前進代入は列方向アクセス
+($\ell_{ji}$, $j = i+1, \ldots, n$;ストライド幅=行長)の
+AXPY型更新であり,このままではSIMD化に不向きである。そこで新FMAパスでは
+前進代入を行方向内積形式
+\begin{equation}
+y_j \leftarrow b_j - \sum_{i=1}^{j-1} \ell_{ji}\, y_i
+\end{equation}
+に再構成し,後退代入と同一の内積カーネルで計算する。
+
+内積カーネルは全6精度共通の構成で,(1) SIMDレーンごとに独立な部分和を
+ベクトル融合FMA $\mathrm{acc}_w \leftarrow \mathrm{fma}(\ell_w, y_w, \mathrm{acc}_w)$
+で積算し,(2) 端数要素はスカラー新FMAで積算,(3) 最後にレーン間の部分和を
+スカラー多倍長加算で水平還元し,(4) 全体を1回の多倍長減算で右辺から引く。
+除算(後退代入)はその後に1回行う。なお完全ピボット選択版
+(\texttt{SolveXXLSC})は行・列とも置換配列を介した不連続アクセスと
+なるためSIMD化の対象外とし,スカラー新FMA化のみ行った。
+
+レーン分割により総和順序が変わるため結果は従来実装と厳密には一致しないが,
+各部分和が融合FMAで計算されるため誤差は同等かそれ以下である(第4節)。
+
+\section{実装}
+
+\subsection{対象関数と変更ファイル}
+
+全6精度の以下のルーチンを対象とした
+(\texttt{XX} $\in$ \{DS, TS, QS, DD, TD, QD\})。
+
+\begin{itemize}
+  \item \texttt{XXLUdecompPM}(部分ピボット・行実交換版):
+        後続部分行列更新をSIMDベクトルFMA化
+        (AVX2 / AVX-512 / NEON / SVE2 の4分岐+スカラーフォールバック)。
+  \item \texttt{XXLUdecomp / XXLUdecompP / XXLUdecompC}
+        (ピボットなし/添字ピボット/完全ピボット版):スカラー新FMA化。
+  \item \texttt{SolveXXLS / SolveXXLSP / SolveXXLSPM}(前進・後退代入):
+        行方向内積形式に再構成し,精度別共通内積カーネル
+        \texttt{\_bnc\_xxsolve\_dot}(SIMD 4分岐+スカラーフォールバック)
+        で計算。
+  \item \texttt{SolveXXLSC}(完全ピボット版):スカラー新FMA化。
+\end{itemize}
+
+変更・新規ファイルを表\ref{tab:files}に示す。DS精度のLU分解・求解は
+ヘッダ宣言のみで未実装であったため,\texttt{src/dslu.c} を新規作成し,
+分解4種(\texttt{DSLUdecomp/P/C/PM})と求解4種(\texttt{SolveDSLS/P/C/PM})を
+実装した。TS/QS精度の \texttt{LUdecompPM} は従来スカラー実装のみであった
+ため,SIMD区間(パディング済み \texttt{real\_col\_dim} 境界までのhead処理+
+整列SIMD本体)を新設した。
+
+\begin{table}[htbp]
+\centering
+\caption{変更・新規ファイル一覧}
+\label{tab:files}
+\footnotesize
+\begin{tabular}{lll}
+\toprule
+ファイル & 内容 & 種別 \\
+\midrule
+\texttt{src/ddlu.c, tdlu.c, qdlu.c} & LU分解のFMA+SIMD化+求解カーネル・Solve系FMA化 & 変更 \\
+\texttt{src/tslinear.c, qslinear.c} & 同上(LU PMはSIMD区間新設) & 変更 \\
+\texttt{src/dslu.c} & DS用LU分解・求解一式(FMA+SIMD付き) & \textbf{新規} \\
+\texttt{src/Makefile.legacy, .am, .in} & \texttt{dslu} のビルド組込み & 変更 \\
+\texttt{bench/lu/} & 検証・ベンチマークハーネス一式 & \textbf{新規} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{コンパイル時スイッチによる互換性維持}
+
+すべての新パスはライブラリの既存方針に従い \texttt{BNC\_USE\_NEW\_FMA}
+マクロでゲートした。同マクロを定義しないデフォルトビルドでは,
+編集後ソースから生成されるオブジェクトの \texttt{.text} セクションが
+編集前と\textbf{ビット単位で同一}であることを \texttt{objcopy} により確認した
+(scalar/NEON/SVE2構成)。すなわち既定動作は一切変化しない。
+
+全6精度$\times$5命令セット構成(scalar, NEON, SVE2, AVX2, AVX-512)
+$\times$FMA有無の全組み合わせについてコンパイル検証を行い(AVX2/AVX-512は
+\texttt{x86\_64-linux-gnu-gcc} によるクロスコンパイル検証),全構成が成功した。
+生成済みライブラリアーカイブ(serial/NEON/SVE2およびAVX2/AVX-512)へは
+更新オブジェクトを反映済みである。
+
+\section{正当性検証}
+
+\subsection{既知解との照合}
+
+対角優位な密行列 $A$($a_{ii}=n$,非対角は$[0.1, 1.07)$の擬似乱数,
+全要素float厳密表現可能)と既知解 $x_i = (i \bmod 16) + 1$ から
+$b = Ax$ を作業精度で生成し,\texttt{LUdecompPM}+\texttt{SolveLSPM} による
+数値解の最大要素相対誤差を全36構成(6精度$\times$3バックエンド$\times$FMA有無)
+で測定した。DD/TD/QD/TS/QSでは誤差ゼロ(厳密解を再現),DSでは
+$10^{-13}$オーダー(DS単位丸め$u^2 \approx 3.6\times10^{-15}$と次元数の積に相当)
+であり,全構成が精度仕様どおりに動作した。
+
+\subsection{ピボット選択を要する行列での検証}
+
+新規実装のDS系については,ピボット選択が実際に発生する
+$[-1,1]$一様乱数行列(次元64)でも,分解+求解(いずれも新FMA版)を
+検証した(表\ref{tab:dspivot})。ピボット付き3変種はすべて正常動作し,
+新FMA版は従来比で同等以上の精度であった。NEON/SVE2では求解内積の
+レーン分割により総和順序が変わるため serial と数値は一致しないが,
+誤差は同桁($9.6\times10^{-12}$)である。ピボットなし版の差は
+無選択LU固有の成長係数の揺らぎによるもので,どちらも正常な範囲である。
+
+\begin{table}[htbp]
+\centering
+\caption{DS精度LU分解+求解の最大相対誤差(乱数行列,次元64,serial)}
+\label{tab:dspivot}
+\begin{tabular}{lcc}
+\toprule
+変種 & 従来(mul+sub) & 新FMA(分解+代入) \\
+\midrule
+\texttt{DSLUdecompP}(部分ピボット) & $8.1\times10^{-12}$ & $2.0\times10^{-12}$ \\
+\texttt{DSLUdecompC}(完全ピボット) & $7.1\times10^{-12}$ & $3.9\times10^{-12}$ \\
+\texttt{DSLUdecompPM}(行実交換) & $8.1\times10^{-12}$ & $2.0\times10^{-12}$ \\
+\texttt{DSLUdecomp}(ピボットなし) & $2.3\times10^{-10}$ & $2.1\times10^{-10}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{悪条件問題での検証(Hilbert行列・Frank行列)}
+\label{sec:illcond}
+
+条件数が次元とともに指数的に増大する古典的な悪条件行列2種でも,
+\texttt{LUdecompPM} と \texttt{SolveLSPM}(新FMA版・従来版とも)を
+検証した。
+
+\begin{itemize}
+  \item \textbf{Hilbert行列} $a_{ij} = 1/(i+j+1)$($0$始まり添字。
+        $\kappa_\infty \approx 2.3\times10^{59}$ at $n=40$):
+        係数はQD演算(\texttt{c\_qd\_div},FMAスイッチ非依存)で計算して
+        各作業精度へ丸めて格納し,同一精度のFMA版・従来版が
+        \textbf{厳密に同じ行列}を解くようにした。
+  \item \textbf{Frank行列}(上Hessenberg型,\texttt{gallery('frank')} 相当。
+        $\kappa_\infty \approx 3.4\times10^{49}$ at $n=40$):
+        成分は小さい整数で全精度において厳密に表現可能。
+\end{itemize}
+
+真の解を $x = (1,\ldots,1)^T$ とし,右辺 $b = Ax$ は格納された係数から
+QD演算で積算して作業精度へ丸めた。数値解の誤差もQD演算で評価しているため,
+double精度より遥かに小さい誤差($10^{-60}$オーダー)も測定できる。
+条件数 $\kappa_\infty(A) = \|A\|_\infty \|A^{-1}\|_\infty$ は
+mpmath(120桁)による参考値である。
+
+図\ref{fig:illhilbert}・図\ref{fig:illfrank}に新FMA版(serial)の
+最大相対誤差の次元依存性を,表\ref{tab:illhilbert}・表\ref{tab:illfrank}に
+代表次元での従来版との比較を示す。全精度・全次元で誤差は理論どおり
+$\kappa_\infty(A)\, u_{\mathrm{prec}}$ に比例して増大し
+(図の縦軸約60桁のダイナミックレンジにわたる指数的成長),
+精度が破綻する次元はFMA版・従来版でほぼ一致した(差は高々2次元)。
+NEON/SVE2の誤差もserialと同桁である(総和順序の違いのみ)。
+
+一方,誤差の\textbf{定数係数}には差が見られる。新FMAの誤差上界は
+DW/TW/QWで $34u^2$/$184u^3$/$812u^4$ と,個別の乗算・減算
+(それぞれ数$u^k$)より大きく,係数が厳密表現されるFrank行列では
+この定数差がそのまま観測される。特にQSでは従来版比で最大2--3桁
+大きい誤差となる場合があった(表\ref{tab:illfrank})。逆に
+良条件・ピボット付きの乱数行列(前節)ではFMA版が上回るなど,
+差は定数倍の範囲で問題依存であり,\textbf{誤差のオーダー
+($\kappa_\infty\, u$)と精度破綻限界は変わらない}。
+誤差定数を優先する用途ではスイッチを無効化すれば従来演算に戻る。
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  width=0.9\linewidth, height=7.5cm,
+  ymode=log,
+  xlabel={次元 $n$}, ylabel={最大相対誤差},
+  xmin=0, xmax=42,
+  legend style={at={(0.98,0.02)}, anchor=south east, legend columns=3, font=\small},
+  ymajorgrids,
+  cycle list={{blue,mark=*},{red,mark=square*},{black,mark=triangle*},{orange!90!black,mark=diamond*},{teal,mark=pentagon*},{violet,mark=x}},
+]
+\addplot+[mark size=1.6pt] coordinates {(2,3.698e-32) (4,4.108e-30) (6,5.646e-27) (8,9.837e-23) (10,3.513e-20) (12,2.814e-17) (14,1.436e-14) (16,5.043e-11) (18,2.215e-08) (20,2.921e-05) (22,3.464e-02) };
+\addplot+[mark size=1.6pt] coordinates {(2,2.053e-48) (4,3.100e-45) (6,5.800e-42) (8,1.073e-39) (10,8.767e-36) (12,1.945e-33) (14,2.213e-30) (16,4.430e-27) (18,2.669e-24) (20,4.240e-22) (22,5.572e-19) (24,1.962e-15) (26,4.155e-12) (28,2.876e-09) (30,9.938e-06) (32,7.447e-03) };
+\addplot+[mark size=1.6pt] coordinates {(2,1.139e-64) (4,1.147e-62) (6,4.869e-58) (8,8.013e-56) (10,3.585e-52) (12,9.480e-50) (14,2.753e-46) (16,5.323e-43) (18,3.375e-40) (20,3.230e-37) (22,1.600e-34) (24,1.758e-32) (26,1.237e-28) (28,3.300e-25) (30,5.427e-22) (32,5.921e-19) (34,2.120e-16) (36,8.051e-13) (38,5.562e-10) (40,1.942e-06) };
+\addplot+[mark size=1.6pt] coordinates {(2,1.066e-14) (4,1.237e-11) (6,4.633e-09) (8,2.747e-06) (10,1.655e-02) };
+\addplot+[mark size=1.6pt] coordinates {(2,3.176e-22) (4,1.823e-19) (6,2.691e-16) (8,1.039e-12) (10,4.748e-10) (12,5.946e-07) (14,6.211e-05) (16,6.234e-01) };
+\addplot+[mark size=1.6pt] coordinates {(2,9.466e-30) (4,3.868e-26) (6,1.573e-23) (8,1.705e-20) (10,1.481e-17) (12,1.273e-14) (14,2.542e-11) (16,1.275e-08) (18,1.160e-05) (20,6.385e-03) (22,3.929e+00) };
+\legend{DD, TD, QD, DS, TS, QS}
+\end{axis}
+\end{tikzpicture}
+\caption{Hilbert行列に対する最大相対誤差(新FMA版,serial)。誤差$>1$は省略}
+\label{fig:illhilbert}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  width=0.9\linewidth, height=7.5cm,
+  ymode=log,
+  xlabel={次元 $n$}, ylabel={最大相対誤差},
+  xmin=0, xmax=42,
+  legend style={at={(0.98,0.02)}, anchor=south east, legend columns=3, font=\small},
+  ymajorgrids,
+  cycle list={{blue,mark=*},{red,mark=square*},{black,mark=triangle*},{orange!90!black,mark=diamond*},{teal,mark=pentagon*},{violet,mark=x}},
+]
+\addplot+[mark size=1.6pt] coordinates {(6,4.376e-29) (8,1.719e-27) (10,1.164e-25) (12,2.956e-23) (14,4.050e-22) (16,1.800e-18) (18,1.639e-15) (20,3.805e-13) (22,3.407e-10) (24,2.124e-07) (26,5.157e-05) (28,4.393e-02) };
+\addplot+[mark size=1.6pt] coordinates {(2,5.834e-62) (4,1.089e-60) (6,2.429e-45) (8,1.774e-44) (10,1.411e-41) (12,3.150e-39) (14,4.849e-37) (16,1.119e-34) (18,2.188e-32) (20,1.137e-29) (22,1.478e-26) (24,8.614e-24) (26,3.303e-21) (28,4.708e-19) (30,6.224e-16) (32,1.180e-12) (34,4.542e-09) (36,6.276e-06) (38,3.913e-03) };
+\addplot+[mark size=1.6pt] coordinates {(6,1.349e-61) (8,1.702e-60) (10,2.189e-57) (12,9.481e-56) (14,1.355e-53) (16,1.109e-50) (18,1.982e-48) (20,2.330e-45) (22,1.222e-43) (24,3.854e-40) (26,1.587e-37) (28,4.334e-35) (30,1.874e-31) (32,1.691e-28) (34,1.001e-25) (36,3.580e-22) (38,1.284e-19) (40,6.379e-16) };
+\addplot+[mark size=1.6pt] coordinates {(6,9.896e-12) (8,6.392e-10) (10,5.073e-08) (12,1.809e-05) (14,3.163e-03) (16,1.046e-01) };
+\addplot+[mark size=1.6pt] coordinates {(2,3.029e-28) (4,5.655e-27) (6,3.764e-19) (8,8.386e-19) (10,5.308e-18) (12,4.929e-13) (14,3.643e-11) (16,6.502e-09) (18,4.906e-06) (20,1.194e-03) (22,5.508e-01) (24,8.511e+00) };
+\addplot+[mark size=1.6pt] coordinates {(6,6.361e-27) (8,7.799e-25) (10,1.889e-23) (12,8.605e-21) (14,1.459e-18) (16,1.187e-15) (18,8.486e-14) (20,8.718e-11) (22,2.355e-08) (24,1.714e-06) (26,2.002e-02) (28,1.643e+00) };
+\legend{DD, TD, QD, DS, TS, QS}
+\end{axis}
+\end{tikzpicture}
+\caption{Frank行列に対する最大相対誤差(新FMA版,serial)。誤差$>1$は省略}
+\label{fig:illfrank}
+\end{figure}
+
+
+\begin{table}[htbp]
+\centering
+\caption{Hilbert行列: 最大相対誤差の比較(serial,代表次元)}
+\label{tab:illhilbert}
+\small
+\begin{tabular}{lrlll}
+\toprule
+精度 & $n$ & $\kappa_\infty(A)$ & 従来(mul+sub) & 新FMA \\
+\midrule
+DD & 12 & $4.1\times10^{16}$ & $7.0\times10^{-18}$ & $2.8\times10^{-17}$ \\
+DD & 20 & $6.3\times10^{28}$ & $3.6\times10^{-5}$ & $2.9\times10^{-5}$ \\
+TD & 20 & $6.3\times10^{28}$ & $1.2\times10^{-21}$ & $4.2\times10^{-22}$ \\
+TD & 28 & $1.1\times10^{41}$ & $3.1\times10^{-11}$ & $2.9\times10^{-9}$ \\
+QD & 28 & $1.1\times10^{41}$ & $1.3\times10^{-25}$ & $3.3\times10^{-25}$ \\
+QD & 38 & $2.0\times10^{56}$ & $3.5\times10^{-10}$ & $5.6\times10^{-10}$ \\
+DS & 6 & $2.9\times10^{7}$ & $1.1\times10^{-8}$ & $4.6\times10^{-9}$ \\
+DS & 10 & $3.5\times10^{13}$ & $7.0\times10^{-4}$ & $1.7\times10^{-2}$ \\
+TS & 8 & $3.4\times10^{10}$ & $3.2\times10^{-13}$ & $1.0\times10^{-12}$ \\
+TS & 14 & $4.5\times10^{19}$ & $7.1\times10^{-5}$ & $6.2\times10^{-5}$ \\
+QS & 12 & $4.1\times10^{16}$ & $5.6\times10^{-16}$ & $1.3\times10^{-14}$ \\
+QS & 18 & $5.8\times10^{25}$ & $4.0\times10^{-7}$ & $1.2\times10^{-5}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption{Frank行列: 最大相対誤差の比較(serial,代表次元)}
+\label{tab:illfrank}
+\small
+\begin{tabular}{lrlll}
+\toprule
+精度 & $n$ & $\kappa_\infty(A)$ & 従来(mul+sub) & 新FMA \\
+\midrule
+DD & 12 & $6.9\times10^{9}$ & $9.0\times10^{-24}$ & $3.0\times10^{-23}$ \\
+DD & 20 & $5.4\times10^{19}$ & $6.8\times10^{-14}$ & $3.8\times10^{-13}$ \\
+TD & 20 & $5.4\times10^{19}$ & $4.7\times10^{-30}$ & $1.1\times10^{-29}$ \\
+TD & 28 & $9.2\times10^{30}$ & $2.2\times10^{-19}$ & $4.7\times10^{-19}$ \\
+QD & 28 & $9.2\times10^{30}$ & $1.1\times10^{-35}$ & $4.3\times10^{-35}$ \\
+QD & 38 & $2.1\times10^{46}$ & $5.0\times10^{-20}$ & $1.3\times10^{-19}$ \\
+DS & 6 & $6.4\times10^{3}$ & $2.4\times10^{-13}$ & $9.9\times10^{-12}$ \\
+DS & 10 & $4.5\times10^{7}$ & $1.9\times10^{-8}$ & $5.1\times10^{-8}$ \\
+TS & 8 & $4.3\times10^{5}$ & $4.0\times10^{-19}$ & $8.4\times10^{-19}$ \\
+TS & 14 & $1.4\times10^{12}$ & $2.5\times10^{-12}$ & $3.6\times10^{-11}$ \\
+QS & 12 & $6.9\times10^{9}$ & $7.6\times10^{-22}$ & $8.6\times10^{-21}$ \\
+QS & 18 & $1.3\times10^{17}$ & $2.1\times10^{-15}$ & $8.5\times10^{-14}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{性能評価}
+
+\subsection{評価環境と方法}
+
+\begin{itemize}
+  \item CPU: Arm Cortex-X925 + Cortex-A725(NVIDIA GB10,計20コア),
+        SVEベクトル長128 bit(NEONと同レーン数)
+  \item コンパイラ: gcc 13.3.0,
+        \texttt{-O3 -ffp-contract=off}(+NEON: \texttt{-mcpu=cortex-a76},
+        SVE2: \texttt{-mcpu=neoverse-v2})
+  \item 測定: \texttt{bench/lu/} ハーネス。\texttt{LUdecompPM}(行列複製
+        コストは別測定して控除)と \texttt{SolveLSPM}(前進+後退代入)の
+        実行時間をそれぞれ累積0.2秒以上になるまで反復して平均。1コア逐次実行。
+\end{itemize}
+
+FMA版バイナリはLU分解・求解の翻訳単位のみを \texttt{-DBNC\_USE\_NEW\_FMA}
+付きで再コンパイルし,ライブラリより前にリンクした。それ以外のルーチン
+(行列初期化・行列ベクトル積等)は両版で共通のライブラリ実装を用いており,
+純粋に対象カーネルの差のみを比較している。
+
+\subsection{結果}
+
+次元512における高速化率(従来比)を表\ref{tab:speedup}
+(LU分解)・表\ref{tab:solvespeedup}(前進・後退代入)と
+図\ref{fig:speedup}・図\ref{fig:solvespeedup}に,全測定結果を
+表\ref{tab:full}に示す。
+
+\begin{table}[htbp]
+\centering
+\caption{LU分解の高速化率(従来 mul+sub 比,次元512)}
+\label{tab:speedup}
+\begin{tabular}{lccc}
+\toprule
+精度 & serial & NEON & SVE2 \\
+\midrule
+DD & 1.38 & 1.84 & 1.42 \\
+TD & 1.90 & 1.61 & 1.71 \\
+QD & 2.69 & 1.43 & 1.48 \\
+DS & 1.40 & 4.56 & 5.20 \\
+TS & 2.54 & 9.06 & 8.75 \\
+QS & 3.80 & 13.53 & 12.26 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption{前進・後退代入(\texttt{SolveLSPM})の高速化率(従来比,次元512)}
+\label{tab:solvespeedup}
+\begin{tabular}{lccc}
+\toprule
+精度 & serial & NEON & SVE2 \\
+\midrule
+DD & 1.11 & 2.25 & 2.21 \\
+TD & 1.36 & 2.61 & 2.64 \\
+QD & 1.82 & 3.99 & 3.94 \\
+DS & 1.08 & 3.97 & 3.99 \\
+TS & 1.70 & 5.83 & 5.99 \\
+QS & 2.83 & 10.89 & 11.24 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  ybar, bar width=7pt,
+  width=0.95\linewidth, height=6.2cm,
+  symbolic x coords={DD,TD,QD,DS,TS,QS},
+  xtick=data,
+  ymin=0,
+  ylabel={高速化率(従来/新FMA)},
+  xlabel={精度},
+  legend style={at={(0.02,0.98)}, anchor=north west, legend columns=3},
+  ymajorgrids,
+  enlarge x limits=0.1,
+]
+\addplot coordinates {(DD,1.38) (TD,1.90) (QD,2.69) (DS,1.40) (TS,2.54) (QS,3.80)};
+\addplot coordinates {(DD,1.84) (TD,1.61) (QD,1.43) (DS,4.56) (TS,9.06) (QS,13.53)};
+\addplot coordinates {(DD,1.42) (TD,1.71) (QD,1.48) (DS,5.20) (TS,8.75) (QS,12.26)};
+\legend{serial, NEON, SVE2}
+\end{axis}
+\end{tikzpicture}
+\caption{分岐なしFMA+SIMDによるLU分解高速化率(次元512)}
+\label{fig:speedup}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  ybar, bar width=7pt,
+  width=0.95\linewidth, height=6.2cm,
+  symbolic x coords={DD,TD,QD,DS,TS,QS},
+  xtick=data,
+  ymin=0,
+  ylabel={高速化率(従来/新FMA)},
+  xlabel={精度},
+  legend style={at={(0.02,0.98)}, anchor=north west, legend columns=3},
+  ymajorgrids,
+  enlarge x limits=0.1,
+]
+\addplot coordinates {(DD,1.11) (TD,1.36) (QD,1.82) (DS,1.08) (TS,1.70) (QS,2.83)};
+\addplot coordinates {(DD,2.25) (TD,2.61) (QD,3.99) (DS,3.97) (TS,5.83) (QS,10.89)};
+\addplot coordinates {(DD,2.21) (TD,2.64) (QD,3.94) (DS,3.99) (TS,5.99) (QS,11.24)};
+\legend{serial, NEON, SVE2}
+\end{axis}
+\end{tikzpicture}
+\caption{分岐なしFMA+SIMDによる前進・後退代入高速化率(次元512)}
+\label{fig:solvespeedup}
+\end{figure}
+
+
+\begin{table}[p]
+\centering
+\caption{LU分解・前進後退代入の全測定結果(1コア逐次)}
+\label{tab:full}
+\footnotesize
+\renewcommand{\arraystretch}{0.92}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{llrrrrrrrl}
+\toprule
+ & & & \multicolumn{3}{c}{LU分解 [s]} & \multicolumn{3}{c}{代入 [ms]} & \\
+\cmidrule(lr){4-6}\cmidrule(lr){7-9}
+精度 & backend & 次元 & 従来 & 新FMA & 倍率 & 従来 & 新FMA & 倍率 & 最大相対誤差 \\
+\midrule
+DD & serial & 256 & 0.0095 & 0.0068 & \textbf{1.40} & 0.273 & 0.251 & \textbf{1.08} & $0$ \\
+ & NEON & 256 & 0.0072 & 0.0039 & \textbf{1.85} & 0.270 & 0.124 & \textbf{2.17} & $0$ \\
+ & SVE2 & 256 & 0.0050 & 0.0035 & \textbf{1.42} & 0.265 & 0.128 & \textbf{2.07} & $0$ \\
+ & serial & 512 & 0.0751 & 0.0543 & \textbf{1.38} & 1.118 & 1.004 & \textbf{1.11} & $0$ \\
+ & NEON & 512 & 0.0569 & 0.0309 & \textbf{1.84} & 1.103 & 0.489 & \textbf{2.25} & $0$ \\
+ & SVE2 & 512 & 0.0402 & 0.0283 & \textbf{1.42} & 1.105 & 0.501 & \textbf{2.21} & $0$ \\
+ & serial & 1024 & 0.5994 & 0.4339 & \textbf{1.38} & 4.515 & 4.024 & \textbf{1.12} & $0$ \\
+ & NEON & 1024 & 0.4539 & 0.2503 & \textbf{1.81} & 4.440 & 1.943 & \textbf{2.28} & $0$ \\
+ & SVE2 & 1024 & 0.3207 & 0.2258 & \textbf{1.42} & 4.440 & 1.986 & \textbf{2.24} & $0$ \\
+\midrule
+TD & serial & 256 & 0.0548 & 0.0291 & \textbf{1.88} & 0.912 & 0.675 & \textbf{1.35} & $0$ \\
+ & NEON & 256 & 0.0260 & 0.0164 & \textbf{1.58} & 0.907 & 0.364 & \textbf{2.49} & $0$ \\
+ & SVE2 & 256 & 0.0280 & 0.0168 & \textbf{1.67} & 0.921 & 0.371 & \textbf{2.48} & $0$ \\
+ & serial & 512 & 0.4352 & 0.2293 & \textbf{1.90} & 3.632 & 2.675 & \textbf{1.36} & $0$ \\
+ & NEON & 512 & 0.2040 & 0.1263 & \textbf{1.61} & 3.632 & 1.389 & \textbf{2.61} & $0$ \\
+ & SVE2 & 512 & 0.2225 & 0.1299 & \textbf{1.71} & 3.768 & 1.427 & \textbf{2.64} & $0$ \\
+\midrule
+QD & serial & 256 & 0.1990 & 0.0705 & \textbf{2.82} & 2.532 & 1.413 & \textbf{1.79} & $0$ \\
+ & NEON & 256 & 0.0565 & 0.0401 & \textbf{1.41} & 2.504 & 0.666 & \textbf{3.76} & $0$ \\
+ & SVE2 & 256 & 0.0617 & 0.0424 & \textbf{1.46} & 2.498 & 0.675 & \textbf{3.70} & $0$ \\
+ & serial & 512 & 1.4653 & 0.5456 & \textbf{2.69} & 10.120 & 5.546 & \textbf{1.82} & $0$ \\
+ & NEON & 512 & 0.4285 & 0.2993 & \textbf{1.43} & 10.066 & 2.520 & \textbf{3.99} & $0$ \\
+ & SVE2 & 512 & 0.4718 & 0.3184 & \textbf{1.48} & 10.093 & 2.563 & \textbf{3.94} & $0$ \\
+\midrule
+DS & serial & 256 & 0.0092 & 0.0067 & \textbf{1.38} & 0.263 & 0.248 & \textbf{1.06} & $5.3\times10^{-14}$ \\
+ & NEON & 256 & 0.0092 & 0.0020 & \textbf{4.53} & 0.263 & 0.070 & \textbf{3.77} & $5.3\times10^{-14}$ \\
+ & SVE2 & 256 & 0.0093 & 0.0019 & \textbf{4.96} & 0.266 & 0.073 & \textbf{3.63} & $5.3\times10^{-14}$ \\
+ & serial & 512 & 0.0748 & 0.0533 & \textbf{1.40} & 1.067 & 0.991 & \textbf{1.08} & $1.1\times10^{-13}$ \\
+ & NEON & 512 & 0.0735 & 0.0161 & \textbf{4.56} & 1.054 & 0.266 & \textbf{3.97} & $4.8\times10^{-14}$ \\
+ & SVE2 & 512 & 0.0745 & 0.0143 & \textbf{5.20} & 1.066 & 0.267 & \textbf{3.99} & $4.8\times10^{-14}$ \\
+ & serial & 1024 & 0.5985 & 0.4328 & \textbf{1.38} & 4.477 & 4.022 & \textbf{1.11} & $3.2\times10^{-13}$ \\
+ & NEON & 1024 & 0.5907 & 0.1304 & \textbf{4.53} & 4.412 & 1.016 & \textbf{4.34} & $8.5\times10^{-14}$ \\
+ & SVE2 & 1024 & 0.5969 & 0.1198 & \textbf{4.98} & 4.465 & 1.052 & \textbf{4.24} & $8.5\times10^{-14}$ \\
+\midrule
+TS & serial & 256 & 0.0743 & 0.0300 & \textbf{2.48} & 1.149 & 0.686 & \textbf{1.67} & $0$ \\
+ & NEON & 256 & 0.0734 & 0.0087 & \textbf{8.46} & 1.132 & 0.223 & \textbf{5.08} & $0$ \\
+ & SVE2 & 256 & 0.0735 & 0.0092 & \textbf{8.00} & 1.173 & 0.230 & \textbf{5.10} & $0$ \\
+ & serial & 512 & 0.5932 & 0.2340 & \textbf{2.54} & 4.585 & 2.691 & \textbf{1.70} & $0$ \\
+ & NEON & 512 & 0.5850 & 0.0646 & \textbf{9.06} & 4.517 & 0.775 & \textbf{5.83} & $0$ \\
+ & SVE2 & 512 & 0.6006 & 0.0686 & \textbf{8.75} & 4.814 & 0.804 & \textbf{5.99} & $0$ \\
+\midrule
+QS & serial & 256 & 0.2701 & 0.0696 & \textbf{3.88} & 3.878 & 1.402 & \textbf{2.77} & $0$ \\
+ & NEON & 256 & 0.2880 & 0.0243 & \textbf{11.86} & 4.075 & 0.453 & \textbf{9.00} & $0$ \\
+ & SVE2 & 256 & 0.2908 & 0.0260 & \textbf{11.17} & 4.238 & 0.454 & \textbf{9.33} & $0$ \\
+ & serial & 512 & 2.0413 & 0.5371 & \textbf{3.80} & 15.565 & 5.498 & \textbf{2.83} & $0$ \\
+ & NEON & 512 & 2.2270 & 0.1647 & \textbf{13.53} & 16.393 & 1.505 & \textbf{10.89} & $0$ \\
+ & SVE2 & 512 & 2.2053 & 0.1799 & \textbf{12.26} & 17.013 & 1.514 & \textbf{11.24} & $0$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{考察}
+
+\begin{itemize}
+  \item \textbf{単精度系(DS/TS/QS)の大幅な高速化}:
+        従来LU分解・求解ともスカラー実装のみだったため,SIMD化
+        (float32レーン数は倍精度の2倍)と融合FMA化の効果が乗算的に働き,
+        LU分解はQSで最大約14倍,前進・後退代入もNEON/SVE2で
+        DS約$4$倍,TS約$6$倍,QS約$11$倍に達した。
+  \item \textbf{倍精度系(DD/TD/QD)}:LU分解は既にSIMD化済みの実装に
+        対する置き換えであるため,効果は融合FMAによる演算量削減分
+        ($1.4$--$1.9$倍程度)である。成分数が多いほど乗算+減算の正規化
+        コストが大きいため,スカラー(serial)ではQDで$2.7$--$2.8$倍と
+        最も効果が大きい。前進・後退代入は従来スカラーだったため,
+        SIMD化と合わせてNEON/SVE2で$2.1$--$4.0$倍となった
+        (serialでは融合FMA分のみで$1.1$--$1.8$倍)。
+  \item \textbf{代入の高速化率がLU分解より小さい理由}:
+        代入は $O(n^2)$ でメモリ帯域律速に近く,また前進代入初期・
+        後退代入末期の短い内積では水平還元・端数処理の固定費が相対的に
+        大きいためである。次元が大きいほど高速化率は改善する傾向にある。
+  \item \textbf{NEONとSVE2がほぼ同等}なのは,本評価環境のSVEベクトル長が
+        128 bitでNEONとレーン数が同じためである。
+  \item LU分解の高速化率は次元256--1024でほぼ一定であり,
+        更新カーネル律速であることと整合する。
+\end{itemize}
+
+\section{まとめ}
+
+BNCmatmulの全6実数精度のLU分解および前進・後退代入に
+分岐なしFMA+SIMDパスを実装した。\texttt{BNC\_USE\_NEW\_FMA} 定義時に,
+LU分解で最大約14倍(QS/NEON),倍精度系でも$1.4$--$2.8$倍,
+前進・後退代入で最大約11倍(QS/SVE2)の高速化を,数値精度のオーダーを維持
+したまま達成した(良条件・ピボット付き乱数行列では従来比で改善,
+Hilbert・Frank行列の悪条件事例でも誤差は $\kappa_\infty\, u$ に比例する
+古典的挙動を保ち,精度破綻次元は従来版とほぼ一致)。前進代入は列方向AXPY型から
+行方向内積型に再構成することでSIMD化を可能にした。未実装だったDS精度の
+LU分解・求解一式も新規追加した。デフォルトビルドはビット単位で従来と
+同一である。
+
+今後の課題として,(1) x86実機(AVX2/AVX-512)での実行性能評価
+(本レポートではクロスコンパイルによる全構成コンパイル検証まで),
+(2) ブロックLU(Strassen型・OpenMP並列版)内部の
+\texttt{LUdecomp\_square} 等への同様の適用,(3) 複素数精度
+(CDD/CTD/CQD/CDS/CTS/CQS)への展開,が挙げられる。
+
+\begin{thebibliography}{9}
+\bibitem{fma-paper}
+T.~Kouya:
+``Performance evaluation of branch-free fused multiply-add algorithms
+for multi-component-type multiple-precision floating-point arithmetic'',
+arXiv:2607.11391v1, 2026.
+\bibitem{bncmatmul}
+BNCmatmul version 0.24, \url{https://na-inet.jp/na/bnc/}.
+\end{thebibliography}
+
+\end{document}

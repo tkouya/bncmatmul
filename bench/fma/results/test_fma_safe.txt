@@ -1,0 +1,9 @@
+[1] DW-FMA on unnormalized operands (100000 trials per family)
+    overlapping c (|c1| ~ |c0|)           std 46666.3850  safe 46666.3850  [eps(dd)*(|xy|+|c|)]
+    cancellation  c ~ -x*y, c1 overlaps   std   112.8127  safe   112.8127  [eps(dd)*(|xy|+|c|)]
+    cancellation + perturbed low limb     std  1242.0520  safe  1242.0520  [eps(dd)*(|xy|+|c|)]
+
+[2] FMA-driven division vs classic (MPFR 512-bit reference)
+dd div   classic: max    0.476 eps     6.5 ns | fma_div: max    0.379 eps     5.4 ns | speedup 1.22x
+td div   classic: max    0.053 eps    99.0 ns | fma_div: max    0.132 eps    35.3 ns | speedup 2.81x
+qd div   classic: max    0.189 eps   210.2 ns | fma_div: max    0.086 eps    95.5 ns | speedup 2.20x

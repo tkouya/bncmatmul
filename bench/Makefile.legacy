@@ -1,0 +1,1628 @@
+#---------------------------------------
+# Makefile for Benchmark programs
+# Copyright (c) 2023-2026 Tomonori Kouya
+#---------------------------------------
+
+# include bncmatmul.inc
+#include ../icc.inc
+#include ../gcc.inc
+include ../bncmatmul.inc
+
+#CBLAS_INC = -I/opt/intel/oneapi/mkl/latest/include -DUSE_IMKL
+#CBLAS_LIB = -L/opt/intel/oneapi/mkl/latest/lib/intel64 -lmkl_intel_lp64 -lmkl_sequential -lmkl_core 
+# completely compile
+all: \
+	lu_bench lu_bench_dd lu_bench_td lu_bench_qd \
+	clu_bench clu_bench_dd clu_bench_td clu_bench_qd \
+	lu_bench_omp lu_bench_dd_omp lu_bench_td_omp lu_bench_qd_omp \
+	clu_bench_omp clu_bench_dd_omp clu_bench_td_omp clu_bench_qd_omp \
+	matmul_bench_dd \
+	matmul_bench_qd \
+	matmul_bench_td \
+	matmulbench_cdd \
+	matmulbench_ctd \
+	matmulbench_cqd 
+
+avx2: \
+	matmul_bench_dd_avx2 \
+	matmul_bench_qd_avx2 \
+	matmul_bench_td_avx2 \
+	matmulbench_cdd_avx2 \
+	matmulbench_ctd_avx2 \
+	matmulbench_cqd_avx2 
+
+avx512: \
+	matmul_bench_dd_avx512 \
+	matmul_bench_qd_avx512 \
+	matmul_bench_td_avx512 \
+	matmulbench_cdd_avx512 \
+	matmulbench_ctd_avx512 \
+	matmulbench_cqd_avx512 
+
+neon: \
+	matmul_bench_dd_neon \
+	matmul_bench_qd_neon \
+	matmul_bench_td_neon \
+	matmulbench_cdd_neon matmulbench_cdd_strassen_neon \
+	matmulbench_ctd_neon matmulbench_ctd_strassen_neon \
+	matmulbench_cqd_neon matmulbench_cqd_strassen_neon \
+	lu_bench_dd_neon clu_bench_dd_neon \
+	lu_bench_td_neon clu_bench_td_neon \
+	lu_bench_qd_neon clu_bench_qd_neon
+
+# Double Precision
+strassen_general: matmul_strassen.h matmul_strassen_general.c
+#	$(CC) -DDEBUG $(INC) matmul_strassen_general.c  $(COMMON_LIB) -o strassen_general
+#	$(CC) -DDEBUG -DUSE_WINOGRAD $(INC) matmul_strassen_general.c $(COMMON_LIB) -o strassen_general_winograd
+	$(CC) -c $(INC) dlinear.c -o dlinear.o
+	$(CC) -DDEBUG $(INC) matmul_strassen_general.c dlinear.o mpfr_dtq_sd.c  $(COMMON_LIB) -o strassen_general
+	$(CC) -DDEBUG -DDUSE_WINOGRAD $(INC) matmul_strassen_general.c dlinear.o mpfr_dtq_sd.c  $(COMMON_LIB) -o strassen_general_winograd
+
+strassen_general_avx2: matmul_strassen.h matmul_strassen_general.c
+	$(CC_AVX2) -c $(INC) dlinear.c -o dlinear_avx2.o
+	$(CC_AVX2) -DDEBUG $(INC) matmul_strassen_general.c dlinear_avx2.o mpfr_dtq_sd.c  $(COMMON_LIB) -o strassen_general_avx2
+	$(CC_AVX2) -DDEBUG -DDUSE_WINOGRAD $(INC) matmul_strassen_general.c dlinear_avx2.o mpfr_dtq_sd.c  $(COMMON_LIB) -o strassen_general_winograd_avx2
+
+#strassen_general_omp: matmul_strassen.h matmul_strassen_general_omp.c $(BNCMATMUL_LIBNAME_OMP)
+#	$(CC) -DDEBUG $(OPENMP) $(INC) matmul_strassen_general_omp.c $(LIB_OMP) -o strassen_general_omp
+#	$(CC) -DDEBUG $(OPENMP) -DUSE_WINOGRAD $(INC) matmul_strassen_general_omp.c $(LIB_OMP) -o strassen_general_winograd_omp
+
+# MPFR
+strassen_general_mpf: matmul_strassen.h matmul_strassen_general_mpf.c mpflinear.c 
+	$(CC) -DDEBUG $(INC) matmul_strassen_general_mpf.c  $(BNCMATMUL_LIB) $(COMMON_LIB) -o strassen_general_mpf
+	$(CC) -DDEBUG -DUSE_WINOGRAD $(INC) matmul_strassen_general_mpf.c  $(BNCMATMUL_LIB) $(COMMON_LIB) -o strassen_general_winograd_mpf
+
+strassen_general_mpf_omp: matmul_strassen.h matmul_strassen_general_mpf_omp.c mpflinear.c  $(BNCMATMUL_LIBNAME_OMP)
+	$(CC) -DUSE_DDLINEAR $(INC) -c mpflinear.c -o mpflinear.o
+	$(CC) -DDEBUG $(OPENMP) $(INC) matmul_strassen_general_mpf_omp.c  mpflinear.o $(BNCMATMUL_LIB_OMP) $(LIB_OMP) $(BNCMATMUL_LIB) $(COMMOM_LIB) -o strassen_general_mpf_omp	
+	$(CC) -DDEBUG $(OPENMP) -DUSE_WINOGRAD $(INC) matmul_strassen_general_mpf_omp.c  mpflinear.o $(BNCMATMUL_LIB_OMP) $(LIB_OMP) $(BNCMATMUL_LIB) $(COMMON_LIB) -o strassen_general_winograd_mpf_omp
+
+# Double-double
+strassen_general_dd: matmul_strassen.h matmul_strassen_general_dd.c ddlinear.h ddlu.c mpfr_dtq_sd.c  ddlinear.h ddlinear.c mpflinear.h mpflinear.c
+	$(CC) -DUSE_DDLINEAR $(INC) -c ddlinear.c -o ddlinear.o
+	$(CC) -DUSE_DDLINEAR $(INC) -c mpflinear.c -o mpflinear.o
+	$(CC) -c  -o get_sec.o
+	$(CC) -DUSE_DDLINEAR $(INC) -c mpfr_dtq_sd.c -o mpfr_dtq_sd.o
+	$(CC) -DUSE_DDLINEAR $(INC) -c ddlu.c -o ddlu.o
+	$(CC) -DUSE_DDLINEAR $(INC) -c gtestmat.c -o gtestmat.o
+	$(CC) -DUSE_DDLINEAR $(INC) -c gtestmat_dd.c -o gtestmat_dd.o
+	$(CC) -DUSE_DDLINEAR -DDEBUG $(INC) matmul_strassen_general_dd.c ddlinear.o get_sec.o gtestmat_dd.o ddlu.o mpfr_dtq_sd.o mpflinear.o $(COMMON_LIB) -o strassen_general_dd
+	$(CC) -DUSE_DDLINEAR -DDEBUG -DUSE_WINOGRAD $(INC) matmul_strassen_general_dd.c ddlinear.o get_sec.o gtestmat_dd.o ddlu.o mpfr_dtq_sd.o mpflinear.o $(COMMON_LIB) -o strassen_general_winograd_dd
+
+strassen_general_dd_avx2: matmul_strassen.h matmul_strassen_general_dd.c ddlinear.h ddlu.c mpfr_dtq_sd.c  ddlinear.h ddlinear.c mpflinear.h mpflinear.c
+	$(CC_AVX2) -DUSE_DDLINEAR $(INC) -c ddlinear.c -o ddlinear_avx2.o
+	$(CC_AVX2) -DUSE_DDLINEAR -DDEBUG $(INC) matmul_strassen_general_dd.c ddlinear_avx2.o get_sec.o gtestmat_dd.o ddlu.o mpfr_dtq_sd.o mpflinear.o $(COMMON_LIB) -o strassen_general_dd_avx2
+	$(CC_AVX2) -DUSE_DDLINEAR -DDEBUG -DUSE_WINOGRAD $(INC) matmul_strassen_general_dd.c ddlinear_avx2.o get_sec.o gtestmat_dd.o ddlu.o mpfr_dtq_sd.o mpflinear.o $(COMMON_LIB) -o strassen_general_winograd_dd_avx2
+
+strassen_general_dd_omp: matmul_strassen.h matmul_strassen_general_dd_omp.c matmul_strassen_general_dd_omp.c ddlinear.h ddlu.c bncomp.h bncomp_linear.c mpfr_dtq_sd.c  ddlinear.h ddlinear.c
+	$(CC) -DUSE_DDLINEAR $(INC) -c ddlinear.c -o ddlinear.o
+	$(CC) $(OPENMP) -DUSE_DDLINEAR $(INC) -c bncomp_linear.c -o bncomp_linear.o
+	$(CC) -DUSE_DDLINEAR $(INC) -c matmul_strassen_general_dd.c -o matmul_strassen_general_dd.o
+	$(CC) -c  -o get_sec.o
+	$(CC) -DUSE_DDLINEAR $(INC) -c mpfr_dtq_sd.c -o mpfr_dtq_sd.o
+	$(CC) -DUSE_DDLINEAR $(INC) -c ddlu.c -o ddlu.o
+	$(CC) -DUSE_DDLINEAR $(INC) -c gtestmat_dd.c -o gtestmat_dd.o
+	$(CC) $(OPENMP) -DUSE_DDLINEAR -DDEBUG $(INC) matmul_strassen_general_dd_omp.c matmul_strassen_general_dd.o bncomp_linear.o ddlinear.o get_sec.o gtestmat_dd.o ddlu.o mpfr_dtq_sd.o $(COMMON_LIB) -o strassen_general_dd_omp
+	$(CC) $(OPENMP) -DUSE_DDLINEAR -DDEBUG -DUSE_WINOGRAD $(INC) matmul_strassen_general_dd_omp.c matmul_strassen_general_dd.o bncomp_linear.o ddlinear.o get_sec.o gtestmat_dd.o ddlu.o mpfr_dtq_sd.o $(COMMON_LIB) -o strassen_general_winograd_dd_omp
+
+strassen_general_dd_omp_avx2: matmul_strassen.h matmul_strassen_general_dd_omp.c matmul_strassen_general_dd_omp.c ddlinear.h ddlu.c bncomp.h bncomp_linear.c mpfr_dtq_sd.c  ddlinear.h ddlinear.c
+	$(CC_AVX2) -DUSE_DDLINEAR $(INC) -c ddlinear.c -o ddlinear_avx2.o
+	$(CC_AVX2) $(OPENMP) -DUSE_DDLINEAR $(INC) -c bncomp_linear.c -o bncomp_linear_avx2.o
+	$(CC_AVX2) -DUSE_DDLINEAR $(INC) -c matmul_strassen_general_dd.c -o matmul_strassen_general_dd_avx2.o
+	$(CC_AVX2) $(OPENMP) -DUSE_DDLINEAR -DDEBUG $(INC) matmul_strassen_general_dd_omp.c matmul_strassen_general_dd_avx2.o bncomp_linear_avx2.o ddlinear_avx2.o get_sec.o gtestmat_dd.o ddlu.o mpfr_dtq_sd.o $(COMMON_LIB) -o strassen_general_dd_omp_avx2
+	$(CC_AVX2) $(OPENMP) -DUSE_DDLINEAR -DDEBUG -DUSE_WINOGRAD $(INC) matmul_strassen_general_dd_omp.c matmul_strassen_general_dd_avx2.o bncomp_linear_avx2.o ddlinear_avx2.o get_sec.o gtestmat_dd.o ddlu.o mpfr_dtq_sd.o $(COMMON_LIB) -o strassen_general_winograd_dd_omp_avx2
+
+# Triple-double
+strassen_general_td: matmul_strassen.h matmul_strassen_general_td.c tdlinear.h tdlu.c gtestmat_td.c mpfr_dtq_sd.c  tdlinear.h tdlinear.c
+	$(CC) -DUSE_DDLINEAR -DUSE_TDLINEAR $(INC) -c tdlinear.c -o tdlinear.o
+	$(CC) -c  -o get_sec.o
+	$(CC) -DUSE_DDLINEAR $(INC) -c mpfr_dtq_sd.c -o mpfr_dtq_sd.o
+	#$(CC) -DUSE_DDLINEAR $(INC) -c tdlu.c -o tdlu.o
+	$(CC) -DUSE_DDLINEAR -DUSE_TDLINEAR $(INC) -c gtestmat_td.c -o gtestmat_td.o
+	$(CC) -DUSE_DDLINEAR -DUSE_TDLINEAR -DDEBUG $(INC) matmul_strassen_general_td.c gtestmat_td.o tdlinear.o get_sec.o mpfr_dtq_sd.o $(COMMON_LIB) -o strassen_general_td
+	$(CC) -DUSE_DDLINEAR -DUSE_TDLINEAR -DDEBUG -DUSE_WINOGRAD $(INC) matmul_strassen_general_td.c gtestmat_td.o tdlinear.o get_sec.o mpfr_dtq_sd.o $(COMMON_LIB) -o strassen_general_winograd_td
+
+strassen_general_td_avx2: matmul_strassen.h matmul_strassen_general_td.c tdlinear.h tdlu.c gtestmat_td.c mpfr_dtq_sd.c  tdlinear.h tdlinear.c
+	$(CC_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR $(INC) -c tdlinear.c -o tdlinear_avx2.o
+	$(CC_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DDEBUG $(INC) matmul_strassen_general_td.c gtestmat_td.o tdlinear_avx2.o get_sec.o mpfr_dtq_sd.o $(COMMON_LIB) -o strassen_general_td_avx2
+	$(CC_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DDEBUG -DUSE_WINOGRAD $(INC) matmul_strassen_general_td.c gtestmat_td.o tdlinear_avx2.o get_sec.o mpfr_dtq_sd.o $(COMMON_LIB) -o strassen_general_winograd_td_avx2
+
+strassen_general_td_omp: matmul_strassen.h matmul_strassen_general_td_omp.c tdlinear.h tdlu.c gtestmat_td.c mpfr_dtq_sd.c  tdlinear.h tdlinear.c
+	$(CC) -DUSE_DDLINEAR -DUSE_TDLINEAR $(INC) -c tdlinear.c -o tdlinear.o
+	$(CC) $(OPENMP) -DUSE_DDLINEAR -DUSE_TDLINEAR $(INC) -c bncomp_linear.c -o bncomp_linear.o
+	$(CC) -DUSE_DDLINEAR -DUSE_TDLINEAR $(INC) -c matmul_strassen_general_td.c -o matmul_strassen_general_td.o
+	$(CC) -c  -o get_sec.o
+	$(CC) -DUSE_DDLINEAR $(INC) -c mpfr_dtq_sd.c -o mpfr_dtq_sd.o
+#	$(CC) -DUSE_DDLINEAR $(INC) -c tdlu.c -o tdlu.o
+	$(CC) -DUSE_DDLINEAR -DUSE_TDLINEAR $(INC) -c gtestmat_td.c -o gtestmat_td.o
+	$(CC) $(OPENMP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DDEBUG $(INC) matmul_strassen_general_td_omp.c matmul_strassen_general_td.o bncomp_linear.o gtestmat_td.o tdlinear.o get_sec.o mpfr_dtq_sd.o $(COMMON_LIB) -o strassen_general_td_omp
+	$(CC) $(OPENMP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DDEBUG -DUSE_WINOGRAD $(INC) matmul_strassen_general_td_omp.c matmul_strassen_general_td.o bncomp_linear.o gtestmat_td.o tdlinear.o get_sec.o mpfr_dtq_sd.o $(COMMON_LIB) -o strassen_general_winograd_td_omp
+
+strassen_general_td_omp_avx2: matmul_strassen.h matmul_strassen_general_td_omp.c tdlinear.h tdlu.c gtestmat_td.c mpfr_dtq_sd.c  tdlinear.h tdlinear.c
+	$(CC_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR $(INC) -c tdlinear.c -o tdlinear_avx2.o
+	$(CC_AVX2) $(OPENMP) -DUSE_DDLINEAR -DUSE_TDLINEAR $(INC) -c bncomp_linear.c -o bncomp_linear_avx2.o
+	$(CC_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR $(INC) -c matmul_strassen_general_td.c -o matmul_strassen_general_td_avx2.o
+	$(CC_AVX2) $(OPENMP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DDEBUG $(INC) matmul_strassen_general_td_omp.c matmul_strassen_general_td_avx2.o bncomp_linear_avx2.o gtestmat_td.o tdlinear_avx2.o get_sec.o mpfr_dtq_sd.o $(COMMON_LIB) -o strassen_general_td_omp_avx2
+	$(CC_AVX2) $(OPENMP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DDEBUG -DUSE_WINOGRAD $(INC) matmul_strassen_general_td_omp.c matmul_strassen_general_td_avx2.o bncomp_linear_avx2.o gtestmat_td.o tdlinear_avx2.o get_sec.o mpfr_dtq_sd.o $(COMMON_LIB) -o strassen_general_winograd_td_omp_avx2
+
+
+# Quad-double
+strassen_general_qd: matmul_strassen.h matmul_strassen_general_qd.c mpfr_dtq_sd.c  qdlinear.h qdlinear.c
+	$(CC) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c qdlinear.c -o qdlinear.o
+	$(CC) -c  -o get_sec.o
+	$(CC) -DUSE_DDLINEAR $(INC) -c mpfr_dtq_sd.c -o mpfr_dtq_sd.o
+#	$(CC) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c qdlu.c -o qdlu.o
+	$(CC) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c gtestmat_qd.c -o gtestmat_qd.o	
+	$(CC) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DDEBUG $(INC) matmul_strassen_general_qd.c gtestmat_qd.o qdlinear.o get_sec.o mpfr_dtq_sd.o $(COMMON_LIB) -o strassen_general_qd
+	$(CC) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DDEBUG -DUSE_WINOGRAD $(INC) matmul_strassen_general_qd.c gtestmat_qd.o qdlinear.o get_sec.o mpfr_dtq_sd.o $(COMMON_LIB) -o strassen_general_winograd_qd
+
+strassen_general_qd_avx2: matmul_strassen.h matmul_strassen_general_qd.c mpfr_dtq_sd.c  qdlinear.h qdlinear.c
+	$(CC_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c qdlinear.c -o qdlinear_avx2.o
+	$(CC_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DDEBUG $(INC) matmul_strassen_general_qd.c gtestmat_qd.o qdlinear_avx2.o get_sec.o mpfr_dtq_sd.o $(COMMON_LIB) -o strassen_general_qd_avx2
+	$(CC_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DDEBUG -DUSE_WINOGRAD $(INC) matmul_strassen_general_qd.c gtestmat_qd.o qdlinear_avx2.o get_sec.o mpfr_dtq_sd.o $(COMMON_LIB) -o strassen_general_winograd_qd_avx2
+
+strassen_general_qd_omp: matmul_strassen.h matmul_strassen_general_qd_omp.c mpfr_dtq_sd.c  qdlinear.h qdlinear.c
+	$(CC) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c qdlinear.c -o qdlinear.o
+	$(CC) $(OPENMP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c bncomp_linear.c -o bncomp_linear.o
+	$(CC) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c matmul_strassen_general_qd.c -o matmul_strassen_general_qd.o
+	$(CC) -c  -o get_sec.o
+	$(CC) -DUSE_DDLINEAR $(INC) -c mpfr_dtq_sd.c -o mpfr_dtq_sd.o
+#	$(CC) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c qdlu.c -o qdlu.o
+	$(CC) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c gtestmat_qd.c -o gtestmat_qd.o	
+	$(CC) $(OPENMP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DDEBUG $(INC) matmul_strassen_general_qd_omp.c matmul_strassen_general_qd.o gtestmat_qd.o bncomp_linear.o qdlinear.o get_sec.o mpfr_dtq_sd.o $(COMMON_LIB) -o strassen_general_qd_omp
+	$(CC) $(OPENMP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DDEBUG -DUSE_WINOGRAD $(INC) matmul_strassen_general_qd_omp.c matmul_strassen_general_qd.o gtestmat_qd.o bncomp_linear.o qdlinear.o get_sec.o mpfr_dtq_sd.o $(COMMON_LIB) -o strassen_general_winograd_qd_omp
+
+strassen_general_qd_omp_avx2: matmul_strassen.h matmul_strassen_general_qd_omp.c mpfr_dtq_sd.c  qdlinear.h qdlinear.c
+	$(CC_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c qdlinear.c -o qdlinear_avx2.o
+	$(CC_AVX2) $(OPENMP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c bncomp_linear.c -o bncomp_linear_avx2.o
+	$(CC_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c matmul_strassen_general_qd.c -o matmul_strassen_general_qd_avx2.o
+	$(CC_AVX2) $(OPENMP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DDEBUG $(INC) matmul_strassen_general_qd_omp.c matmul_strassen_general_qd_avx2.o gtestmat_qd.o bncomp_linear_avx2.o qdlinear_avx2.o get_sec.o mpfr_dtq_sd.o $(COMMON_LIB) -o strassen_general_qd_omp_avx2
+	$(CC_AVX2) $(OPENMP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DDEBUG -DUSE_WINOGRAD $(INC) matmul_strassen_general_qd_omp.c matmul_strassen_general_qd_avx2.o gtestmat_qd.o bncomp_linear_avx2.o qdlinear_avx2.o get_sec.o $(COMMON_LIB) -o strassen_general_winograd_qd_omp_avx2
+
+# --------------------------
+# lu_bench
+# --------------------------
+#lu_bench: ../include/matmul_strassen.h lu_bench.c
+lu_bench: ../include/matmul_strassen.h lu_bench.c
+	$(CC) $(INC) -DUSE_BLOCK lu_bench.c $(LIB) -o lu_bench_block
+	$(CC) $(INC) -DUSE_BLOCK -DUSE_SCALING lu_bench.c $(LIB) -o lu_bench_block_scale
+	$(CC) $(INC) -DUSE_STRASSEN lu_bench.c $(LIB) -o lu_bench
+	$(CC) $(INC) -DUSE_STRASSEN -DUSE_SCALING lu_bench.c $(LIB) -o lu_bench_scale
+#	$(CC) $(INC) -DUSE_WINOGRAD lu_bench.c $(LIB) -o lu_bench_winograd
+#	$(CC) $(INC) -DUSE_WINOGRAD -DUSE_SCALING lu_bench.c $(LIB) -o lu_bench_winograd_scale
+	$(CC) $(INC) -DUSE_LOTKIN -DUSE_BLOCK lu_bench.c $(LIB) -o lu_bench_block_lotkin
+	$(CC) $(INC) -DUSE_LOTKIN -DUSE_BLOCK -DUSE_SCALING lu_bench.c $(LIB) -o lu_bench_block_scale_lotkin
+	$(CC) $(INC) -DUSE_LOTKIN -DUSE_STRASSEN lu_bench.c $(LIB) -o lu_bench_lotkin
+	$(CC) $(INC) -DUSE_LOTKIN -DUSE_STRASSEN -DUSE_SCALING lu_bench.c $(LIB) -o lu_bench_scale_lotkin
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=8 lu_bench.c $(LIB) -o lu_bench_oz_mnd8
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=9 lu_bench.c $(LIB) -o lu_bench_oz_mnd9
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=10 lu_bench.c $(LIB) -o lu_bench_oz_mnd10
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=11 lu_bench.c $(LIB) -o lu_bench_oz_mnd11
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=12 lu_bench.c $(LIB) -o lu_bench_oz_mnd12
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=13 lu_bench.c $(LIB) -o lu_bench_oz_mnd13
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=14 lu_bench.c $(LIB) -o lu_bench_oz_mnd14
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=15 lu_bench.c $(LIB) -o lu_bench_oz_mnd15
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=16 lu_bench.c $(LIB) -o lu_bench_oz_mnd16
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=17 lu_bench.c $(LIB) -o lu_bench_oz_mnd17
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=18 lu_bench.c $(LIB) -o lu_bench_oz_mnd18
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=19 lu_bench.c $(LIB) -o lu_bench_oz_mnd19
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=20 lu_bench.c $(LIB) -o lu_bench_oz_mnd20
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=21 lu_bench.c $(LIB) -o lu_bench_oz_mnd21
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=22 lu_bench.c $(LIB) -o lu_bench_oz_mnd22
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=23 lu_bench.c $(LIB) -o lu_bench_oz_mnd23
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=24 lu_bench.c $(LIB) -o lu_bench_oz_mnd24
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=25 lu_bench.c $(LIB) -o lu_bench_oz_mnd25
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=26 lu_bench.c $(LIB) -o lu_bench_oz_mnd26
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=27 lu_bench.c $(LIB) -o lu_bench_oz_mnd27
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=28 lu_bench.c $(LIB) -o lu_bench_oz_mnd28
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=29 lu_bench.c $(LIB) -o lu_bench_oz_mnd29
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=30 lu_bench.c $(LIB) -o lu_bench_oz_mnd30
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=31 lu_bench.c $(LIB) -o lu_bench_oz_mnd31
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=32 lu_bench.c $(LIB) -o lu_bench_oz_mnd32
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=33 lu_bench.c $(LIB) -o lu_bench_oz_mnd33
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=34 lu_bench.c $(LIB) -o lu_bench_oz_mnd34
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=35 lu_bench.c $(LIB) -o lu_bench_oz_mnd35
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=36 lu_bench.c $(LIB) -o lu_bench_oz_mnd36
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=37 lu_bench.c $(LIB) -o lu_bench_oz_mnd37
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=38 lu_bench.c $(LIB) -o lu_bench_oz_mnd38
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=39 lu_bench.c $(LIB) -o lu_bench_oz_mnd39
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=40 lu_bench.c $(LIB) -o lu_bench_oz_mnd40
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=50 lu_bench.c $(LIB) -o lu_bench_oz_mnd50
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=64 lu_bench.c $(LIB) -o lu_bench_oz_mnd64
+#
+#	$(CC) $(INC) -DUSE_LOTKIN -DUSE_WINOGRAD lu_bench.c $(LIB) -o lu_bench_winograd_lotkin
+#	$(CC) $(INC) -DUSE_LOTKIN -DUSE_WINOGRAD -DUSE_SCALING lu_bench.c $(LIB) -o lu_bench_winograd_scale_lotkin
+	$(CC) $(INC) -DUSE_IM_RAND -DUSE_BLOCK lu_bench.c $(LIB) -o lu_bench_block_im_rand
+	$(CC) $(INC) -DUSE_IM_RAND -DUSE_BLOCK -DUSE_SCALING lu_bench.c $(LIB) -o lu_bench_block_scale_im_rand
+	$(CC) $(INC) -DUSE_IM_RAND -DUSE_STRASSEN lu_bench.c $(LIB) -o lu_bench_im_rand
+	$(CC) $(INC) -DUSE_IM_RAND -DUSE_STRASSEN -DUSE_SCALING lu_bench.c $(LIB) -o lu_bench_scale_im_rand
+#	$(CC) $(INC) -DUSE_IM_RAND -DUSE_WINOGRAD lu_bench.c $(LIB) -o lu_bench_winograd_im_rand
+#	$(CC) $(INC) -DUSE_IM_RAND -DUSE_WINOGRAD -DUSE_SCALING lu_bench.c $(LIB) -o lu_bench_winograd_scale_im_rand
+
+lu_bench_neon: ../include/matmul_strassen.h lu_bench.c
+	$(CC) $(INC) -DUSE_BLOCK lu_bench.c $(LIB) -o lu_bench_block_neon
+	$(CC) $(INC) -DUSE_STRASSEN lu_bench.c $(LIB) -o lu_bench_neon
+	$(CC) $(INC) -DUSE_LOTKIN -DUSE_BLOCK lu_bench.c $(LIB) -o lu_bench_block_lotkin_neon
+	$(CC) $(INC) -DUSE_LOTKIN -DUSE_STRASSEN lu_bench.c $(LIB) -o lu_bench_lotkin_neon
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=8 lu_bench.c $(LIB) -o lu_bench_oz_mnd8_neon
+
+#lu_bench_omp: ../include/matmul_strassen.h lu_bench.c
+lu_bench_omp: ../include/matmul_strassen.h lu_bench.c
+	$(CC) $(OPENMP) $(INC) -DUSE_BLOCK lu_bench.c $(OPENMP_LIB) $(LIB_OMP) -o lu_bench_block_omp
+	$(CC) $(OPENMP) $(INC) -DUSE_STRASSEN lu_bench.c $(OPENMP_LIB) $(LIB_OMP) -o lu_bench_omp
+#	$(CC) $(OPENMP) $(INC) -DUSE_WINOGRAD lu_bench.c $(OPENMP_LIB) $(LIB_OMP) -o lu_bench_winograd_omp
+	$(CC) $(OPENMP) $(INC) -DUSE_LOTKIN -DUSE_BLOCK lu_bench.c $(OPENMP_LIB) $(LIB_OMP) -o lu_bench_block_lotkin_omp
+	$(CC) $(OPENMP) $(INC) -DUSE_LOTKIN -DUSE_STRASSEN lu_bench.c $(OPENMP_LIB) $(LIB_OMP) -o lu_bench_lotkin_omp
+#	$(CC) $(OPENMP) $(INC) -DUSE_LOTKIN -DUSE_WINOGRAD lu_bench.c $(OPENMP_LIB) $(LIB_OMP) -o lu_bench_winograd_lotkin_omp
+	$(CC) $(OPENMP) $(INC) -DUSE_IM_RAND -DUSE_BLOCK lu_bench.c $(OPENMP_LIB) $(LIB_OMP) -o lu_bench_block_im_rand_omp
+	$(CC) $(OPENMP) $(INC) -DUSE_IM_RAND -DUSE_STRASSEN lu_bench.c $(OPENMP_LIB) $(LIB_OMP) -o lu_bench_im_rand_omp
+#	$(CC) $(OPENMP) $(INC) -DUSE_IM_RAND -DUSE_WINOGRAD lu_bench.c $(OPENMP_LIB) $(LIB_OMP) -o lu_bench_winograd_im_rand_omp
+
+clu_bench: ../include/matmul_strassen.h clu_bench.c
+	$(CC) $(INC) -DUSE_BLOCK clu_bench.c $(LIB) -o clu_bench_block
+	$(CC) $(INC) -DUSE_STRASSEN clu_bench.c $(LIB) -o clu_bench
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=5 clu_bench.c $(LIB) -o clu_bench_oz_mnd5
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=6 clu_bench.c $(LIB) -o clu_bench_oz_mnd6
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=7 clu_bench.c $(LIB) -o clu_bench_oz_mnd7
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=8 clu_bench.c $(LIB) -o clu_bench_oz_mnd8
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=9 clu_bench.c $(LIB) -o clu_bench_oz_mnd9
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=10 clu_bench.c $(LIB) -o clu_bench_oz_mnd10
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=11 clu_bench.c $(LIB) -o clu_bench_oz_mnd11
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=12 clu_bench.c $(LIB) -o clu_bench_oz_mnd12
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=13 clu_bench.c $(LIB) -o clu_bench_oz_mnd13
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=14 clu_bench.c $(LIB) -o clu_bench_oz_mnd14
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=15 clu_bench.c $(LIB) -o clu_bench_oz_mnd15
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=16 clu_bench.c $(LIB) -o clu_bench_oz_mnd16
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=17 clu_bench.c $(LIB) -o clu_bench_oz_mnd17
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=18 clu_bench.c $(LIB) -o clu_bench_oz_mnd18
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=19 clu_bench.c $(LIB) -o clu_bench_oz_mnd19
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=20 clu_bench.c $(LIB) -o clu_bench_oz_mnd20
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=21 clu_bench.c $(LIB) -o clu_bench_oz_mnd21
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=22 clu_bench.c $(LIB) -o clu_bench_oz_mnd22
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=23 clu_bench.c $(LIB) -o clu_bench_oz_mnd23
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=24 clu_bench.c $(LIB) -o clu_bench_oz_mnd24
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=25 clu_bench.c $(LIB) -o clu_bench_oz_mnd25
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=26 clu_bench.c $(LIB) -o clu_bench_oz_mnd26
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=27 clu_bench.c $(LIB) -o clu_bench_oz_mnd27
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=28 clu_bench.c $(LIB) -o clu_bench_oz_mnd28
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=29 clu_bench.c $(LIB) -o clu_bench_oz_mnd29
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=30 clu_bench.c $(LIB) -o clu_bench_oz_mnd30
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=31 clu_bench.c $(LIB) -o clu_bench_oz_mnd31
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=32 clu_bench.c $(LIB) -o clu_bench_oz_mnd32
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=33 clu_bench.c $(LIB) -o clu_bench_oz_mnd33
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=34 clu_bench.c $(LIB) -o clu_bench_oz_mnd34
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=35 clu_bench.c $(LIB) -o clu_bench_oz_mnd35
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=36 clu_bench.c $(LIB) -o clu_bench_oz_mnd36
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=37 clu_bench.c $(LIB) -o clu_bench_oz_mnd37
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=38 clu_bench.c $(LIB) -o clu_bench_oz_mnd38
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=39 clu_bench.c $(LIB) -o clu_bench_oz_mnd39
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=40 clu_bench.c $(LIB) -o clu_bench_oz_mnd40
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=50 clu_bench.c $(LIB) -o clu_bench_oz_mnd50
+	$(CC) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=64 clu_bench.c $(LIB) -o clu_bench_oz_mnd64
+
+clu_bench_omp: ../include/matmul_strassen.h clu_bench.c
+	$(CC) $(OPENMP) $(INC) -DUSE_BLOCK clu_bench.c $(LIB_OMP) -o clu_bench_block_omp
+	$(CC) $(OPENMP) $(INC) -DUSE_STRASSEN clu_bench.c $(LIB_OMP) -o clu_bench_omp
+	$(CC) $(OPENMP) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=5 clu_bench.c $(LIB_OMP) -o clu_bench_oz_mnd5_omp
+
+clu_bench_omp_avx2: ../include/matmul_strassen.h clu_bench.c
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_BLOCK clu_bench.c $(LIB_OMP_AVX2) -o clu_bench_block_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_STRASSEN clu_bench.c $(LIB_OMP_AVX2) -o clu_bench_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=5 clu_bench.c $(LIB_OMP_AVX2) -o clu_bench_oz_mnd5_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=6 clu_bench.c $(LIB_OMP_AVX2) -o clu_bench_oz_mnd6_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=7 clu_bench.c $(LIB_OMP_AVX2) -o clu_bench_oz_mnd7_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=8 clu_bench.c $(LIB_OMP_AVX2) -o clu_bench_oz_mnd8_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=9 clu_bench.c $(LIB_OMP_AVX2) -o clu_bench_oz_mnd9_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=10 clu_bench.c $(LIB_OMP_AVX2) -o clu_bench_oz_mnd10_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=11 clu_bench.c $(LIB_OMP_AVX2) -o clu_bench_oz_mnd11_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=12 clu_bench.c $(LIB_OMP_AVX2) -o clu_bench_oz_mnd12_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=13 clu_bench.c $(LIB_OMP_AVX2) -o clu_bench_oz_mnd13_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=14 clu_bench.c $(LIB_OMP_AVX2) -o clu_bench_oz_mnd14_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=15 clu_bench.c $(LIB_OMP_AVX2) -o clu_bench_oz_mnd15_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=16 clu_bench.c $(LIB_OMP_AVX2) -o clu_bench_oz_mnd16_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=17 clu_bench.c $(LIB_OMP_AVX2) -o clu_bench_oz_mnd17_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=18 clu_bench.c $(LIB_OMP_AVX2) -o clu_bench_oz_mnd18_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=19 clu_bench.c $(LIB_OMP_AVX2) -o clu_bench_oz_mnd19_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=20 clu_bench.c $(LIB_OMP_AVX2) -o clu_bench_oz_mnd20_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=21 clu_bench.c $(LIB_OMP_AVX2) -o clu_bench_oz_mnd21_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=22 clu_bench.c $(LIB_OMP_AVX2) -o clu_bench_oz_mnd22_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=23 clu_bench.c $(LIB_OMP_AVX2) -o clu_bench_oz_mnd23_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=24 clu_bench.c $(LIB_OMP_AVX2) -o clu_bench_oz_mnd24_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=25 clu_bench.c $(LIB_OMP_AVX2) -o clu_bench_oz_mnd25_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=26 clu_bench.c $(LIB_OMP_AVX2) -o clu_bench_oz_mnd26_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=27 clu_bench.c $(LIB_OMP_AVX2) -o clu_bench_oz_mnd27_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=28 clu_bench.c $(LIB_OMP_AVX2) -o clu_bench_oz_mnd28_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=29 clu_bench.c $(LIB_OMP_AVX2) -o clu_bench_oz_mnd29_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=30 clu_bench.c $(LIB_OMP_AVX2) -o clu_bench_oz_mnd30_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=31 clu_bench.c $(LIB_OMP_AVX2) -o clu_bench_oz_mnd31_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=32 clu_bench.c $(LIB_OMP_AVX2) -o clu_bench_oz_mnd32_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=33 clu_bench.c $(LIB_OMP_AVX2) -o clu_bench_oz_mnd33_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=34 clu_bench.c $(LIB_OMP_AVX2) -o clu_bench_oz_mnd34_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=35 clu_bench.c $(LIB_OMP_AVX2) -o clu_bench_oz_mnd35_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=36 clu_bench.c $(LIB_OMP_AVX2) -o clu_bench_oz_mnd36_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=37 clu_bench.c $(LIB_OMP_AVX2) -o clu_bench_oz_mnd37_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=38 clu_bench.c $(LIB_OMP_AVX2) -o clu_bench_oz_mnd38_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=39 clu_bench.c $(LIB_OMP_AVX2) -o clu_bench_oz_mnd39_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=40 clu_bench.c $(LIB_OMP_AVX2) -o clu_bench_oz_mnd40_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=50 clu_bench.c $(LIB_OMP_AVX2) -o clu_bench_oz_mnd50_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_OZ -DOZ_MAX_NUM_DIV=64 clu_bench.c $(LIB_OMP_AVX2) -o clu_bench_oz_mnd64_omp_avx2
+
+lu_bench_dd: ../include/matmul_strassen.h lu_bench_dd.c 
+	$(CC) $(INC) -DUSE_DDLINEAR -DUSE_BLOCK lu_bench_dd.c  $(LIB) -o lu_bench_dd_block
+	$(CC) $(INC) -DUSE_DDLINEAR -DUSE_BLOCK -DUSE_SCALING  lu_bench_dd.c $(LIB) -o lu_bench_dd_block_scale
+	$(CC) $(INC) -DUSE_DDLINEAR -DUSE_STRASSEN lu_bench_dd.c $(LIB) -o lu_bench_dd
+	$(CC) $(INC) -DUSE_DDLINEAR -DUSE_STRASSEN -DUSE_SCALING lu_bench_dd.c $(LIB) -o lu_bench_dd_scale
+	$(CC) $(INC) -DUSE_DDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=2 lu_bench_dd.c  $(LIB) -o lu_bench_dd_oz_mnd2
+	$(CC) $(INC) -DUSE_DDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=3 lu_bench_dd.c  $(LIB) -o lu_bench_dd_oz_mnd3
+	$(CC) $(INC) -DUSE_DDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=4 lu_bench_dd.c  $(LIB) -o lu_bench_dd_oz_mnd4
+	$(CC) $(INC) -DUSE_DDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=5 lu_bench_dd.c  $(LIB) -o lu_bench_dd_oz_mnd5
+	$(CC) $(INC) -DUSE_DDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=6 lu_bench_dd.c  $(LIB) -o lu_bench_dd_oz_mnd6
+	$(CC) $(INC) -DUSE_DDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=7 lu_bench_dd.c  $(LIB) -o lu_bench_dd_oz_mnd7
+	$(CC) $(INC) -DUSE_DDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=8 lu_bench_dd.c  $(LIB) -o lu_bench_dd_oz_mnd8
+	$(CC) $(INC) -DUSE_DDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=16 lu_bench_dd.c  $(LIB) -o lu_bench_dd_oz_mnd16
+#	$(CC) $(INC) -DUSE_DDLINEAR -DUSE_WINOGRAD lu_bench_dd.c  $(LIB_WINOGRAD) -o lu_bench_dd_winograd
+#	$(CC) $(INC) -DUSE_DDLINEAR -DUSE_WINOGRAD -DUSE_SCALING lu_bench_dd.c  mpfr_dtq_sd.o $(LIB_WINOGRAD) -o lu_bench_dd_winograd_scale
+
+lu_bench_dd_avx2: ../include/matmul_strassen.h lu_bench_dd.c 
+	$(CC_AVX2) $(INC) -DUSE_DDLINEAR -DUSE_BLOCK lu_bench_dd.c  $(LIB_AVX2) -o lu_bench_dd_block_avx2
+	$(CC_AVX2) $(INC) -DUSE_DDLINEAR -DUSE_STRASSEN lu_bench_dd.c  $(LIB_AVX2) -o lu_bench_dd_avx2
+	$(CC_AVX2) $(INC) -DUSE_DDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=2 lu_bench_dd.c  $(LIB_AVX2) -o lu_bench_dd_oz_mnd2_avx2
+	$(CC_AVX2) $(INC) -DUSE_DDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=3 lu_bench_dd.c  $(LIB_AVX2) -o lu_bench_dd_oz_mnd3_avx2
+	$(CC_AVX2) $(INC) -DUSE_DDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=4 lu_bench_dd.c  $(LIB_AVX2) -o lu_bench_dd_oz_mnd4_avx2
+	$(CC_AVX2) $(INC) -DUSE_DDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=5 lu_bench_dd.c  $(LIB_AVX2) -o lu_bench_dd_oz_mnd5_avx2
+	$(CC_AVX2) $(INC) -DUSE_DDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=6 lu_bench_dd.c  $(LIB_AVX2) -o lu_bench_dd_oz_mnd6_avx2
+	$(CC_AVX2) $(INC) -DUSE_DDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=7 lu_bench_dd.c  $(LIB_AVX2) -o lu_bench_dd_oz_mnd7_avx2
+	$(CC_AVX2) $(INC) -DUSE_DDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=8 lu_bench_dd.c  $(LIB_AVX2) -o lu_bench_dd_oz_mnd8_avx2
+	$(CC_AVX2) $(INC) -DUSE_DDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=9 lu_bench_dd.c  $(LIB_AVX2) -o lu_bench_dd_oz_mnd9_avx2
+	$(CC_AVX2) $(INC) -DUSE_DDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=10 lu_bench_dd.c  $(LIB_AVX2) -o lu_bench_dd_oz_mnd10_avx2
+	$(CC_AVX2) $(INC) -DUSE_DDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=11 lu_bench_dd.c  $(LIB_AVX2) -o lu_bench_dd_oz_mnd11_avx2
+	$(CC_AVX2) $(INC) -DUSE_DDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=12 lu_bench_dd.c  $(LIB_AVX2) -o lu_bench_dd_oz_mnd12_avx2
+	$(CC_AVX2) $(INC) -DUSE_DDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=13 lu_bench_dd.c  $(LIB_AVX2) -o lu_bench_dd_oz_mnd13_avx2
+	$(CC_AVX2) $(INC) -DUSE_DDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=14 lu_bench_dd.c  $(LIB_AVX2) -o lu_bench_dd_oz_mnd14_avx2
+	$(CC_AVX2) $(INC) -DUSE_DDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=15 lu_bench_dd.c  $(LIB_AVX2) -o lu_bench_dd_oz_mnd15_avx2
+	$(CC_AVX2) $(INC) -DUSE_DDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=16 lu_bench_dd.c  $(LIB_AVX2) -o lu_bench_dd_oz_mnd16_avx2
+#	$(CC_AVX2) $(INC) -DUSE_DDLINEAR -DUSE_WINOGRAD lu_bench_dd.c  $(LIB_WINOGRAD_AVX2) -o lu_bench_dd_winograd_avx2
+
+lu_bench_dd_neon: ../include/matmul_strassen.h lu_bench_dd.c 
+	$(CC_NEON) $(INC) -DUSE_DDLINEAR -DUSE_BLOCK lu_bench_dd.c  $(LIB_NEON) -o lu_bench_dd_block_neon
+	$(CC_NEON) $(INC) -DUSE_DDLINEAR -DUSE_STRASSEN lu_bench_dd.c  $(LIB_NEON) -o lu_bench_dd_neon
+	$(CC_NEON) $(INC) -DUSE_DDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=2 lu_bench_dd.c   $(LIB_NEON) -o lu_bench_dd_oz_mnd2_neon
+	$(CC_NEON) $(INC) -DUSE_DDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=3 lu_bench_dd.c   $(LIB_NEON) -o lu_bench_dd_oz_mnd3_neon
+	$(CC_NEON) $(INC) -DUSE_DDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=4 lu_bench_dd.c   $(LIB_NEON) -o lu_bench_dd_oz_mnd4_neon
+	$(CC_NEON) $(INC) -DUSE_DDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=5 lu_bench_dd.c   $(LIB_NEON) -o lu_bench_dd_oz_mnd5_neon
+	$(CC_NEON) $(INC) -DUSE_DDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=6 lu_bench_dd.c   $(LIB_NEON) -o lu_bench_dd_oz_mnd6_neon
+	$(CC_NEON) $(INC) -DUSE_DDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=7 lu_bench_dd.c   $(LIB_NEON) -o lu_bench_dd_oz_mnd7_neon
+	$(CC_NEON) $(INC) -DUSE_DDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=8 lu_bench_dd.c   $(LIB_NEON) -o lu_bench_dd_oz_mnd8_neon
+	$(CC_NEON) $(INC) -DUSE_DDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=9 lu_bench_dd.c   $(LIB_NEON) -o lu_bench_dd_oz_mnd9_neon
+	$(CC_NEON) $(INC) -DUSE_DDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=10 lu_bench_dd.c  $(LIB_NEON) -o lu_bench_dd_oz_mnd10_neon
+	$(CC_NEON) $(INC) -DUSE_DDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=11 lu_bench_dd.c  $(LIB_NEON) -o lu_bench_dd_oz_mnd11_neon
+	$(CC_NEON) $(INC) -DUSE_DDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=12 lu_bench_dd.c  $(LIB_NEON) -o lu_bench_dd_oz_mnd12_neon
+	$(CC_NEON) $(INC) -DUSE_DDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=13 lu_bench_dd.c  $(LIB_NEON) -o lu_bench_dd_oz_mnd13_neon
+	$(CC_NEON) $(INC) -DUSE_DDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=14 lu_bench_dd.c  $(LIB_NEON) -o lu_bench_dd_oz_mnd14_neon
+	$(CC_NEON) $(INC) -DUSE_DDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=15 lu_bench_dd.c  $(LIB_NEON) -o lu_bench_dd_oz_mnd15_neon
+	$(CC_NEON) $(INC) -DUSE_DDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=16 lu_bench_dd.c  $(LIB_NEON) -o lu_bench_dd_oz_mnd16_neon
+#	$(CC_NEON) $(INC) -DUSE_DDLINEAR -DUSE_WINOGRAD lu_bench_dd.c  $(LIB_WINOGRAD_AVX2) -o lu_bench_dd_winograd_avx2
+
+
+lu_bench_dd_omp: ../include/matmul_strassen.h lu_bench_dd.c
+	$(CC) $(OPENMP) $(INC) -DUSE_DDLINEAR -DUSE_BLOCK lu_bench_dd.c $(OPENMP_LIB) $(LIB_OMP) -o lu_bench_dd_block_omp
+	$(CC) $(OPENMP) $(INC) -DUSE_DDLINEAR -DUSE_STRASSEN lu_bench_dd.c $(OPENMP_LIB) $(LIB_OMP) -o lu_bench_dd_omp
+#	$(CC) $(OPENMP) $(INC) -DUSE_DDLINEAR -DUSE_WINOGRAD lu_bench_dd.c $(OPENMP_LIB) $(LIB_WINOGRAD_OMP) -o lu_bench_dd_winograd_omp
+
+lu_bench_dd_omp_avx2: ../include/matmul_strassen.h lu_bench_dd.c
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_DDLINEAR -DUSE_BLOCK lu_bench_dd.c $(OPENMP_LIB) $(LIB_OMP_AVX2) -o lu_bench_dd_block_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_DDLINEAR -DUSE_STRASSEN lu_bench_dd.c $(OPENMP_LIB) $(LIB_OMP_AVX2) -o lu_bench_dd_omp_avx2
+#	$(CC) $(OPENMP) $(INC) -DUSE_DDLINEAR -DUSE_WINOGRAD lu_bench_dd.c $(OPENMP_LIB) $(LIB_WINOGRAD_OMP_AVX2) -o lu_bench_dd_winograd_omp_avx2
+
+lu_bench_dd_omp_neon: ../include/matmul_strassen.h lu_bench_dd.c
+	$(CC_NEON) $(OPENMP) $(INC) -DUSE_DDLINEAR -DUSE_BLOCK lu_bench_dd.c $(OPENMP_LIB) $(LIB_OMP_NEON) -o lu_bench_dd_block_omp_neon
+	$(CC_NEON) $(OPENMP) $(INC) -DUSE_DDLINEAR -DUSE_STRASSEN lu_bench_dd.c $(OPENMP_LIB) $(LIB_OMP_NEON) -o lu_bench_dd_omp_neon
+#	$(CC) $(OPENMP) $(INC) -DUSE_DDLINEAR -DUSE_WINOGRAD lu_bench_dd.c $(OPENMP_LIB) $(LIB_WINOGRAD_OMP_AVX2) -o lu_bench_dd_winograd_omp_avx2
+
+clu_bench_dd: ../include/matmul_strassen.h clu_bench_dd.c
+	$(CC) $(INC) -DUSE_DDLINEAR -DUSE_BLOCK clu_bench_dd.c  $(LIB) -o clu_bench_dd_block
+	$(CC) $(INC) -DUSE_DDLINEAR -DUSE_STRASSEN clu_bench_dd.c  $(LIB) -o clu_bench_dd
+	$(CC) $(INC) -DUSE_DDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=2 clu_bench_dd.c  $(LIB) -o clu_bench_dd_oz_mnd2
+	$(CC) $(INC) -DUSE_DDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=3 clu_bench_dd.c  $(LIB) -o clu_bench_dd_oz_mnd3
+	$(CC) $(INC) -DUSE_DDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=4 clu_bench_dd.c  $(LIB) -o clu_bench_dd_oz_mnd4
+	$(CC) $(INC) -DUSE_DDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=5 clu_bench_dd.c  $(LIB) -o clu_bench_dd_oz_mnd5
+
+clu_bench_dd_avx2: ../include/matmul_strassen.h clu_bench_dd.c
+	$(CC_AVX2) $(INC) -DUSE_DDLINEAR -DUSE_BLOCK clu_bench_dd.c  $(LIB_AVX2) -o clu_bench_dd_block_avx2
+	$(CC_AVX2) $(INC) -DUSE_DDLINEAR -DUSE_STRASSEN clu_bench_dd.c  $(LIB_AVX2) -o clu_bench_dd_avx2
+	$(CC_AVX2) $(INC) -DUSE_DDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=2 clu_bench_dd.c  $(LIB_AVX2) -o clu_bench_dd_oz_mnd2_avx2
+	$(CC_AVX2) $(INC) -DUSE_DDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=3 clu_bench_dd.c  $(LIB_AVX2) -o clu_bench_dd_oz_mnd3_avx2
+	$(CC_AVX2) $(INC) -DUSE_DDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=4 clu_bench_dd.c  $(LIB_AVX2) -o clu_bench_dd_oz_mnd4_avx2
+	$(CC_AVX2) $(INC) -DUSE_DDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=5 clu_bench_dd.c  $(LIB_AVX2) -o clu_bench_dd_oz_mnd5_avx2
+	$(CC_AVX2) $(INC) -DUSE_DDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=6 clu_bench_dd.c  $(LIB_AVX2) -o clu_bench_dd_oz_mnd6_avx2
+	$(CC_AVX2) $(INC) -DUSE_DDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=7 clu_bench_dd.c  $(LIB_AVX2) -o clu_bench_dd_oz_mnd7_avx2
+	$(CC_AVX2) $(INC) -DUSE_DDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=8 clu_bench_dd.c  $(LIB_AVX2) -o clu_bench_dd_oz_mnd8_avx2
+
+clu_bench_dd_neon: ../include/matmul_strassen.h clu_bench_dd.c
+	$(CC_NEON) $(INC) -DUSE_DDLINEAR -DUSE_BLOCK clu_bench_dd.c  $(LIB_NEON) -o clu_bench_dd_block_neon
+	$(CC_NEON) $(INC) -DUSE_DDLINEAR -DUSE_STRASSEN clu_bench_dd.c  $(LIB_NEON) -o clu_bench_dd_neon
+	$(CC_NEON) $(INC) -DUSE_DDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=2 clu_bench_dd.c  $(LIB_NEON) -o clu_bench_dd_oz_mnd2_neon
+	$(CC_NEON) $(INC) -DUSE_DDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=3 clu_bench_dd.c  $(LIB_NEON) -o clu_bench_dd_oz_mnd3_neon
+	$(CC_NEON) $(INC) -DUSE_DDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=4 clu_bench_dd.c  $(LIB_NEON) -o clu_bench_dd_oz_mnd4_neon
+	$(CC_NEON) $(INC) -DUSE_DDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=5 clu_bench_dd.c  $(LIB_NEON) -o clu_bench_dd_oz_mnd5_neon
+	$(CC_NEON) $(INC) -DUSE_DDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=6 clu_bench_dd.c  $(LIB_NEON) -o clu_bench_dd_oz_mnd6_neon
+	$(CC_NEON) $(INC) -DUSE_DDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=7 clu_bench_dd.c  $(LIB_NEON) -o clu_bench_dd_oz_mnd7_neon
+	$(CC_NEON) $(INC) -DUSE_DDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=8 clu_bench_dd.c  $(LIB_NEON) -o clu_bench_dd_oz_mnd8_neon
+
+clu_bench_dd_omp: ../include/matmul_strassen.h clu_bench_dd.c
+	$(CC) $(OPENMP) $(INC) -DUSE_DDLINEAR -DUSE_BLOCK clu_bench_dd.c $(OPENMP_LIB) $(LIB_OMP) -o clu_bench_dd_block_omp
+	$(CC) $(OPENMP) $(INC) -DUSE_DDLINEAR -DUSE_STRASSEN clu_bench_dd.c $(OPENMP_LIB) $(LIB_OMP) -o clu_bench_dd_omp
+
+clu_bench_dd_omp_avx2: ../include/matmul_strassen.h clu_bench_dd.c
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_DDLINEAR -DUSE_BLOCK clu_bench_dd.c $(OPENMP_LIB) $(LIB_OMP_AVX2) -o clu_bench_dd_block_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_DDLINEAR -DUSE_STRASSEN clu_bench_dd.c $(OPENMP_LIB) $(LIB_OMP_AVX2) -o clu_bench_dd_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_DDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=2 clu_bench_dd.c  $(LIB_OMP_AVX2) -o clu_bench_dd_oz_mnd2_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_DDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=3 clu_bench_dd.c  $(LIB_OMP_AVX2) -o clu_bench_dd_oz_mnd3_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_DDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=4 clu_bench_dd.c  $(LIB_OMP_AVX2) -o clu_bench_dd_oz_mnd4_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_DDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=5 clu_bench_dd.c  $(LIB_OMP_AVX2) -o clu_bench_dd_oz_mnd5_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_DDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=6 clu_bench_dd.c  $(LIB_OMP_AVX2) -o clu_bench_dd_oz_mnd6_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_DDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=7 clu_bench_dd.c  $(LIB_OMP_AVX2) -o clu_bench_dd_oz_mnd7_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_DDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=8 clu_bench_dd.c  $(LIB_OMP_AVX2) -o clu_bench_dd_oz_mnd8_omp_avx2
+
+lu_bench_qd: ../include/matmul_strassen.h lu_bench_qd.c
+	$(CC) $(INC) -DUSE_QDLINEAR -DUSE_BLOCK lu_bench_qd.c $(LIB) -o lu_bench_qd_block
+	$(CC) $(INC) -DUSE_QDLINEAR -DUSE_BLOCK -DUSE_SCALING lu_bench_qd.c $(LIB) -o lu_bench_qd_block_scale
+	$(CC) $(INC) -DUSE_QDLINEAR -DUSE_STRASSEN lu_bench_qd.c $(LIB) -o lu_bench_qd
+	$(CC) $(INC) -DUSE_QDLINEAR -DUSE_STRASSEN -DUSE_SCALING lu_bench_qd.c $(LIB) -o lu_bench_qd_scale
+	$(CC) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=4 lu_bench_qd.c $(LIB) -o lu_bench_qd_oz_mnd4
+	$(CC) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=8 lu_bench_qd.c $(LIB) -o lu_bench_qd_oz_mnd8
+	$(CC) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=16 lu_bench_qd.c $(LIB) -o lu_bench_qd_oz_mnd16
+	$(CC) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=32 lu_bench_qd.c $(LIB) -o lu_bench_qd_oz_mnd32
+#	$(CC) $(INC) -DUSE_QDLINEAR -DUSE_WINOGRAD lu_bench_qd.c $(LIB_WINOGRAD) -o lu_bench_qd_winograd
+#	$(CC) $(INC) -DUSE_QDLINEAR -DUSE_WINOGRAD -DUSE_SCALING lu_bench_qd.c $(LIB_WINOGRAD) -o lu_bench_qd_winograd_scale
+
+lu_bench_qd_avx2: ../include/matmul_strassen.h lu_bench_qd.c
+	$(CC_AVX2) $(INC) -DUSE_QDLINEAR -DUSE_BLOCK lu_bench_qd.c $(LIB_AVX2) -o lu_bench_qd_block_avx2
+	$(CC_AVX2) $(INC) -DUSE_QDLINEAR -DUSE_STRASSEN lu_bench_qd.c $(LIB_AVX2) -o lu_bench_qd_avx2
+	$(CC_AVX2) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=4 lu_bench_qd.c $(LIB_AVX2) -o lu_bench_qd_oz_mnd4_avx2
+	$(CC_AVX2) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=8 lu_bench_qd.c $(LIB_AVX2) -o lu_bench_qd_oz_mnd8_avx2
+	$(CC_AVX2) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=9 lu_bench_qd.c $(LIB_AVX2) -o lu_bench_qd_oz_mnd9_avx2
+	$(CC_AVX2) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=10 lu_bench_qd.c $(LIB_AVX2) -o lu_bench_qd_oz_mnd10_avx2
+	$(CC_AVX2) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=11 lu_bench_qd.c $(LIB_AVX2) -o lu_bench_qd_oz_mnd11_avx2
+	$(CC_AVX2) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=12 lu_bench_qd.c $(LIB_AVX2) -o lu_bench_qd_oz_mnd12_avx2
+	$(CC_AVX2) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=13 lu_bench_qd.c $(LIB_AVX2) -o lu_bench_qd_oz_mnd13_avx2
+	$(CC_AVX2) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=14 lu_bench_qd.c $(LIB_AVX2) -o lu_bench_qd_oz_mnd14_avx2
+	$(CC_AVX2) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=15 lu_bench_qd.c $(LIB_AVX2) -o lu_bench_qd_oz_mnd15_avx2
+	$(CC_AVX2) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=16 lu_bench_qd.c $(LIB_AVX2) -o lu_bench_qd_oz_mnd16_avx2
+	$(CC_AVX2) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=17 lu_bench_qd.c $(LIB_AVX2) -o lu_bench_qd_oz_mnd17_avx2
+	$(CC_AVX2) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=18 lu_bench_qd.c $(LIB_AVX2) -o lu_bench_qd_oz_mnd18_avx2
+	$(CC_AVX2) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=19 lu_bench_qd.c $(LIB_AVX2) -o lu_bench_qd_oz_mnd19_avx2
+	$(CC_AVX2) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=20 lu_bench_qd.c $(LIB_AVX2) -o lu_bench_qd_oz_mnd20_avx2
+	$(CC_AVX2) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=21 lu_bench_qd.c $(LIB_AVX2) -o lu_bench_qd_oz_mnd21_avx2
+	$(CC_AVX2) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=22 lu_bench_qd.c $(LIB_AVX2) -o lu_bench_qd_oz_mnd22_avx2
+	$(CC_AVX2) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=23 lu_bench_qd.c $(LIB_AVX2) -o lu_bench_qd_oz_mnd23_avx2
+	$(CC_AVX2) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=24 lu_bench_qd.c $(LIB_AVX2) -o lu_bench_qd_oz_mnd24_avx2
+	$(CC_AVX2) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=25 lu_bench_qd.c $(LIB_AVX2) -o lu_bench_qd_oz_mnd25_avx2
+	$(CC_AVX2) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=26 lu_bench_qd.c $(LIB_AVX2) -o lu_bench_qd_oz_mnd26_avx2
+	$(CC_AVX2) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=27 lu_bench_qd.c $(LIB_AVX2) -o lu_bench_qd_oz_mnd27_avx2
+	$(CC_AVX2) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=28 lu_bench_qd.c $(LIB_AVX2) -o lu_bench_qd_oz_mnd28_avx2
+	$(CC_AVX2) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=29 lu_bench_qd.c $(LIB_AVX2) -o lu_bench_qd_oz_mnd29_avx2
+	$(CC_AVX2) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=30 lu_bench_qd.c $(LIB_AVX2) -o lu_bench_qd_oz_mnd30_avx2
+	$(CC_AVX2) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=32 lu_bench_qd.c $(LIB_AVX2) -o lu_bench_qd_oz_mnd32_avx2
+#	$(CC_AVX2) $(INC) -DUSE_QDLINEAR -DUSE_WINOGRAD lu_bench_qd.c $(LIB_WINOGRAD_AVX2) -o lu_bench_qd_winograd_avx2
+
+lu_bench_qd_neon: ../include/matmul_strassen.h lu_bench_qd.c
+	$(CC_NEON) $(INC) -DUSE_QDLINEAR -DUSE_BLOCK lu_bench_qd.c $(LIB_NEON) -o lu_bench_qd_block_neon
+	$(CC_NEON) $(INC) -DUSE_QDLINEAR -DUSE_STRASSEN lu_bench_qd.c $(LIB_NEON) -o lu_bench_qd_neon
+
+lu_bench_qd_omp: ../include/matmul_strassen.h lu_bench_qd.c
+	$(CC) $(OPENMP) $(INC) -DUSE_QDLINEAR -DUSE_BLOCK lu_bench_qd.c $(OPENMP_LIB) $(LIB_OMP) -o lu_bench_qd_block_omp
+	$(CC) $(OPENMP) $(INC) -DUSE_QDLINEAR -DUSE_STRASSEN lu_bench_qd.c $(OPENMP_LIB) $(LIB_OMP) -o lu_bench_qd_omp
+#	$(CC) $(OPENMP) $(INC) -DUSE_QDLINEAR -DUSE_WINOGRAD lu_bench_qd.c $(OPENMP_LIB) $(LIB_WINOGRAD_OMP) -o lu_bench_qd_winograd_omp
+
+lu_bench_qd_omp_avx2: ../include/matmul_strassen.h lu_bench_qd.c
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_QDLINEAR -DUSE_BLOCK lu_bench_qd.c $(OPENMP_LIB) $(LIB_OMP_AVX2) -o lu_bench_qd_block_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_QDLINEAR -DUSE_STRASSEN lu_bench_qd.c $(OPENMP_LIB) $(LIB_OMP_AVX2) -o lu_bench_qd_omp_avx2
+#	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_QDLINEAR -DUSE_WINOGRAD lu_bench_qd.c $(OPENMP_LIB) $(LIB_WINOGRAD_OMP_AVX2) -o lu_bench_qd_winograd_omp_avx2
+
+clu_bench_qd: ../include/matmul_strassen.h clu_bench_qd.c
+	$(CC) $(INC) -DUSE_QDLINEAR -DUSE_BLOCK clu_bench_qd.c $(LIB) -o clu_bench_qd_block
+	$(CC) $(INC) -DUSE_QDLINEAR -DUSE_STRASSEN clu_bench_qd.c $(LIB) -o clu_bench_qd
+	$(CC) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=4 clu_bench_qd.c $(LIB) -o clu_bench_qd_oz_mnd4
+	$(CC) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=8 clu_bench_qd.c $(LIB) -o clu_bench_qd_oz_mnd8
+	$(CC) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=16 clu_bench_qd.c $(LIB) -o clu_bench_qd_oz_mnd16
+	$(CC) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=32 clu_bench_qd.c $(LIB) -o clu_bench_qd_oz_mnd32
+#	$(CC) $(INC) -DUSE_QDLINEAR -DUSE_WINOGRAD lu_bench_qd.c $(LIB_WINOGRAD) -o lu_bench_qd_winograd
+#	$(CC) $(INC) -DUSE_QDLINEAR -DUSE_WINOGRAD -DUSE_SCALING lu_bench_qd.c $(LIB_WINOGRAD) -o lu_bench_qd_winograd_scale
+
+clu_bench_qd_avx2: ../include/matmul_strassen.h clu_bench_qd.c
+	$(CC_AVX2) $(INC) -DUSE_QDLINEAR -DUSE_BLOCK clu_bench_qd.c $(LIB_AVX2) -o clu_bench_qd_block_avx2
+	$(CC_AVX2) $(INC) -DUSE_QDLINEAR -DUSE_STRASSEN clu_bench_qd.c $(LIB_AVX2) -o clu_bench_qd_avx2
+	$(CC_AVX2) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=4 clu_bench_qd.c $(LIB_AVX2) -o clu_bench_qd_oz_mnd4_avx2
+	$(CC_AVX2) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=8 clu_bench_qd.c $(LIB_AVX2) -o clu_bench_qd_oz_mnd8_avx2
+	$(CC_AVX2) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=9 clu_bench_qd.c $(LIB_AVX2) -o clu_bench_qd_oz_mnd9_avx2
+	$(CC_AVX2) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=10 clu_bench_qd.c $(LIB_AVX2) -o clu_bench_qd_oz_mnd10_avx2
+	$(CC_AVX2) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=11 clu_bench_qd.c $(LIB_AVX2) -o clu_bench_qd_oz_mnd11_avx2
+	$(CC_AVX2) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=12 clu_bench_qd.c $(LIB_AVX2) -o clu_bench_qd_oz_mnd12_avx2
+	$(CC_AVX2) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=13 clu_bench_qd.c $(LIB_AVX2) -o clu_bench_qd_oz_mnd13_avx2
+	$(CC_AVX2) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=14 clu_bench_qd.c $(LIB_AVX2) -o clu_bench_qd_oz_mnd14_avx2
+	$(CC_AVX2) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=15 clu_bench_qd.c $(LIB_AVX2) -o clu_bench_qd_oz_mnd15_avx2
+	$(CC_AVX2) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=16 clu_bench_qd.c $(LIB_AVX2) -o clu_bench_qd_oz_mnd16_avx2
+	$(CC_AVX2) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=17 clu_bench_qd.c $(LIB_AVX2) -o clu_bench_qd_oz_mnd17_avx2
+	$(CC_AVX2) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=18 clu_bench_qd.c $(LIB_AVX2) -o clu_bench_qd_oz_mnd18_avx2
+	$(CC_AVX2) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=19 clu_bench_qd.c $(LIB_AVX2) -o clu_bench_qd_oz_mnd19_avx2
+	$(CC_AVX2) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=20 clu_bench_qd.c $(LIB_AVX2) -o clu_bench_qd_oz_mnd20_avx2
+	$(CC_AVX2) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=21 clu_bench_qd.c $(LIB_AVX2) -o clu_bench_qd_oz_mnd21_avx2
+	$(CC_AVX2) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=22 clu_bench_qd.c $(LIB_AVX2) -o clu_bench_qd_oz_mnd22_avx2
+	$(CC_AVX2) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=23 clu_bench_qd.c $(LIB_AVX2) -o clu_bench_qd_oz_mnd23_avx2
+	$(CC_AVX2) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=24 clu_bench_qd.c $(LIB_AVX2) -o clu_bench_qd_oz_mnd24_avx2
+	$(CC_AVX2) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=25 clu_bench_qd.c $(LIB_AVX2) -o clu_bench_qd_oz_mnd25_avx2
+	$(CC_AVX2) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=26 clu_bench_qd.c $(LIB_AVX2) -o clu_bench_qd_oz_mnd26_avx2
+	$(CC_AVX2) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=27 clu_bench_qd.c $(LIB_AVX2) -o clu_bench_qd_oz_mnd27_avx2
+	$(CC_AVX2) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=28 clu_bench_qd.c $(LIB_AVX2) -o clu_bench_qd_oz_mnd28_avx2
+	$(CC_AVX2) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=29 clu_bench_qd.c $(LIB_AVX2) -o clu_bench_qd_oz_mnd29_avx2
+	$(CC_AVX2) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=30 clu_bench_qd.c $(LIB_AVX2) -o clu_bench_qd_oz_mnd30_avx2
+	$(CC_AVX2) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=32 clu_bench_qd.c $(LIB_AVX2) -o clu_bench_qd_oz_mnd32_avx2
+
+clu_bench_qd_neon: ../include/matmul_strassen.h clu_bench_qd.c
+	$(CC_NEON) $(INC) -DUSE_QDLINEAR -DUSE_BLOCK clu_bench_qd.c $(LIB_NEON) -o clu_bench_qd_block_neon
+	$(CC_NEON) $(INC) -DUSE_QDLINEAR -DUSE_STRASSEN clu_bench_qd.c $(LIB_NEON) -o clu_bench_qd_neon
+
+clu_bench_qd_omp: ../include/matmul_strassen.h clu_bench_qd.c
+	$(CC) $(OPENMP) $(INC) -DUSE_QDLINEAR -DUSE_BLOCK clu_bench_qd.c $(OPENMP_LIB) $(LIB_OMP) -o clu_bench_qd_block_omp
+	$(CC) $(OPENMP) $(INC) -DUSE_QDLINEAR -DUSE_STRASSEN clu_bench_qd.c $(OPENMP_LIB) $(LIB_OMP) -o clu_bench_qd_omp
+
+clu_bench_qd_omp_avx2: ../include/matmul_strassen.h clu_bench_qd.c
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_QDLINEAR -DUSE_BLOCK clu_bench_qd.c $(OPENMP_LIB) $(LIB_OMP_AVX2) -o clu_bench_qd_block_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_QDLINEAR -DUSE_STRASSEN clu_bench_qd.c $(OPENMP_LIB) $(LIB_OMP_AVX2) -o clu_bench_qd_omp_avx2
+	$(CC_AVX2) $(IMKL_OPENMP) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=11 clu_bench_qd.c $(LIB_AVX2_IMKL_OMP) -o clu_bench_qd_oz_mnd11_imklomp_avx2
+#	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=4 clu_bench_qd.c  $(LIB_OMP_AVX2) -o clu_bench_qd_oz_mnd4_omp_avx2
+#	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=8 clu_bench_qd.c  $(LIB_OMP_AVX2) -o clu_bench_qd_oz_mnd8_omp_avx2
+#	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=9 clu_bench_qd.c  $(LIB_OMP_AVX2) -o clu_bench_qd_oz_mnd9_omp_avx2
+#	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=10 clu_bench_qd.c $(LIB_OMP_AVX2) -o clu_bench_qd_oz_mnd10_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=11 clu_bench_qd.c $(LIB_OMP_AVX2) -o clu_bench_qd_oz_mnd11_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=12 clu_bench_qd.c $(LIB_OMP_AVX2) -o clu_bench_qd_oz_mnd12_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=13 clu_bench_qd.c $(LIB_OMP_AVX2) -o clu_bench_qd_oz_mnd13_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=14 clu_bench_qd.c $(LIB_OMP_AVX2) -o clu_bench_qd_oz_mnd14_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=15 clu_bench_qd.c $(LIB_OMP_AVX2) -o clu_bench_qd_oz_mnd15_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=16 clu_bench_qd.c $(LIB_OMP_AVX2) -o clu_bench_qd_oz_mnd16_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=17 clu_bench_qd.c $(LIB_OMP_AVX2) -o clu_bench_qd_oz_mnd17_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=18 clu_bench_qd.c $(LIB_OMP_AVX2) -o clu_bench_qd_oz_mnd18_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=19 clu_bench_qd.c $(LIB_OMP_AVX2) -o clu_bench_qd_oz_mnd19_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=20 clu_bench_qd.c $(LIB_OMP_AVX2) -o clu_bench_qd_oz_mnd20_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=21 clu_bench_qd.c $(LIB_OMP_AVX2) -o clu_bench_qd_oz_mnd21_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=22 clu_bench_qd.c $(LIB_OMP_AVX2) -o clu_bench_qd_oz_mnd22_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=23 clu_bench_qd.c $(LIB_OMP_AVX2) -o clu_bench_qd_oz_mnd23_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=24 clu_bench_qd.c $(LIB_OMP_AVX2) -o clu_bench_qd_oz_mnd24_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=25 clu_bench_qd.c $(LIB_OMP_AVX2) -o clu_bench_qd_oz_mnd25_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=26 clu_bench_qd.c $(LIB_OMP_AVX2) -o clu_bench_qd_oz_mnd26_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=27 clu_bench_qd.c $(LIB_OMP_AVX2) -o clu_bench_qd_oz_mnd27_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=28 clu_bench_qd.c $(LIB_OMP_AVX2) -o clu_bench_qd_oz_mnd28_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=29 clu_bench_qd.c $(LIB_OMP_AVX2) -o clu_bench_qd_oz_mnd29_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=30 clu_bench_qd.c $(LIB_OMP_AVX2) -o clu_bench_qd_oz_mnd30_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=32 clu_bench_qd.c $(LIB_OMP_AVX2) -o clu_bench_qd_oz_mnd32_omp_avx2
+
+lu_bench_td: ../include/matmul_strassen.h lu_bench_td.c
+	$(CC) $(INC) -DUSE_TDLINEAR -DUSE_BLOCK lu_bench_td.c $(LIB) -o lu_bench_td_block
+	$(CC) $(INC) -DUSE_TDLINEAR -DUSE_BLOCK -DUSE_SCALING lu_bench_td.c $(LIB) -o lu_bench_td_block_scale
+	$(CC) $(INC) -DUSE_TDLINEAR -DUSE_STRASSEN lu_bench_td.c $(LIB) -o lu_bench_td
+	$(CC) $(INC) -DUSE_TDLINEAR -DUSE_STRASSEN -DUSE_SCALING lu_bench_td.c $(LIB) -o lu_bench_td_scale
+	$(CC) $(INC) -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=2 lu_bench_td.c $(LIB) -o lu_bench_td_oz_mnd2
+	$(CC) $(INC) -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=4 lu_bench_td.c $(LIB) -o lu_bench_td_oz_mnd4
+	$(CC) $(INC) -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=8 lu_bench_td.c $(LIB) -o lu_bench_td_oz_mnd8
+	$(CC) $(INC) -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=16 lu_bench_td.c $(LIB) -o lu_bench_td_oz_mnd16
+	$(CC) $(INC) -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=32 lu_bench_td.c $(LIB) -o lu_bench_td_oz_mnd32
+#	$(CC) $(INC) -DUSE_TDLINEAR -DUSE_WINOGRAD lu_bench_td.c $(LIB_WINOGRAD) -o lu_bench_td_winograd
+#	$(CC) $(INC) -DUSE_TDLINEAR -DUSE_WINOGRAD -DUSE_SCALING lu_bench_td.c $(LIB) -o lu_bench_td_winograd_scale
+
+lu_bench_td_avx2: ../include/matmul_strassen.h lu_bench_td.c
+	$(CC_AVX2) $(INC) -DUSE_TDLINEAR -DUSE_BLOCK lu_bench_td.c $(LIB_AVX2) -o lu_bench_td_block_avx2
+	$(CC_AVX2) $(INC) -DUSE_TDLINEAR -DUSE_STRASSEN lu_bench_td.c $(LIB_AVX2) -o lu_bench_td_avx2
+	$(CC_AVX2) $(INC) -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=2 lu_bench_td.c $(LIB) -o lu_bench_td_oz_mnd2_avx2
+	$(CC_AVX2) $(INC) -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=4 lu_bench_td.c $(LIB_AVX2) -o lu_bench_td_oz_mnd4_avx2
+	$(CC_AVX2) $(INC) -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=5 lu_bench_td.c $(LIB_AVX2) -o lu_bench_td_oz_mnd5_avx2
+	$(CC_AVX2) $(INC) -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=6 lu_bench_td.c $(LIB_AVX2) -o lu_bench_td_oz_mnd6_avx2
+	$(CC_AVX2) $(INC) -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=7 lu_bench_td.c $(LIB_AVX2) -o lu_bench_td_oz_mnd7_avx2
+	$(CC_AVX2) $(INC) -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=8 lu_bench_td.c $(LIB_AVX2) -o lu_bench_td_oz_mnd8_avx2
+	$(CC_AVX2) $(INC) -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=9 lu_bench_td.c $(LIB_AVX2) -o lu_bench_td_oz_mnd9_avx2
+	$(CC_AVX2) $(INC) -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=10 lu_bench_td.c $(LIB_AVX2) -o lu_bench_td_oz_mnd10_avx2
+	$(CC_AVX2) $(INC) -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=11 lu_bench_td.c $(LIB_AVX2) -o lu_bench_td_oz_mnd11_avx2
+	$(CC_AVX2) $(INC) -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=12 lu_bench_td.c $(LIB_AVX2) -o lu_bench_td_oz_mnd12_avx2
+	$(CC_AVX2) $(INC) -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=13 lu_bench_td.c $(LIB_AVX2) -o lu_bench_td_oz_mnd13_avx2
+	$(CC_AVX2) $(INC) -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=14 lu_bench_td.c $(LIB_AVX2) -o lu_bench_td_oz_mnd14_avx2
+	$(CC_AVX2) $(INC) -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=15 lu_bench_td.c $(LIB_AVX2) -o lu_bench_td_oz_mnd15_avx2
+	$(CC_AVX2) $(INC) -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=16 lu_bench_td.c $(LIB_AVX2) -o lu_bench_td_oz_mnd16_avx2
+	$(CC_AVX2) $(INC) -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=17 lu_bench_td.c $(LIB_AVX2) -o lu_bench_td_oz_mnd17_avx2
+	$(CC_AVX2) $(INC) -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=18 lu_bench_td.c $(LIB_AVX2) -o lu_bench_td_oz_mnd18_avx2
+	$(CC_AVX2) $(INC) -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=19 lu_bench_td.c $(LIB_AVX2) -o lu_bench_td_oz_mnd19_avx2
+	$(CC_AVX2) $(INC) -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=20 lu_bench_td.c $(LIB_AVX2) -o lu_bench_td_oz_mnd20_avx2
+	$(CC_AVX2) $(INC) -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=32 lu_bench_td.c $(LIB_AVX2) -o lu_bench_td_oz_mnd32_avx2
+#	$(CC_AVX2) $(INC) -DUSE_TDLINEAR -DUSE_WINOGRAD lu_bench_td.c $(LIB_WINOGRAD_AVX2) -o lu_bench_td_winograd_avx2
+
+lu_bench_td_neon: ../include/matmul_strassen.h lu_bench_td.c
+	$(CC_NEON) $(INC) -DUSE_TDLINEAR -DUSE_BLOCK lu_bench_td.c $(LIB_NEON) -o lu_bench_td_block_neon
+	$(CC_NEON) $(INC) -DUSE_TDLINEAR -DUSE_STRASSEN lu_bench_td.c $(LIB_NEON) -o lu_bench_td_neon
+
+lu_bench_td_omp: ../include/matmul_strassen.h lu_bench_td.c
+	$(CC) $(OPENMP) $(INC) -DUSE_TDLINEAR -DUSE_BLOCK lu_bench_td.c $(OPENMP_LIB) $(LIB_OMP) -o lu_bench_td_block_omp
+	$(CC) $(OPENMP) $(INC) -DUSE_TDLINEAR -DUSE_STRASSEN lu_bench_td.c $(OPENMP_LIB) $(LIB_OMP) -o lu_bench_td_omp
+#	$(CC) $(OPENMP) $(INC) -DUSE_TDLINEAR -DUSE_WINOGRAD lu_bench_td.c $(OPENMP_LIB) $(LIB_WINOGRAD_OMP) -o lu_bench_td_winograd_omp
+
+lu_bench_td_omp_avx2: ../include/matmul_strassen.h lu_bench_td.c
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_TDLINEAR -DUSE_BLOCK lu_bench_td.c $(OPENMP_LIB) $(LIB_OMP_AVX2) -o lu_bench_td_block_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_TDLINEAR -DUSE_STRASSEN lu_bench_td.c $(OPENMP_LIB) $(LIB_OMP_AVX2) -o lu_bench_td_omp_avx2
+#	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_TDLINEAR -DUSE_WINOGRAD lu_bench_td.c $(OPENMP_LIB) $(LIB_WINOGRAD_OMP_AVX2) -o lu_bench_td_winograd_omp_avx2
+
+clu_bench_td: ../include/matmul_strassen.h clu_bench_td.c
+	$(CC) $(INC) -DUSE_TDLINEAR -DUSE_BLOCK clu_bench_td.c $(LIB) -o clu_bench_td_block
+	$(CC) $(INC) -DUSE_TDLINEAR -DUSE_BLOCK -DUSE_SCALING clu_bench_td.c $(LIB) -o clu_bench_td_block_scale
+	$(CC) $(INC) -DUSE_TDLINEAR -DUSE_STRASSEN clu_bench_td.c $(LIB) -o clu_bench_td
+	$(CC) $(INC) -DUSE_TDLINEAR -DUSE_STRASSEN -DUSE_SCALING clu_bench_td.c $(LIB) -o clu_bench_td_scale
+	$(CC) $(INC) -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=2 clu_bench_td.c $(LIB) -o clu_bench_td_oz_mnd2
+	$(CC) $(INC) -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=4 clu_bench_td.c $(LIB) -o clu_bench_td_oz_mnd4
+	$(CC) $(INC) -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=8 clu_bench_td.c $(LIB) -o clu_bench_td_oz_mnd8
+	$(CC) $(INC) -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=16 clu_bench_td.c $(LIB) -o clu_bench_td_oz_mnd16
+	$(CC) $(INC) -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=32 clu_bench_td.c $(LIB) -o clu_bench_td_oz_mnd32
+#	$(CC) $(INC) -DUSE_TDLINEAR -DUSE_WINOGRAD lu_bench_td.c $(LIB_WINOGRAD) -o lu_bench_td_winograd
+#	$(CC) $(INC) -DUSE_TDLINEAR -DUSE_WINOGRAD -DUSE_SCALING lu_bench_td.c $(LIB) -o lu_bench_td_winograd_scale
+
+clu_bench_td_avx2: ../include/matmul_strassen.h clu_bench_td.c
+	$(CC_AVX2) $(INC) -DUSE_TDLINEAR -DUSE_BLOCK clu_bench_td.c $(LIB_AVX2) -o clu_bench_td_block_avx2
+	$(CC_AVX2) $(INC) -DUSE_TDLINEAR -DUSE_STRASSEN clu_bench_td.c $(LIB_AVX2) -o clu_bench_td_avx2
+	$(CC_AVX2) $(INC) -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=2  clu_bench_td.c $(LIB_AVX2) -o clu_bench_td_oz_mnd2_avx2
+	$(CC_AVX2) $(INC) -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=4  clu_bench_td.c $(LIB_AVX2) -o clu_bench_td_oz_mnd4_avx2
+	$(CC_AVX2) $(INC) -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=5  clu_bench_td.c $(LIB_AVX2) -o clu_bench_td_oz_mnd5_avx2
+	$(CC_AVX2) $(INC) -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=6  clu_bench_td.c $(LIB_AVX2) -o clu_bench_td_oz_mnd6_avx2
+	$(CC_AVX2) $(INC) -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=7  clu_bench_td.c $(LIB_AVX2) -o clu_bench_td_oz_mnd7_avx2
+	$(CC_AVX2) $(INC) -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=8  clu_bench_td.c $(LIB_AVX2) -o clu_bench_td_oz_mnd8_avx2
+	$(CC_AVX2) $(INC) -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=9  clu_bench_td.c $(LIB_AVX2) -o clu_bench_td_oz_mnd9_avx2
+	$(CC_AVX2) $(INC) -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=10 clu_bench_td.c $(LIB_AVX2) -o clu_bench_td_oz_mnd10_avx2
+	$(CC_AVX2) $(INC) -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=11 clu_bench_td.c $(LIB_AVX2) -o clu_bench_td_oz_mnd11_avx2
+	$(CC_AVX2) $(INC) -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=12 clu_bench_td.c $(LIB_AVX2) -o clu_bench_td_oz_mnd12_avx2
+	$(CC_AVX2) $(INC) -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=13 clu_bench_td.c $(LIB_AVX2) -o clu_bench_td_oz_mnd13_avx2
+	$(CC_AVX2) $(INC) -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=14 clu_bench_td.c $(LIB_AVX2) -o clu_bench_td_oz_mnd14_avx2
+	$(CC_AVX2) $(INC) -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=15 clu_bench_td.c $(LIB_AVX2) -o clu_bench_td_oz_mnd15_avx2
+	$(CC_AVX2) $(INC) -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=16 clu_bench_td.c $(LIB_AVX2) -o clu_bench_td_oz_mnd16_avx2
+	$(CC_AVX2) $(INC) -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=17 clu_bench_td.c $(LIB_AVX2) -o clu_bench_td_oz_mnd17_avx2
+	$(CC_AVX2) $(INC) -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=18 clu_bench_td.c $(LIB_AVX2) -o clu_bench_td_oz_mnd18_avx2
+	$(CC_AVX2) $(INC) -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=19 clu_bench_td.c $(LIB_AVX2) -o clu_bench_td_oz_mnd19_avx2
+	$(CC_AVX2) $(INC) -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=20 clu_bench_td.c $(LIB_AVX2) -o clu_bench_td_oz_mnd20_avx2
+	$(CC_AVX2) $(INC) -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=32 clu_bench_td.c $(LIB_AVX2) -o clu_bench_td_oz_mnd32_avx2
+
+clu_bench_td_neon: ../include/matmul_strassen.h clu_bench_td.c
+	$(CC_NEON) $(INC) -DUSE_TDLINEAR -DUSE_BLOCK clu_bench_td.c $(LIB_NEON) -o clu_bench_td_block_neon
+	$(CC_NEON) $(INC) -DUSE_TDLINEAR -DUSE_STRASSEN clu_bench_td.c $(LIB_NEON) -o clu_bench_td_neon
+
+clu_bench_td_omp: ../include/matmul_strassen.h clu_bench_td.c
+	$(CC) $(OPENMP) $(INC) -DUSE_TDLINEAR -DUSE_BLOCK clu_bench_td.c $(OPENMP_LIB) $(LIB_OMP) -o clu_bench_td_block_omp
+	$(CC) $(OPENMP) $(INC) -DUSE_TDLINEAR -DUSE_STRASSEN clu_bench_td.c $(OPENMP_LIB) $(LIB_OMP) -o clu_bench_td_omp
+
+clu_bench_td_omp_avx2: ../include/matmul_strassen.h clu_bench_td.c
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_TDLINEAR -DUSE_BLOCK clu_bench_td.c $(OPENMP_LIB) $(LIB_OMP_AVX2) -o clu_bench_td_block_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_TDLINEAR -DUSE_STRASSEN clu_bench_td.c $(OPENMP_LIB) $(LIB_OMP_AVX2) -o clu_bench_td_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=2  clu_bench_td.c $(LIB_OMP_AVX2) -o clu_bench_td_oz_mnd2_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=4  clu_bench_td.c $(LIB_OMP_AVX2) -o clu_bench_td_oz_mnd4_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=5  clu_bench_td.c $(LIB_OMP_AVX2) -o clu_bench_td_oz_mnd5_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=6  clu_bench_td.c $(LIB_OMP_AVX2) -o clu_bench_td_oz_mnd6_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=7  clu_bench_td.c $(LIB_OMP_AVX2) -o clu_bench_td_oz_mnd7_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=8  clu_bench_td.c $(LIB_OMP_AVX2) -o clu_bench_td_oz_mnd8_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=9  clu_bench_td.c $(LIB_OMP_AVX2) -o clu_bench_td_oz_mnd9_omp_avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=10 clu_bench_td.c $(LIB_OMP_AVX2) -o clu_bench_td_oz_mnd10_omp__avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=11 clu_bench_td.c $(LIB_OMP_AVX2) -o clu_bench_td_oz_mnd11_omp__avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=12 clu_bench_td.c $(LIB_OMP_AVX2) -o clu_bench_td_oz_mnd12_omp__avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=13 clu_bench_td.c $(LIB_OMP_AVX2) -o clu_bench_td_oz_mnd13_omp__avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=14 clu_bench_td.c $(LIB_OMP_AVX2) -o clu_bench_td_oz_mnd14_omp__avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=15 clu_bench_td.c $(LIB_OMP_AVX2) -o clu_bench_td_oz_mnd15_omp__avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=16 clu_bench_td.c $(LIB_OMP_AVX2) -o clu_bench_td_oz_mnd16_omp__avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=17 clu_bench_td.c $(LIB_OMP_AVX2) -o clu_bench_td_oz_mnd17_omp__avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=18 clu_bench_td.c $(LIB_OMP_AVX2) -o clu_bench_td_oz_mnd18_omp__avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=19 clu_bench_td.c $(LIB_OMP_AVX2) -o clu_bench_td_oz_mnd19_omp__avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=20 clu_bench_td.c $(LIB_OMP_AVX2) -o clu_bench_td_oz_mnd20_omp__avx2
+	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=32 clu_bench_td.c $(LIB_OMP_AVX2) -o clu_bench_td_oz_mnd32_omp__avx2
+
+
+#---------------------------------------
+# Matrix-Matrix Multiplication
+#---------------------------------------
+matmul_bench_dd: matmulbench_dd.cc
+	$(CPP) -DUSE_DDLINEAR $(INC) matmulbench_dd.cc $(LIB) -o matmulbench_dd
+	$(CPP) -DUSE_DDLINEAR -DUSE_MBLAS $(INC) -I$(MPLAPACK_INC_PATH) $(QD_INC) matmulbench_dd.cc -L$(MPLAPACK_LIB_PATH) -l$(MPBLAS_LIBNAME)_dd $(LIB) -o matmulbench_dd_mblas
+	$(CPP) -DUSE_DDLINEAR -DUSE_BLOCK $(INC) -I$(MPLAPACK_INC_PATH) $(QD_INC) matmulbench_dd.cc $(LIB) -o matmulbench_dd_block
+	$(CPP) -DUSE_DDLINEAR -DUSE_STRASSEN $(INC) -I$(MPLAPACK_INC_PATH) $(QD_INC) matmulbench_dd.cc $(LIB) -o matmulbench_dd_strassen
+#	$(CPP) -DUSE_DDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=2 $(INC) $(QD_INC) matmulbench_dd.cc $(LIB) -o matmulbench_dd_oz_mnd2
+#	$(CPP) -DUSE_DDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=4 $(INC) $(QD_INC) matmulbench_dd.cc $(LIB) -o matmulbench_dd_oz_mnd4
+#	$(CPP) -DUSE_DDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=8 $(INC) $(QD_INC) matmulbench_dd.cc $(LIB) -o matmulbench_dd_oz_mnd8
+#	$(CPP) -DUSE_DDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=16 $(INC) $(QD_INC) matmulbench_dd.cc $(LIB) -o matmulbench_dd_oz_mnd16
+	$(CPP) -DUSE_DDLINEAR -DUSE_OZ $(INC) -I$(MPLAPACK_INC_PATH) $(QD_INC) matmulbench_dd.cc $(LIB) -o matmulbench_dd_oz
+#	$(CPP) -DUSE_DDLINEAR -DUSE_STRASSEN -DUSE_WINOGRAD $(INC) $(QD_INC) matmulbench_dd.cc $(LIB_WINOGRAD) -o matmulbench_dd_winograd
+	$(CPP) $(OPENMP) -DUSE_OMP -DUSE_DDLINEAR $(INC) -I$(MPLAPACK_INC_PATH) matmulbench_dd.cc $(LIB_OMP) -o matmulbench_dd_omp
+	$(CPP) $(OPENMP) -DUSE_OMP -DUSE_DDLINEAR -DUSE_MBLAS $(INC) -I$(MPLAPACK_INC_PATH) $(QD_INC) matmulbench_dd.cc -L$(MPLAPACK_LIB_PATH) -l$(MPBLAS_LIBNAME)_dd $(LIB_OMP) -o matmulbench_dd_mblas_omp
+	$(CPP) $(OPENMP) -DUSE_OMP -DUSE_DDLINEAR -DUSE_BLOCK $(INC) -I$(MPLAPACK_INC_PATH) $(QD_INC) matmulbench_dd.cc $(LIB_OMP) -o matmulbench_dd_block_omp
+	$(CPP) $(OPENMP) -DUSE_OMP -DUSE_DDLINEAR -DUSE_STRASSEN $(INC) -I$(MPLAPACK_INC_PATH) $(QD_INC) matmulbench_dd.cc $(LIB_OMP) -o matmulbench_dd_strassen_omp
+#	$(CPP) $(OPENMP) -DUSE_OMP -DUSE_DDLINEAR -DUSE_STRASSEN -DUSE_WINOGRAD $(INC) $(QD_INC) #matmulbench_dd.cc $(LIB_WINOGRAD_OMP) -o matmulbench_dd_winograd_omp
+	$(CPP) $(OPENMP) -DUSE_OMP -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_OZ $(INC) -I$(MPLAPACK_INC_PATH) $(QD_INC) matmulbench_dd.cc $(LIB_OMP) -o matmulbench_dd_oz_omp
+
+matmul_bench_dd_avx2: matmulbench_dd.cc
+	$(CPP_AVX2) -DUSE_DDLINEAR $(INC) matmulbench_dd.cc $(LIB_AVX2) -o matmulbench_dd_avx2
+	$(CPP_AVX2) -DUSE_DDLINEAR -DUSE_MBLAS $(INC) $(QD_INC) -I$(MPLAPACK_INC_PATH) matmulbench_dd.cc -L$(MPLAPACK_LIB_PATH) -l$(MPBLAS_LIBNAME)_dd $(LIB_AVX2) -o matmulbench_dd_mblas_avx2
+	$(CPP_AVX2) -DUSE_DDLINEAR -DUSE_BLOCK $(INC) $(QD_INC) matmulbench_dd.cc $(LIB_AVX2) -o matmulbench_dd_block_avx2
+	$(CPP_AVX2) -DUSE_DDLINEAR -DUSE_STRASSEN $(INC) $(QD_INC) matmulbench_dd.cc $(LIB_AVX2) -o matmulbench_dd_strassen_avx2
+#	$(CPP_AVX2) -DUSE_DDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=2 $(INC) $(QD_INC) matmulbench_dd.cc $(LIB_AVX2) -o matmulbench_dd_oz_mnd2_avx2
+#	$(CPP_AVX2) -DUSE_DDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=4 $(INC) $(QD_INC) matmulbench_dd.cc $(LIB_AVX2) -o matmulbench_dd_oz_mnd4_avx2
+#	$(CPP_AVX2) -DUSE_DDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=8 $(INC) $(QD_INC) matmulbench_dd.cc $(LIB_AVX2) -o matmulbench_dd_oz_mnd8_avx2
+#	$(CPP_AVX2) -DUSE_DDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=16 $(INC) $(QD_INC) matmulbench_dd.cc $(LIB_AVX2) -o matmulbench_dd_oz_mnd16_avx2
+	$(CPP_AVX2) -DUSE_DDLINEAR -DUSE_OZ $(INC) $(QD_INC) matmulbench_dd.cc $(LIB_AVX2) -o matmulbench_dd_oz_avx2
+#	$(CPP_AVX2) -DUSE_DDLINEAR -DUSE_STRASSEN -DUSE_WINOGRAD $(INC) $(QD_INC) matmulbench_dd.cc $(LIB_WINOGRAD_AVX2) -o matmulbench_dd_winograd_avx2
+	$(CPP_AVX2) $(OPENMP) -DUSE_OMP -DUSE_DDLINEAR $(INC) matmulbench_dd.cc $(LIB_AVX2_OMP) -o matmulbench_dd_omp_avx2
+#	$(CPP) $(OPENMP) -DUSE_OMP -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR $(INC) matmulbench_dd.cc $(LIB_CC) -o matmulbench_dd_cc_omp_avx2
+	$(CPP_AVX2) $(OPENMP) -DUSE_OMP -DUSE_DDLINEAR -DUSE_MBLAS $(INC) $(QD_INC) -I$(MPLAPACK_INC_PATH) matmulbench_dd.cc -L$(MPLAPACK_LIB_PATH) -l$(MPBLAS_LIBNAME)_dd $(LIB_AVX2_OMP) -o matmulbench_dd_mblas_omp_avx2
+	$(CPP_AVX2) $(OPENMP) -DUSE_OMP -DUSE_DDLINEAR -DUSE_BLOCK $(INC) $(QD_INC) matmulbench_dd.cc $(LIB_AVX2_OMP) -o matmulbench_dd_block_omp_avx2
+	$(CPP_AVX2) $(OPENMP) -DUSE_OMP -DUSE_DDLINEAR -DUSE_STRASSEN $(INC) $(QD_INC) matmulbench_dd.cc $(LIB_AVX2_OMP) -o matmulbench_dd_strassen_omp_avx2
+#	$(CPP_AVX2) $(OPENMP) -DUSE_OMP -DUSE_DDLINEAR -DUSE_STRASSEN -DUSE_WINOGRAD $(INC) $(QD_INC) matmulbench_dd.cc $(LIB_WINOGRAD_AVX2_OMP) -o matmulbench_dd_winograd_omp_avx2
+	$(CPP_AVX2) $(OPENMP) -DUSE_OMP -DUSE_DDLINEAR -DUSE_OZ $(INC) $(QD_INC) matmulbench_dd.cc $(LIB_AVX2_OMP) -o matmulbench_dd_oz_omp_avx2
+
+matmul_bench_dd_neon: matmulbench_dd.cc
+	$(CPP_NEON) -DUSE_DDLINEAR $(INC) -I$(MPLAPACK_INC_PATH) matmulbench_dd.cc $(LIB_NEON) -o matmulbench_dd_neon
+	$(CPP_NEON) -DUSE_DDLINEAR -DUSE_MBLAS $(INC) -I$(MPLAPACK_INC_PATH) $(QD_INC) matmulbench_dd.cc -L$(MPLAPACK_LIB_PATH) -l$(MPBLAS_LIBNAME)_dd $(LIB_NEON) -o matmulbench_dd_mblas_neon
+	$(CPP_NEON) -DUSE_DDLINEAR -DUSE_BLOCK $(INC) -I$(MPLAPACK_INC_PATH) $(QD_INC) matmulbench_dd.cc $(LIB_NEON) -o matmulbench_dd_block_neon
+	$(CPP_NEON) -DUSE_DDLINEAR -DUSE_STRASSEN $(INC) -I$(MPLAPACK_INC_PATH) $(QD_INC) matmulbench_dd.cc $(LIB_NEON) -o matmulbench_dd_strassen_neon
+	$(CPP_NEON) -DUSE_DDLINEAR -DUSE_OZ $(INC) -I$(MPLAPACK_INC_PATH) $(QD_INC) matmulbench_dd.cc $(LIB_NEON) -o matmulbench_dd_oz_neon
+#	$(CPP_NEON) -DUSE_DDLINEAR -DUSE_STRASSEN -DUSE_WINOGRAD $(INC) $(QD_INC) matmulbench_dd.cc $(LIB_WINOGRAD_NEON) -o matmulbench_dd_winograd_avx2
+	$(CPP_NEON) $(OPENMP) -DUSE_OMP -DUSE_DDLINEAR -I$(MPLAPACK_INC_PATH) $(INC) matmulbench_dd.cc $(LIB_NEON_OMP) -o matmulbench_dd_omp_neon
+	$(CPP_NEON) $(OPENMP) -DUSE_OMP -DUSE_DDLINEAR -DUSE_MBLAS $(INC) -I$(MPLAPACK_INC_PATH) $(QD_INC) matmulbench_dd.cc -L$(MPLAPACK_LIB_PATH) -l$(MPBLAS_LIBNAME)_dd $(LIB_NEON_OMP) -o matmulbench_dd_mblas_omp_neon
+	$(CPP_NEON) $(OPENMP) -DUSE_OMP -DUSE_DDLINEAR -DUSE_BLOCK $(INC) -I$(MPLAPACK_INC_PATH) $(QD_INC) matmulbench_dd.cc $(LIB_NEON_OMP) -o matmulbench_dd_block_omp_neon
+	$(CPP_NEON) $(OPENMP) -DUSE_OMP -DUSE_DDLINEAR -DUSE_STRASSEN $(INC) -I$(MPLAPACK_INC_PATH) $(QD_INC) matmulbench_dd.cc $(LIB_NEON_OMP) -o matmulbench_dd_strassen_omp_neon
+#	$(CPP_NEON) $(OPENMP) -DUSE_OMP -DUSE_DDLINEAR -DUSE_STRASSEN -DUSE_WINOGRAD $(INC) $(QD_INC) matmulbench_dd.cc $(LIB_WINOGRAD_AVX2_OMP) -o matmulbench_dd_winograd_omp_avx2
+	$(CPP_NEON) $(OPENMP) -DUSE_OMP -DUSE_DDLINEAR -DUSE_OZ $(INC) -I$(MPLAPACK_INC_PATH) $(QD_INC) matmulbench_dd.cc $(LIB_NEON_OMP) -o matmulbench_dd_oz_omp_neon
+
+matmul_bench_dd_avx512: matmulbench_dd.cc
+	$(CPP_AVX512) -DUSE_DDLINEAR $(INC) matmulbench_dd.cc $(LIB_AVX512) -o matmulbench_dd_avx512
+	$(CPP_AVX512) -DUSE_DDLINEAR -DUSE_MBLAS $(INC) $(QD_INC) -I$(MPLAPACK_INC_PATH) matmulbench_dd.cc -L$(MPLAPACK_LIB_PATH) -l$(MPBLAS_LIBNAME)_dd $(LIB_AVX512) -o matmulbench_dd_mblas_avx512
+	$(CPP_AVX512) -DUSE_DDLINEAR -DUSE_BLOCK $(INC) $(QD_INC) matmulbench_dd.cc $(LIB_AVX512) -o matmulbench_dd_block_avx512
+	$(CPP_AVX512) -DUSE_DDLINEAR -DUSE_STRASSEN $(INC) $(QD_INC) matmulbench_dd.cc $(LIB_AVX512) -o matmulbench_dd_strassen_avx512
+	$(CPP_AVX512) -DUSE_DDLINEAR -DUSE_OZ $(INC) $(QD_INC) matmulbench_dd.cc $(LIB_AVX512) -o matmulbench_dd_oz_avx512
+#	$(CPP_AVX512) -DUSE_DDLINEAR -DUSE_STRASSEN -DUSE_WINOGRAD $(INC) $(QD_INC) matmulbench_dd.cc $(LIB_WINOGRAD_AVX512) -o matmulbench_dd_winograd_avx512
+	$(CPP_AVX512) $(OPENMP) -DUSE_OMP -DUSE_DDLINEAR $(INC) matmulbench_dd.cc $(LIB_AVX512_OMP) -o matmulbench_dd_omp_avx512
+#	$(CPP) $(OPENMP) -DUSE_OMP -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR $(INC) matmulbench_dd.cc $(LIB_CC) -o matmulbench_dd_cc_omp_avx512
+	$(CPP_AVX512) $(OPENMP) -DUSE_OMP -DUSE_DDLINEAR -DUSE_MBLAS $(INC) $(QD_INC) matmulbench_dd.cc -L$(MPLAPACK_LIB_PATH) -l$(MPBLAS_LIBNAME)_dd $(LIB_AVX512_OMP) -o matmulbench_dd_mblas_omp_avx512
+	$(CPP_AVX512) $(OPENMP) -DUSE_OMP -DUSE_DDLINEAR -DUSE_BLOCK $(INC) $(QD_INC) matmulbench_dd.cc $(LIB_AVX512_OMP) -o matmulbench_dd_block_omp_avx512
+	$(CPP_AVX512) $(OPENMP) -DUSE_OMP -DUSE_DDLINEAR -DUSE_STRASSEN $(INC) $(QD_INC) matmulbench_dd.cc $(LIB_AVX512_OMP) -o matmulbench_dd_strassen_omp_avx512
+#	$(CPP_AVX512) $(OPENMP) -DUSE_OMP -DUSE_DDLINEAR -DUSE_STRASSEN -DUSE_WINOGRAD $(INC) $(QD_INC) matmulbench_dd.cc $(LIB_WINOGRAD_AVX512_OMP) -o matmulbench_dd_winograd_omp_avx512
+
+matmul_bench_qd: matmulbench_qd.cc
+	$(CPP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_qd.cc $(LIB) -o matmulbench_qd
+	$(CPP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_MBLAS $(INC) $(QD_INC) -I$(MPLAPACK_INC_PATH) matmulbench_qd.cc -L$(MPLAPACK_LIB_PATH) -l$(MPBLAS_LIBNAME)_qd $(LIB) -o matmulbench_qd_mblas
+	$(CPP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_BLOCK $(INC) $(QD_INC) -I$(MPLAPACK_INC_PATH) matmulbench_qd.cc $(LIB) -o matmulbench_qd_block
+#	$(CPP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=2 $(INC) $(QD_INC) matmulbench_qd.cc $(LIB) -o matmulbench_qd_oz_mnd2
+#	$(CPP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=4 $(INC) $(QD_INC) matmulbench_qd.cc $(LIB) -o matmulbench_qd_oz_mnd4
+#	$(CPP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=8 $(INC) $(QD_INC) matmulbench_qd.cc $(LIB) -o matmulbench_qd_oz_mnd8
+#	$(CPP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=16 $(INC) $(QD_INC) matmulbench_qd.cc $(LIB) -o matmulbench_qd_oz_mnd16
+	$(CPP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_OZ $(INC) $(QD_INC) -I$(MPLAPACK_INC_PATH) matmulbench_qd.cc $(LIB) -o matmulbench_qd_oz
+	$(CPP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_STRASSEN $(INC) $(QD_INC) -I$(MPLAPACK_INC_PATH) matmulbench_qd.cc $(LIB) -o matmulbench_qd_strassen
+#	$(CPP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_STRASSEN -DUSE_WINOGRAD $(INC) $(QD_INC) matmulbench_qd.cc $(LIB_WINOGRAD) -o matmulbench_qd_winograd
+	$(CPP) $(OPENMP) -DUSE_OMP -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) $(QD_INC) -I$(MPLAPACK_INC_PATH) matmulbench_qd.cc $(LIB_OMP) -o matmulbench_qd_omp
+#	$(CPP) $(OPENMP) -DUSE_OMP -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) $(QD_INC) matmulbench_qd.cc $(LIB_CC) -o matmulbench_qd_cc_omp
+	$(CPP) $(OPENMP) -DUSE_OMP -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_MBLAS -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_qd.cc -L$(MPLAPACK_LIB_PATH) -l$(MPBLAS_LIBNAME)_qd $(LIB_OMP) -o matmulbench_qd_mblas_omp
+	$(CPP) $(OPENMP) -DUSE_OMP -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_BLOCK $(INC) $(QD_INC) -I$(MPLAPACK_INC_PATH) matmulbench_qd.cc $(LIB_OMP) -o matmulbench_qd_block_omp
+	$(CPP) $(OPENMP) -DUSE_OMP -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_STRASSEN $(INC) $(QD_INC) -I$(MPLAPACK_INC_PATH) matmulbench_qd.cc $(LIB_OMP) -o matmulbench_qd_strassen_omp
+#	$(CPP) $(OPENMP) -DUSE_OMP -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_STRASSEN -DUSE_WINOGRAD $(INC) $(QD_INC) matmulbench_qd.cc $(LIB_WINOGRAD_OMP) -o matmulbench_qd_winograd_omp
+	$(CPP) $(OPENMP) -DUSE_OMP -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_OZ $(INC) $(QD_INC) -I$(MPLAPACK_INC_PATH) matmulbench_qd.cc $(LIB_OMP) -o matmulbench_qd_oz_omp
+
+matmul_bench_qd_avx2: matmulbench_qd.cc
+	$(CPP_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) $(QD_INC) -I$(MPLAPACK_INC_PATH) matmulbench_qd.cc $(LIB_AVX2) -o matmulbench_qd_avx2
+	$(CPP_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_MBLAS $(INC) $(QD_INC) -I$(MPLAPACK_INC_PATH) matmulbench_qd.cc -L$(MPLAPACK_LIB_PATH) -l$(MPBLAS_LIBNAME)_qd $(LIB_AVX2) -o matmulbench_qd_mblas_avx2
+#	$(CPP_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_BLOCK $(INC) $(QD_INC) -I$(MPLAPACK_INC_PATH)　matmulbench_qd.cc $(LIB_AVX2) -o matmulbench_qd_block_avx2
+#	$(CPP_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=2 $(INC) $(QD_INC) matmulbench_qd.cc $(LIB_AVX2) -o matmulbench_qd_oz_mnd2_avx2
+#	$(CPP_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=4 $(INC) $(QD_INC) matmulbench_qd.cc $(LIB_AVX2) -o matmulbench_qd_oz_mnd4_avx2
+#	$(CPP_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=8 $(INC) $(QD_INC) matmulbench_qd.cc $(LIB_AVX2) -o matmulbench_qd_oz_mnd8_avx2
+#	$(CPP_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=9 $(INC) $(QD_INC) matmulbench_qd.cc $(LIB_AVX2) -o matmulbench_qd_oz_mnd9_avx2
+#	$(CPP_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=10 $(INC) $(QD_INC) matmulbench_qd.cc $(LIB_AVX2) -o matmulbench_qd_oz_mnd10_avx2
+#	$(CPP_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=11 $(INC) $(QD_INC) matmulbench_qd.cc $(LIB_AVX2) -o matmulbench_qd_oz_mnd11_avx2
+#	$(CPP_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=12 $(INC) $(QD_INC) matmulbench_qd.cc $(LIB_AVX2) -o matmulbench_qd_oz_mnd12_avx2
+#	$(CPP_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=16 $(INC) $(QD_INC) matmulbench_qd.cc $(LIB_AVX2) -o matmulbench_qd_oz_mnd16_avx2
+#	$(CPP_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_OZ $(INC) $(QD_INC) matmulbench_qd.cc $(LIB_AVX2) -o matmulbench_qd_oz_avx2
+	$(CPP_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_STRASSEN $(INC) $(QD_INC) matmulbench_qd.cc $(LIB_AVX2) -o matmulbench_qd_strassen_avx2
+#	$(CPP_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_STRASSEN -DUSE_WINOGRAD $(INC) $(QD_INC) matmulbench_qd.cc $(LIB_WINOGRAD_AVX2) -o matmulbench_qd_winograd_avx2
+	$(CPP_AVX2) $(OPENMP) -DUSE_OMP -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) $(QD_INC) matmulbench_qd.cc $(LIB_AVX2_OMP) -o matmulbench_qd_omp_avx2
+#	$(CPP_AVX2) $(OPENMP) -DUSE_OMP -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) $(QD_INC) matmulbench_qd.cc $(LIB_CC) -o matmulbench_qd_cc_omp
+	$(CPP_AVX2) $(OPENMP) -DUSE_OMP -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_MBLAS $(INC) $(QD_INC) -I$(MPLAPACK_INC_PATH) matmulbench_qd.cc -L$(MPLAPACK_LIB_PATH) -l$(MPBLAS_LIBNAME)_qd $(LIB_AVX2_OMP) -o matmulbench_qd_mblas_omp_avx2
+	$(CPP_AVX2) $(OPENMP) -DUSE_OMP -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_BLOCK $(INC) $(QD_INC) matmulbench_qd.cc $(LIB_AVX2_OMP) -o matmulbench_qd_block_omp_avx2
+	$(CPP_AVX2) $(OPENMP) -DUSE_OMP -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_STRASSEN $(INC) $(QD_INC) matmulbench_qd.cc $(LIB_AVX2_OMP) -o matmulbench_qd_strassen_omp_avx2
+#	$(CPP_AVX2) $(OPENMP) -DUSE_OMP -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_STRASSEN -DUSE_WINOGRAD $(INC) $(QD_INC) matmulbench_qd.cc $(LIB_WINOGRAD_AVX2_OMP) -o matmulbench_qd_winograd_omp_avx2
+	$(CPP_AVX2) $(OPENMP) -DUSE_OMP -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_OZ $(INC) $(QD_INC) matmulbench_qd.cc $(LIB_AVX2_OMP) -o matmulbench_qd_oz_omp
+
+matmul_bench_qd_avx512: matmulbench_qd.cc
+	$(CPP_AVX512) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) $(QD_INC) matmulbench_qd.cc $(LIB_AVX512) -o matmulbench_qd_avx512
+	$(CPP_AVX512) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_MBLAS -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_qd.cc -L$(MPLAPACK_LIB_PATH) -l$(MPBLAS_LIBNAME)_qd $(LIB_AVX512) -o matmulbench_qd_mblas_avx512
+	$(CPP_AVX512) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_BLOCK $(INC) $(QD_INC) matmulbench_qd.cc $(LIB_AVX512) -o matmulbench_qd_block_avx512
+	$(CPP_AVX512) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_STRASSEN $(INC) $(QD_INC) matmulbench_qd.cc $(LIB_AVX512) -o matmulbench_qd_strassen_avx512
+	$(CPP_AVX512) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_OZ $(INC) $(QD_INC) matmulbench_qd.cc $(LIB_AVX512) -o matmulbench_qd_oz_avx512
+#	$(CPP_AVX512) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_STRASSEN -DUSE_WINOGRAD $(INC) $(QD_INC) matmulbench_qd.cc $(LIB_WINOGRAD_AVX512) -o matmulbench_qd_winograd_avx512
+	$(CPP_AVX512) $(OPENMP) -DUSE_OMP -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) $(QD_INC) matmulbench_qd.cc $(LIB_AVX512_OMP) -o matmulbench_qd_omp_avx512
+#	$(CPP_AVX512) $(OPENMP) -DUSE_OMP -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) $(QD_INC) matmulbench_qd.cc $(LIB_CC) -o matmulbench_qd_cc_omp
+	$(CPP_AVX512) $(OPENMP) -DUSE_OMP -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_MBLAS -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_qd.cc -L$(MPLAPACK_LIB_PATH) -l$(MPBLAS_LIBNAME)_qd $(LIB_AVX512_OMP) -o matmulbench_qd_mblas_omp_avx512
+	$(CPP_AVX512) $(OPENMP) -DUSE_OMP -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_BLOCK $(INC) $(QD_INC) matmulbench_qd.cc $(LIB_AVX512_OMP) -o matmulbench_qd_block_omp_avx512
+	$(CPP_AVX512) $(OPENMP) -DUSE_OMP -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_STRASSEN $(INC) $(QD_INC) matmulbench_qd.cc $(LIB_AVX512_OMP) -o matmulbench_qd_strassen_omp_avx512
+#	$(CPP_AVX512) $(OPENMP) -DUSE_OMP -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_STRASSEN -DUSE_WINOGRAD $(INC) $(QD_INC) matmulbench_qd.cc $(LIB_WINOGRAD_AVX512_OMP) -o matmulbench_qd_winograd_omp_avx512
+
+matmul_bench_qd_neon: matmulbench_qd.cc
+	$(CPP_NEON) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -I$(MPLAPACK_INC_PATH) matmulbench_qd.cc $(LIB_NEON) -o matmulbench_qd_neon
+	$(CPP_NEON) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_MBLAS $(INC) -I$(MPLAPACK_INC_PATH) $(QD_INC) matmulbench_qd.cc -L$(MPLAPACK_LIB_PATH) -l$(MPBLAS_LIBNAME)_qd $(LIB_NEON) -o matmulbench_qd_mblas_neon
+	$(CPP_NEON) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_BLOCK $(INC) -I$(MPLAPACK_INC_PATH) $(QD_INC) matmulbench_qd.cc $(LIB_NEON) -o matmulbench_qd_block_neon
+	$(CPP_NEON) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_STRASSEN $(INC) -I$(MPLAPACK_INC_PATH) $(QD_INC) matmulbench_qd.cc $(LIB_NEON) -o matmulbench_qd_strassen_neon
+	$(CPP_NEON) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_OZ $(INC) -I$(MPLAPACK_INC_PATH) $(QD_INC) matmulbench_qd.cc $(LIB_NEON) -o matmulbench_qd_oz_neon
+#	$(CPP_NEON) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_STRASSEN -DUSE_WINOGRAD $(INC) $(QD_INC) matmulbench_qd.cc $(LIB_WINOGRAD_NEON) -o matmulbench_dd_winograd_avx2
+	$(CPP_NEON) $(OPENMP) -DUSE_OMP -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -I$(MPLAPACK_INC_PATH) $(INC) matmulbench_qd.cc $(LIB_NEON_OMP) -o matmulbench_qd_omp_neon
+	$(CPP_NEON) $(OPENMP) -DUSE_OMP -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_MBLAS $(INC) -I$(MPLAPACK_INC_PATH) $(QD_INC) matmulbench_qd.cc -l$(MPBLAS_LIBNAME)_qd $(LIB_NEON_OMP) -o matmulbench_qd_mblas_omp_neon
+	$(CPP_NEON) $(OPENMP) -DUSE_OMP -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_BLOCK $(INC) -I$(MPLAPACK_INC_PATH) $(QD_INC) matmulbench_qd.cc $(LIB_NEON_OMP) -o matmulbench_qd_block_omp_neon
+	$(CPP_NEON) $(OPENMP) -DUSE_OMP -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_STRASSEN $(INC) -I$(MPLAPACK_INC_PATH) $(QD_INC) matmulbench_qd.cc $(LIB_NEON_OMP) -o matmulbench_qd_strassen_omp_neon
+#	$(CPP_NEON) $(OPENMP) -DUSE_OMP -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_STRASSEN -DUSE_WINOGRAD $(INC) $(QD_INC) matmulbench_qd.cc $(LIB_WINOGRAD_AVX2_OMP) -o matmulbench_qd_winograd_omp_avx2
+#	$(CPP_NEON) $(OPENMP) -DUSE_OMP -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_OZ $(INC) -I$(MPLAPACK_INC_PATH) $(QD_INC) matmulbench_qd.cc $(LIB_NEON_OMP) -o matmulbench_qd_oz_omp_neon
+
+matmul_bench_td: matmulbench_td.cc
+	$(CPP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) $(QD_INC) matmulbench_td.cc $(LIB) -o matmulbench_td
+	$(CPP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_BLOCK $(INC) $(QD_INC) matmulbench_td.cc $(LIB) -o matmulbench_td_block
+	$(CPP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_STRASSEN $(INC) $(QD_INC) matmulbench_td.cc $(LIB) -o matmulbench_td_strassen
+	$(CPP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) $(QD_INC) matmulbench_td.cc $(LIB) -o matmulbench_td_oz_mnd4
+#	$(CPP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=8 $(INC) $(QD_INC) matmulbench_td.cc $(LIB) -o matmulbench_td_oz_mnd8
+#	$(CPP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=16 $(INC) $(QD_INC) matmulbench_td.cc $(LIB) -o matmulbench_td_oz_mnd16
+	$(CPP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_OZ $(INC) $(QD_INC) matmulbench_td.cc $(LIB) -o matmulbench_td_oz
+#	$(CPP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_STRASSEN -DUSE_WINOGRAD $(INC) $(QD_INC) matmulbench_td.cc $(LIB_WINOGRAD) -o matmulbench_td_winograd
+	$(CPP) $(OPENMP) -DUSE_OMP -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) $(QD_INC) matmulbench_td.cc $(LIB_OMP) -o matmulbench_td_omp
+	$(CPP) $(OPENMP) -DUSE_OMP -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_BLOCK $(INC) $(QD_INC) matmulbench_td.cc $(LIB_OMP) -o matmulbench_td_block_omp
+	$(CPP) $(OPENMP) -DUSE_OMP -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_STRASSEN $(INC) $(QD_INC) matmulbench_td.cc $(LIB_OMP) -o matmulbench_td_strassen_omp
+#	$(CPP) $(OPENMP) -DUSE_OMP -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_STRASSEN -DUSE_WINOGRAD $(INC) $(QD_INC) matmulbench_td.cc $(LIB_WINOGRAD_OMP) -o matmulbench_td_winograd_omp
+	$(CPP) $(OPENMP) -DUSE_OMP -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_OZ $(INC) $(QD_INC) matmulbench_td.cc $(LIB_OMP) -o matmulbench_td_oz_omp
+
+matmul_bench_td_avx2: matmulbench_td.cc
+	$(CPP_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) $(QD_INC) matmulbench_td.cc $(LIB_AVX2) -o matmulbench_td_avx2
+	$(CPP_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_BLOCK $(INC) $(QD_INC) matmulbench_td.cc $(LIB_AVX2) -o matmulbench_td_block_avx2
+#	$(CPP_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=4 $(INC) $(QD_INC) matmulbench_td.cc $(LIB_AVX2) -o matmulbench_td_oz_mnd4_avx2
+#	$(CPP_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=8 $(INC) $(QD_INC) matmulbench_td.cc $(LIB_AVX2) -o matmulbench_td_oz_mnd8_avx2
+#	$(CPP_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_OZ -DOZ_MAX_NUM_DIV=16 $(INC) $(QD_INC) matmulbench_td.cc $(LIB_AVX2) -o matmulbench_td_oz_mnd16_avx2
+	$(CPP_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_OZ $(INC) $(QD_INC) matmulbench_td.cc $(LIB) -o matmulbench_td_oz_avx2
+	$(CPP_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_STRASSEN $(INC) $(QD_INC) matmulbench_td.cc $(LIB_AVX2) -o matmulbench_td_strassen_avx2
+#	$(CPP_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_STRASSEN -DUSE_WINOGRAD $(INC) $(QD_INC) matmulbench_td.cc $(LIB_WINOGRAD_AVX2) -o matmulbench_td_winograd_avx2
+	$(CPP_AVX2) $(OPENMP) -DUSE_OMP -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) $(QD_INC) matmulbench_td.cc $(LIB_AVX2_OMP) -o matmulbench_td_omp_avx2
+	$(CPP_AVX2) $(OPENMP) -DUSE_OMP -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_BLOCK $(INC) $(QD_INC) matmulbench_td.cc $(LIB_AVX2_OMP) -o matmulbench_td_block_omp_avx2
+	$(CPP_AVX2) $(OPENMP) -DUSE_OMP -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_STRASSEN $(INC) $(QD_INC) matmulbench_td.cc $(LIB_AVX2_OMP) -o matmulbench_td_strassen_omp_avx2
+#	$(CPP_AVX2) $(OPENMP) -DUSE_OMP -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_STRASSEN -DUSE_WINOGRAD $(INC) $(QD_INC) matmulbench_td.cc $(LIB_WINOGRAD_AVX2_OMP) -o matmulbench_td_winograd_omp_avx2
+	$(CPP_AVX2) $(OPENMP) -DUSE_OMP -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_OZ $(INC) $(QD_INC) matmulbench_td.cc $(LIB_AVX2_OMP) -o matmulbench_td_oz_omp
+
+matmul_bench_td_avx512: matmulbench_td.cc
+	$(CPP_AVX512) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) $(QD_INC) matmulbench_td.cc $(LIB_AVX512) -o matmulbench_td_avx512
+	$(CPP_AVX512) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_BLOCK $(INC) $(QD_INC) matmulbench_td.cc $(LIB_AVX512) -o matmulbench_td_block_avx512
+	$(CPP_AVX512) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_STRASSEN $(INC) $(QD_INC) matmulbench_td.cc $(LIB_AVX512) -o matmulbench_td_strassen_avx512
+	$(CPP_AVX512) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_OZ $(INC) $(QD_INC) matmulbench_td.cc $(LIB_AVX512) -o matmulbench_td_oz_avx512
+#	$(CPP_AVX512) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_STRASSEN -DUSE_WINOGRAD $(INC) $(QD_INC) matmulbench_td.cc $(LIB_WINOGRAD_AVX512) -o matmulbench_td_winograd_avx512
+	$(CPP_AVX512) $(OPENMP) -DUSE_OMP -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) $(QD_INC) matmulbench_td.cc $(LIB_AVX512_OMP) -o matmulbench_td_omp_avx512
+	$(CPP_AVX512) $(OPENMP) -DUSE_OMP -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_BLOCK $(INC) $(QD_INC) matmulbench_td.cc $(LIB_AVX512_OMP) -o matmulbench_td_block_omp_avx512
+	$(CPP_AVX512) $(OPENMP) -DUSE_OMP -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_STRASSEN $(INC) $(QD_INC) matmulbench_td.cc $(LIB_AVX512_OMP) -o matmulbench_td_strassen_omp_avx512
+#	$(CPP_AVX512) $(OPENMP) -DUSE_OMP -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_STRASSEN -DUSE_WINOGRAD $(INC) $(QD_INC) matmulbench_td.cc $(LIB_WINOGRAD_AVX512_OMP) -o matmulbench_td_winograd_omp_avx512
+
+matmul_bench_td_neon: matmulbench_td.cc
+	$(CPP_NEON) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -I$(MPLAPACK_INC_PATH) matmulbench_td.cc $(LIB_NEON) -o matmulbench_td_neon
+	$(CPP_NEON) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_BLOCK $(INC) -I$(MPLAPACK_INC_PATH) $(QD_INC) matmulbench_td.cc $(LIB_NEON) -o matmulbench_td_block_neon
+	$(CPP_NEON) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_STRASSEN $(INC) -I$(MPLAPACK_INC_PATH) $(QD_INC) matmulbench_td.cc $(LIB_NEON) -o matmulbench_td_strassen_neon
+	$(CPP_NEON) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_OZ $(INC) -I$(MPLAPACK_INC_PATH) $(QD_INC) matmulbench_td.cc $(LIB_NEON) -o matmulbench_td_oz_neon
+#	$(CPP_NEON) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_STRASSEN -DUSE_WINOGRAD $(INC) $(QD_INC) matmulbench_td.cc $(LIB_WINOGRAD_NEON) -o matmulbench_td_winograd_avx2
+#	$(CPP_NEON) $(OPENMP) -DUSE_OMP -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -I$(MPLAPACK_INC_PATH) $(INC) matmulbench_td.cc $(LIB_NEON_OMP) -o matmulbench_td_omp_neon
+#	$(CPP_NEON) $(OPENMP) -DUSE_OMP -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_MBLAS $(INC) -I$(MPLAPACK_INC_PATH) $(QD_INC) matmulbench_td.cc $(LIB_NEON_OMP) -o matmulbench_td_mblas_omp_neon
+#	$(CPP_NEON) $(OPENMP) -DUSE_OMP -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_BLOCK $(INC) -I$(MPLAPACK_INC_PATH) $(QD_INC) matmulbench_td.cc $(LIB_NEON_OMP) -o matmulbench_td_block_omp_neon
+#	$(CPP_NEON) $(OPENMP) -DUSE_OMP -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_STRASSEN $(INC) -I$(MPLAPACK_INC_PATH) $(QD_INC) matmulbench_td.cc $(LIB_NEON_OMP) -o matmulbench_td_strassen_omp_neon
+#	$(CPP_NEON) $(OPENMP) -DUSE_OMP -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_STRASSEN -DUSE_WINOGRAD $(INC) $(QD_INC) matmulbench_td.cc $(LIB_WINOGRAD_AVX2_OMP) -o matmulbench_td_winograd_omp_avx2
+#	$(CPP_NEON) $(OPENMP) -DUSE_OMP -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_OZ $(INC) -I$(MPLAPACK_INC_PATH) $(QD_INC) matmulbench_td.cc $(LIB_NEON_OMP) -o matmulbench_td_oz_omp_neon
+
+#matmulbench_mpfr: matmulbench_mpfr.cc matmulbench_mblas.cc Rgemm_mpfr.cpp
+matmulbench_mpfr: matmulbench_mpfr.cc Rgemm_mpfr.cpp
+	$(CPP) -DUSE_GMP -DUSE_MPFR $(INC) matmulbench_mpfr.cc $(LIB) -o matmulbench_mpfr
+	$(CPP) -DUSE_GMP -DUSE_MPFR -DUSE_MBLAS -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_mpfr.cc $(LIB) -o matmulbench_mpfr_mblas
+#	$(CPP) $(INC) $(QD_INC) Rgemm_mpfr.cpp $(LIB) -o Rgemm_mpfr
+#	$(CPP) $(OPENMP) $(INC) $(QD_INC) Rgemm_mpfr.cpp $(LIB) -o Rgemm_mpfr_omp
+	$(CPP) -DUSE_GMP -DUSE_MPFR -DUSE_BLOCK $(INC) $(QD_INC) matmulbench_mpfr.cc $(LIB) -o matmulbench_mpfr_block
+	$(CPP) -DUSE_GMP -DUSE_MPFR -DUSE_STRASSEN $(INC) $(QD_INC) matmulbench_mpfr.cc $(LIB) -o matmulbench_mpfr_strassen
+#	$(CPP) -DUSE_GMP -DUSE_MPFR -DUSE_OZ -DOZ_MAX_NUM_DIV=8 $(INC) $(QD_INC) matmulbench_mpfr.cc $(LIB) -o matmulbench_mpfr_oz_mnd8
+#	$(CPP) -DUSE_GMP -DUSE_MPFR -DUSE_OZ -DOZ_MAX_NUM_DIV=16 $(INC) $(QD_INC) matmulbench_mpfr.cc $(LIB) -o matmulbench_mpfr_oz_mnd16
+#	$(CPP) -DUSE_GMP -DUSE_MPFR -DUSE_OZ -DOZ_MAX_NUM_DIV=32 $(INC) $(QD_INC) matmulbench_mpfr.cc $(LIB) -o matmulbench_mpfr_oz_mnd32
+#	$(CPP) -DUSE_GMP -DUSE_MPFR -DUSE_OZ -DOZ_MAX_NUM_DIV=64 $(INC) $(QD_INC) matmulbench_mpfr.cc $(LIB) -o matmulbench_mpfr_oz_mnd64
+	$(CPP) -DUSE_GMP -DUSE_MPFR -DUSE_OZ $(INC) $(QD_INC) matmulbench_mpfr.cc $(LIB) -o matmulbench_mpfr_oz
+	$(CPP) -DUSE_GMP -DUSE_MPFR -DUSE_STRASSEN -DUSE_WINOGRAD $(INC) $(QD_INC) matmulbench_mpfr.cc $(LIB_WINOGRAD) -o matmulbench_mpfr_winograd
+	$(CPP) $(OPENMP) -DUSE_OMP -DUSE_GMP -DUSE_MPFR $(INC) matmulbench_mpfr.cc $(LIB_OMP) -o matmulbench_mpfr_omp
+	$(CPP) $(OPENMP) -DUSE_OMP -DUSE_GMP -DUSE_MPFR -DUSE_MBLAS -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_mpfr.cc $(LIB_OMP) -o matmulbench_mpfr_mblas_omp
+	$(CPP) $(OPENMP) -DUSE_OMP -DUSE_GMP -DUSE_MPFR -DUSE_BLOCK $(INC) $(QD_INC) matmulbench_mpfr.cc $(LIB_OMP) -o matmulbench_mpfr_block_omp
+	$(CPP) $(OPENMP) -DUSE_OMP -DUSE_GMP -DUSE_MPFR -DUSE_STRASSEN $(INC) $(QD_INC) matmulbench_mpfr.cc $(LIB_OMP) -o matmulbench_mpfr_strassen_omp
+	$(CPP) $(OPENMP) -DUSE_OMP -DUSE_GMP -DUSE_MPFR -DUSE_STRASSEN -DUSE_WINOGRAD $(INC) $(QD_INC) matmulbench_mpfr.cc $(LIB_WINOGRAD_OMP) -o matmulbench_mpfr_winograd_omp
+
+matmulbench_mpfr_avx2: matmulbench_mpfr.cc
+	$(CPP_AVX2) -DUSE_GMP -DUSE_MPFR $(INC) matmulbench_mpfr.cc $(LIB_AVX2) -o matmulbench_mpfr_avx2
+	$(CPP_AVX2) -DUSE_GMP -DUSE_MPFR -DUSE_MBLAS $(INC) $(QD_INC) matmulbench_mpfr.cc $(LIB_AVX2) -o matmulbench_mpfr_mblas_avx2
+	$(CPP_AVX2) -DUSE_GMP -DUSE_MPFR -DUSE_BLOCK $(INC) $(QD_INC) matmulbench_mpfr.cc $(LIB_AVX2) -o matmulbench_mpfr_block_avx2
+#	$(CPP_AVX2) -DUSE_GMP -DUSE_MPFR -DUSE_OZ -DOZ_MAX_NUM_DIV=8 $(INC) $(QD_INC) matmulbench_mpfr.cc $(LIB_AVX2) -o matmulbench_mpfr_oz_mnd8_avx2
+#	$(CPP_AVX2) -DUSE_GMP -DUSE_MPFR -DUSE_OZ -DOZ_MAX_NUM_DIV=16 $(INC) $(QD_INC) matmulbench_mpfr.cc $(LIB_AVX2) -o matmulbench_mpfr_oz_mnd16_avx2
+#	$(CPP_AVX2) -DUSE_GMP -DUSE_MPFR -DUSE_OZ -DOZ_MAX_NUM_DIV=32 $(INC) $(QD_INC) matmulbench_mpfr.cc $(LIB_AVX2) -o matmulbench_mpfr_oz_mnd32_avx2
+#	$(CPP_AVX2) -DUSE_GMP -DUSE_MPFR -DUSE_OZ -DOZ_MAX_NUM_DIV=64 $(INC) $(QD_INC) matmulbench_mpfr.cc $(LIB_AVX2) -o matmulbench_mpfr_oz_mnd64_avx2
+	$(CPP_AVX2) -DUSE_GMP -DUSE_MPFR -DUSE_OZ -DOZ_MAX_NUM_DIV=64 $(INC) $(QD_INC) matmulbench_mpfr.cc $(LIB_AVX2) -o matmulbench_mpfr_oz_avx2
+	$(CPP_AVX2) -DUSE_GMP -DUSE_MPFR -DUSE_STRASSEN $(INC) $(QD_INC) matmulbench_mpfr.cc $(LIB_AVX2) -o matmulbench_mpfr_strassen_avx2
+	$(CPP_AVX2) -DUSE_GMP -DUSE_MPFR -DUSE_STRASSEN -DUSE_WINOGRAD $(INC) $(QD_INC) matmulbench_mpfr.cc $(LIB_WINOGRAD_AVX2) -o matmulbench_mpfr_winograd_avx2
+	$(CPP_AVX2) $(OPENMP) -DUSE_OMP -DUSE_GMP -DUSE_MPFR $(INC) $(QD_INC) matmulbench_mpfr.cc $(LIB_AVX2_OMP) -o matmulbench_mpfr_omp_avx2
+	$(CPP_AVX2) $(OPENMP) -DUSE_OMP -DUSE_GMP -DUSE_MPFR -DUSE_MBLAS $(INC) $(QD_INC) matmulbench_mpfr.cc $(LIB_AVX2_OMP) -o matmulbench_mpfr_mblas_omp_avx2
+	$(CPP_AVX2) $(OPENMP) -DUSE_OMP -DUSE_GMP -DUSE_MPFR -DUSE_BLOCK $(INC) $(QD_INC) matmulbench_mpfr.cc $(LIB_AVX2_OMP) -o matmulbench_mpfr_block_omp_avx2
+	$(CPP_AVX2) $(OPENMP) -DUSE_OMP -DUSE_GMP -DUSE_MPFR -DUSE_STRASSEN $(INC) $(QD_INC) matmulbench_mpfr.cc $(LIB_AVX2_OMP) -o matmulbench_mpfr_strassen_omp_avx2
+	$(CPP_AVX2) $(OPENMP) -DUSE_OMP -DUSE_GMP -DUSE_MPFR -DUSE_STRASSEN -DUSE_WINOGRAD $(INC) $(QD_INC) matmulbench_mpfr.cc $(LIB_WINOGRAD_AVX2_OMP) -o matmulbench_mpfr_winograd_omp_avx2
+
+matmulbench_mpfr_avx512: matmulbench_mpfr.cc
+	$(CPP_AVX512) -DUSE_GMP -DUSE_MPFR $(INC) matmulbench_mpfr.cc $(LIB_AVX512) -o matmulbench_mpfr_avx512
+	$(CPP_AVX512) -DUSE_GMP -DUSE_MPFR -DUSE_MBLAS $(INC) $(QD_INC) matmulbench_mpfr.cc $(LIB_AVX512) -o matmulbench_mpfr_mblas_avx512
+	$(CPP_AVX512) -DUSE_GMP -DUSE_MPFR -DUSE_BLOCK $(INC) $(QD_INC) matmulbench_mpfr.cc $(LIB_AVX512) -o matmulbench_mpfr_block_avx512
+	$(CPP_AVX512) -DUSE_GMP -DUSE_MPFR -DUSE_STRASSEN $(INC) $(QD_INC) matmulbench_mpfr.cc $(LIB_AVX512) -o matmulbench_mpfr_strassen_avx512
+	$(CPP_AVX512) -DUSE_GMP -DUSE_MPFR -DUSE_OZ $(INC) $(QD_INC) matmulbench_mpfr.cc $(LIB_AVX512) -o matmulbench_mpfr_oz_avx512
+	$(CPP_AVX512) -DUSE_GMP -DUSE_MPFR -DUSE_STRASSEN -DUSE_WINOGRAD $(INC) $(QD_INC) matmulbench_mpfr.cc $(LIB_WINOGRAD_AVX512) -o matmulbench_mpfr_winograd_avx512
+	$(CPP_AVX512) $(OPENMP) -DUSE_OMP -DUSE_GMP -DUSE_MPFR $(INC) $(QD_INC) matmulbench_mpfr.cc $(LIB_AVX512_OMP) -o matmulbench_mpfr_omp_avx512
+	$(CPP_AVX512) $(OPENMP) -DUSE_OMP -DUSE_GMP -DUSE_MPFR -DUSE_MBLAS $(INC) $(QD_INC) matmulbench_mpfr.cc $(LIB_AVX512_OMP) -o matmulbench_mpfr_mblas_omp_avx512
+	$(CPP_AVX512) $(OPENMP) -DUSE_OMP -DUSE_GMP -DUSE_MPFR -DUSE_BLOCK $(INC) $(QD_INC) matmulbench_mpfr.cc $(LIB_AVX512_OMP) -o matmulbench_mpfr_block_omp_avx512
+	$(CPP_AVX512) $(OPENMP) -DUSE_OMP -DUSE_GMP -DUSE_MPFR -DUSE_STRASSEN $(INC) $(QD_INC) matmulbench_mpfr.cc $(LIB_AVX512_OMP) -o matmulbench_mpfr_strassen_omp_avx512
+	$(CPP_AVX512) $(OPENMP) -DUSE_OMP -DUSE_GMP -DUSE_MPFR -DUSE_STRASSEN -DUSE_WINOGRAD $(INC) $(QD_INC) matmulbench_mpfr.cc $(LIB_WINOGRAD_AVX512_OMP) -o matmulbench_mpfr_winograd_omp_avx512
+
+matmulbench_mpfcmplx: matmulbench_mpfcmplx.cc
+	$(CPP) -DUSE_GMP -DUSE_MPFR $(INC) matmulbench_mpfcmplx.cc $(LIB) -o matmulbench_mpfcmplx
+	$(CPP) -DUSE_GMP -DUSE_MPFR -DUSE_MBLAS $(INC) $(QD_INC) matmulbench_mpfcmplx.cc $(LIB) -o matmulbench_mpfcmplx_mblas
+	$(CPP) -DUSE_GMP -DUSE_MPFR -DUSE_BLOCK $(INC) $(QD_INC) matmulbench_mpfcmplx.cc $(LIB) -o matmulbench_mpfcmplx_block
+	$(CPP) -DUSE_GMP -DUSE_MPFR -DUSE_STRASSEN $(INC) $(QD_INC) matmulbench_mpfcmplx.cc $(LIB) -o matmulbench_mpfcmplx_strassen
+	$(CPP) -DUSE_GMP -DUSE_MPFR -DUSE_OZ $(INC) $(QD_INC) matmulbench_mpfcmplx.cc $(LIB) -o matmulbench_mpfcmplx_oz
+
+matmulbench_mpc: matmulbench_mpc.cc
+	$(CPP) -DUSE_GMP -DUSE_MPFR $(INC) matmulbench_mpc.cc $(LIB) -o matmulbench_mpc
+	$(CPP) -DUSE_GMP -DUSE_MPFR -DUSE_MBLAS $(INC) $(QD_INC) matmulbench_mpc.cc $(LIB) -o matmulbench_mpc_mblas
+	$(CPP) $(OPENMP) -DUSE_GMP -DUSE_MPFR -DUSE_MBLAS $(INC) $(QD_INC) matmulbench_mpc.cc $(LIB_OMP) -o matmulbench_mpc_mblas_omp
+	$(CPP) -DUSE_GMP -DUSE_MPFR -DUSE_BLOCK $(INC) $(QD_INC) matmulbench_mpc.cc $(LIB) -o matmulbench_mpc_block
+	$(CPP) -DUSE_GMP -DUSE_MPFR -DUSE_STRASSEN $(INC) $(QD_INC) matmulbench_mpc.cc $(LIB) -o matmulbench_mpc_strassen
+	$(CPP) -DUSE_GMP -DUSE_MPFR -DUSE_OZ $(INC) $(QD_INC) matmulbench_mpc.cc $(LIB) -o matmulbench_mpc_oz
+	$(CPP) -DUSE_GMP -DUSE_MPFR -DUSE_OZ_3M $(INC) $(QD_INC) matmulbench_mpc.cc $(LIB) -o matmulbench_mpc_oz_3m
+	$(CPP) -DUSE_GMP -DUSE_MPFR -DUSE_OZ $(INC) $(QD_INC) matmulbench_mpc.cc $(LIB) -o matmulbench_mpc_oz
+	$(CPP) $(OPENMP) -DUSE_GMP -DUSE_MPFR -DUSE_OZ_3M $(INC) $(QD_INC) matmulbench_mpc.cc $(LIB_OMP) -o matmulbench_mpc_oz_3m_omp
+	$(CPP) $(OPENMP) -DUSE_GMP -DUSE_MPFR -DUSE_OZ_4M $(INC) $(QD_INC) matmulbench_mpc.cc $(LIB_OMP) -o matmulbench_mpc_oz_4m_omp
+
+matmulbench_cdd: matmulbench_cdd.cc
+	$(CPP) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -I$(MPLAPACK_INC_PATH) $(INC) matmulbench_cdd.cc -L$(MPLAPACK_LIB_PATH) -l$(MPBLAS_LIBNAME)_dd $(LIB) -o matmulbench_cdd
+	$(CPP) -DUSE_GMP -DUSE_MPFR -DUSE_MBLAS -DUSE_DDLINEAR -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_cdd.cc -L$(MPLAPACK_LIB_PATH) -l$(MPBLAS_LIBNAME)_dd $(LIB) -o matmulbench_cdd_mblas
+	$(CPP) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_BLOCK -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_cdd.cc -L$(MPLAPACK_LIB_PATH) -l$(MPBLAS_LIBNAME)_dd $(LIB) -o matmulbench_cdd_block
+	$(CPP) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_STRASSEN -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_cdd.cc -L$(MPLAPACK_LIB_PATH) -l$(MPBLAS_LIBNAME)_dd $(LIB) -o matmulbench_cdd_strassen
+	$(CPP) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_BLOCK -DUSE_4M -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_cdd.cc -L$(MPLAPACK_LIB_PATH) -l$(MPBLAS_LIBNAME)_dd $(LIB) -o matmulbench_cdd_block_4m
+	$(CPP) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_STRASSEN -DUSE_4M -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_cdd.cc -L$(MPLAPACK_LIB_PATH) -l$(MPBLAS_LIBNAME)_dd $(LIB) -o matmulbench_cdd_strassen_4m
+	$(CPP) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_OZ -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_cdd.cc -L$(MPLAPACK_LIB_PATH) -l$(MPBLAS_LIBNAME)_dd $(LIB) -o matmulbench_cdd_oz_3m
+#	$(CPP) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_OZ_3M $(INC) $(QD_INC) matmulbench_cdd.cc $(LIB) -o matmulbench_cdd_oz_4m
+
+matmulbench_cdd_avx2: matmulbench_cdd.cc
+	$(CPP_AVX2) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -I$(MPLAPACK_INC_PATH) $(INC) matmulbench_cdd.cc $(LIB_AVX2) -o matmulbench_cdd_avx2
+	$(CPP_AVX2) $(OPENMP) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_OMP -I$(MPLAPACK_INC_PATH) $(INC) matmulbench_cdd.cc $(LIB_AVX2_OMP) -o matmulbench_cdd_omp_avx2
+	$(CPP_AVX2) -DUSE_GMP -DUSE_MPFR -DUSE_MBLAS -DUSE_DDLINEAR -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_cdd.cc -L$(MPLAPACK_LIB_PATH) -l$(MPBLAS_LIBNAME)_dd $(LIB_AVX2) -o matmulbench_cdd_mblas_avx2
+	$(CPP_AVX2) $(OPENMP) -DUSE_OMP -DUSE_GMP -DUSE_MPFR -DUSE_MBLAS -DUSE_DDLINEAR -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_cdd.cc $(LIB_AVX2_OMP) -L$(MPLAPACK_LIB_PATH) -l$(MPBLAS_LIBNAME)_dd -o matmulbench_cdd_mblas_omp_avx2
+	$(CPP_AVX2) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_BLOCK -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_cdd.cc $(LIB_AVX2) -o matmulbench_cdd_block_avx2
+	$(CPP_AVX2) $(OPENMP) -DUSE_OMP -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_BLOCK -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_cdd.cc $(LIB_AVX2_OMP) -o matmulbench_cdd_block_omp_avx2
+	$(CPP_AVX2) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_STRASSEN -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_cdd.cc $(LIB_AVX2) -o matmulbench_cdd_strassen_avx2
+	$(CPP_AVX2) $(OPENMP) -DUSE_OMP -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_STRASSEN -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_cdd.cc $(LIB_AVX2_OMP) -o matmulbench_cdd_strassen_omp_avx2
+	$(CPP_AVX2) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_BLOCK -DUSE_4M -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_cdd.cc $(LIB_AVX2) -o matmulbench_cdd_block_4m_avx2
+	$(CPP_AVX2) $(OPENMP) -DUSE_OMP -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_BLOCK -DUSE_4M -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_cdd.cc $(LIB_AVX2_OMP) -o matmulbench_cdd_block_4m_omp_avx2
+	$(CPP_AVX2) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_STRASSEN -DUSE_4M -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_cdd.cc $(LIB_AVX2) -o matmulbench_cdd_strassen_4m_avx2
+	$(CPP_AVX2) $(OPENMP) -DUSE_OMP -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_STRASSEN -DUSE_4M -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_cdd.cc $(LIB_AVX2_OMP) -o matmulbench_cdd_strassen_4m_omp_avx2
+	$(CPP_AVX2) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_OZ -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_cdd.cc $(LIB_AVX2) -o matmulbench_cdd_oz_3m_avx2
+	$(CPP_AVX2) $(OPENMP) $(INC) $(QD_INC) -DUSE_OMP -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_OZ -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_cdd.cc $(LIB_AVX2_OMP) -o matmulbench_cdd_oz_3m_omp_avx2
+	$(CPP_AVX2) $(OPENMP) $(INC) $(QD_INC) -DUSE_OMP -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_OZ -DUSE_4M -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_cdd.cc $(LIB_AVX2_OMP) -o matmulbench_cdd_oz_4m_omp_avx2
+
+matmulbench_cdd_avx512: matmulbench_cdd.cc
+	$(CPP_AVX512) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR $(INC) matmulbench_cdd.cc $(LIB_AVX512) -o matmulbench_cdd_avx512
+	$(CPP_AVX512) $(OPENMP) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_OMP -I$(MPLAPACK_INC_PATH) $(INC) matmulbench_cdd.cc $(LIB_AVX512_OMP) -o matmulbench_cdd_omp_avx512
+	$(CPP_AVX512) -DUSE_GMP -DUSE_MPFR -DUSE_MBLAS -DUSE_DDLINEAR -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_cdd.cc -L$(MPLAPACK_LIB_PATH) -l$(MPBLAS_LIBNAME)_dd $(LIB_AVX512) -o matmulbench_cdd_mblas_avx512
+	$(CPP_AVX512) $(OPENMP) -DUSE_OMP -DUSE_GMP -DUSE_MPFR -DUSE_MBLAS -DUSE_DDLINEAR -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_cdd.cc $(LIB_AVX512_OMP) -o matmulbench_cdd_mblas_omp_avx512
+	$(CPP_AVX512) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_BLOCK $(INC) $(QD_INC) matmulbench_cdd.cc $(LIB_AVX512) -o matmulbench_cdd_block_avx512
+	$(CPP_AVX512) $(OPENMP) -DUSE_OMP -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_BLOCK $(INC) $(QD_INC) matmulbench_cdd.cc $(LIB_AVX512_OMP) -o matmulbench_cdd_block_omp_avx512
+	$(CPP_AVX512) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_STRASSEN $(INC) $(QD_INC) matmulbench_cdd.cc $(LIB_AVX512) -o matmulbench_cdd_strassen_avx512
+	$(CPP_AVX512) $(OPENMP) -DUSE_OMP -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_STRASSEN $(INC) $(QD_INC) matmulbench_cdd.cc $(LIB_AVX512_OMP) -o matmulbench_cdd_strassen_omp_avx512
+	$(CPP_AVX512) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_BLOCK -DUSE_4M $(INC) $(QD_INC) matmulbench_cdd.cc $(LIB_AVX512) -o matmulbench_cdd_block_4m_avx512
+	$(CPP_AVX512) $(OPENMP) -DUSE_OMP -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_BLOCK -DUSE_4M $(INC) $(QD_INC) matmulbench_cdd.cc $(LIB_AVX512_OMP) -o matmulbench_cdd_block_4m_omp_avx512
+	$(CPP_AVX512) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_STRASSEN -DUSE_4M $(INC) $(QD_INC) matmulbench_cdd.cc $(LIB_AVX512) -o matmulbench_cdd_strassen_4m_avx512
+	$(CPP_AVX512) $(OPENMP) -DUSE_OMP -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_STRASSEN -DUSE_4M $(INC) $(QD_INC) matmulbench_cdd.cc $(LIB_AVX512_OMP) -o matmulbench_cdd_strassen_4m_omp_avx512
+	$(CPP_AVX512) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_OZ $(INC) $(QD_INC) matmulbench_cdd.cc $(LIB_AVX512) -o matmulbench_cdd_oz_3m_avx512
+	$(CPP_AVX512) $(OPENMP) $(INC) $(QD_INC) -DUSE_OMP -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_OZ $(INC) $(QD_INC) matmulbench_cdd.cc $(LIB_AVX512_OMP) -o matmulbench_cdd_oz_3m_omp_avx512
+	$(CPP_AVX512) $(OPENMP) $(INC) $(QD_INC) -DUSE_OMP -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_OZ -DUSE_4M $(INC) $(QD_INC) matmulbench_cdd.cc $(LIB_AVX512_OMP) -o matmulbench_cdd_oz_4m_omp_avx512
+
+matmulbench_cdd_neon: matmulbench_cdd.cc
+	$(CPP_NEON) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -I$(MPLAPACK_INC_PATH) $(INC) matmulbench_cdd.cc $(LIB_NEON) -o matmulbench_cdd_neon
+	$(CPP_NEON) -DUSE_GMP -DUSE_MPFR -DUSE_MBLAS -DUSE_DDLINEAR -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_cdd.cc -L$(MPLAPACK_LIB_PATH) -l$(MPBLAS_LIBNAME)_dd $(LIB_NEON) -o matmulbench_cdd_mblas_neon
+	$(CPP_NEON) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_BLOCK -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_cdd.cc $(LIB_NEON) -o matmulbench_cdd_block_neon
+	$(CPP_NEON) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_STRASSEN -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_cdd.cc $(LIB_NEON) -o matmulbench_cdd_strassen_neon
+	$(CPP_NEON) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_BLOCK -DUSE_4M -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_cdd.cc $(LIB_NEON) -o matmulbench_cdd_block_4m_neon
+	$(CPP_NEON) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_STRASSEN -DUSE_4M -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_cdd.cc $(LIB_NEON) -o matmulbench_cdd_strassen_4m_neon
+	$(CPP_NEON) $(OPENMP) -DUSE_OMP -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -I$(MPLAPACK_INC_PATH) $(INC) matmulbench_cdd.cc $(LIB_NEON_OMP) -o matmulbench_cdd_omp_neon
+	$(CPP_NEON) $(OPENMP) -DUSE_OMP -DUSE_GMP -DUSE_MPFR -DUSE_MBLAS -DUSE_DDLINEAR -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_cdd.cc -L$(MPLAPACK_LIB_PATH) -l$(MPBLAS_LIBNAME)_dd $(LIB_NEON_OMP) -o matmulbench_cdd_mblas_omp_neon
+	$(CPP_NEON) $(OPENMP) -DUSE_OMP -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_BLOCK -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_cdd.cc $(LIB_NEON_OMP) -o matmulbench_cdd_block_omp_neon
+	$(CPP_NEON) $(OPENMP) -DUSE_OMP -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_STRASSEN -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_cdd.cc $(LIB_NEON_OMP) -o matmulbench_cdd_strassen_omp_neon
+	$(CPP_NEON) $(OPENMP) -DUSE_OMP -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_BLOCK -DUSE_4M -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_cdd.cc $(LIB_NEON_OMP) -o matmulbench_cdd_block_4m_omp_neon
+	$(CPP_NEON) $(OPENMP) -DUSE_OMP -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_STRASSEN -DUSE_4M -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_cdd.cc $(LIB_NEON_OMP) -o matmulbench_cdd_strassen_4m_omp_neon
+
+matmulbench_cqd: matmulbench_cqd.cc
+	$(CPP) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -I$(MPLAPACK_INC_PATH) $(INC) matmulbench_cqd.cc $(LIB) -o matmulbench_cqd
+	$(CPP) -DUSE_GMP -DUSE_MPFR -DUSE_MBLAS -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_cqd.cc -L$(MPLAPACK_LIB_PATH) -l$(MPBLAS_LIBNAME)_qd $(LIB) -o matmulbench_cqd_mblas
+	$(CPP) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_BLOCK -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_cqd.cc $(LIB) -o matmulbench_cqd_block
+	$(CPP) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_STRASSEN -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_cqd.cc $(LIB) -o matmulbench_cqd_strassen
+	$(CPP) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_BLOCK -DUSE_4M -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_cqd.cc $(LIB) -o matmulbench_cqd_block_4m
+	$(CPP) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_STRASSEN -DUSE_4M -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_cqd.cc $(LIB) -o matmulbench_cqd_strassen_4m
+	$(CPP) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_OZ -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_cqd.cc $(LIB) -o matmulbench_cqd_oz_3m
+	$(CPP) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_OZ -DUSE_4M -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_cqd.cc $(LIB) -o matmulbench_cqd_oz_4m
+
+matmulbench_cqd_avx2: matmulbench_cqd.cc
+	$(CPP_AVX2) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) matmulbench_cqd.cc $(LIB_AVX2) -o matmulbench_cqd_avx2
+	$(CPP_AVX2) -DUSE_GMP -DUSE_MPFR -DUSE_MBLAS -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_cqd.cc -L$(MPLAPACK_LIB_PATH) -l$(MPBLAS_LIBNAME)_qd $(LIB_AVX2) -o matmulbench_cqd_mblas_avx2
+	$(CPP_AVX2) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_BLOCK $(INC) $(QD_INC) matmulbench_cqd.cc $(LIB_AVX2) -o matmulbench_cqd_block_avx2
+	$(CPP_AVX2) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_STRASSEN $(INC) $(QD_INC) matmulbench_cqd.cc $(LIB_AVX2) -o matmulbench_cqd_strassen_avx2
+	$(CPP_AVX2) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_BLOCK -DUSE_4M $(INC) $(QD_INC) matmulbench_cqd.cc $(LIB_AVX2) -o matmulbench_cqd_block_4m_avx2
+	$(CPP_AVX2) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_STRASSEN -DUSE_4M $(INC) $(QD_INC) matmulbench_cqd.cc $(LIB_AVX2) -o matmulbench_cqd_strassen_4m_avx2
+	$(CPP_AVX2) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_OZ $(INC) $(QD_INC) matmulbench_cqd.cc $(LIB_AVX2) -o matmulbench_cqd_oz_3m_avx2
+	$(CPP_AVX2) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_OZ -DUSE_4M $(INC) $(QD_INC) matmulbench_cqd.cc $(LIB_AVX2) -o matmulbench_cqd_oz_4m_avx2
+	$(CPP_AVX2)  $(OPENMP) -DUSE_OMP -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) matmulbench_cqd.cc $(LIB_AVX2_OMP) -o matmulbench_cqd_omp_avx2
+	$(CPP_AVX2)  $(OPENMP) -DUSE_OMP -DUSE_GMP -DUSE_MPFR -DUSE_MBLAS -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_cqd.cc -L$(MPLAPACK_LIB_PATH) -l$(MPBLAS_LIBNAME)_qd $(LIB_AVX2_OMP) -o matmulbench_cqd_mblas_omp_avx2
+	$(CPP_AVX2)  $(OPENMP) -DUSE_OMP -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_BLOCK $(INC) $(QD_INC) matmulbench_cqd.cc $(LIB_AVX2_OMP) -o matmulbench_cqd_block_omp_avx2
+	$(CPP_AVX2)  $(OPENMP) -DUSE_OMP -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_STRASSEN $(INC) $(QD_INC) matmulbench_cqd.cc $(LIB_AVX2_OMP) -o matmulbench_cqd_strassen_omp_avx2
+	$(CPP_AVX2)  $(OPENMP) -DUSE_OMP -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_BLOCK -DUSE_4M $(INC) $(QD_INC) matmulbench_cqd.cc $(LIB_AVX2_OMP) -o matmulbench_cqd_block_4m_omp_avx2
+	$(CPP_AVX2)  $(OPENMP) -DUSE_OMP -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_STRASSEN -DUSE_4M $(INC) $(QD_INC) matmulbench_cqd.cc $(LIB_AVX2_OMP) -o matmulbench_cqd_strassen_4m_omp_avx2
+	$(CPP_AVX2) $(OPENMP) -DUSE_OMP -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_OZ $(INC) $(QD_INC) matmulbench_cqd.cc $(LIB_AVX2_OMP) -o matmulbench_cqd_oz_3m_omp_avx2
+	$(CPP_AVX2) $(OPENMP) -DUSE_OMP -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_OZ -DUSE_4M $(INC) $(QD_INC) matmulbench_cqd.cc $(LIB_AVX2_OMP) -o matmulbench_cqd_oz_4m_omp_avx2
+
+matmulbench_cqd_avx512: matmulbench_cqd.cc
+	$(CPP_AVX512) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) matmulbench_cqd.cc $(LIB_AVX512) -o matmulbench_cqd_avx512
+	$(CPP_AVX512) -DUSE_GMP -DUSE_MPFR -DUSE_MBLAS -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_cqd.cc -L$(MPLAPACK_LIB_PATH) -l$(MPBLAS_LIBNAME)_qd $(LIB_AVX512) -o matmulbench_cqd_mblas_avx512
+	$(CPP_AVX512) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_BLOCK $(INC) $(QD_INC) matmulbench_cqd.cc $(LIB_AVX512) -o matmulbench_cqd_block_avx512
+	$(CPP_AVX512) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_STRASSEN $(INC) $(QD_INC) matmulbench_cqd.cc $(LIB_AVX512) -o matmulbench_cqd_strassen_avx512
+	$(CPP_AVX512) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_BLOCK -DUSE_4M $(INC) $(QD_INC) matmulbench_cqd.cc $(LIB_AVX512) -o matmulbench_cqd_block_4m_avx512
+	$(CPP_AVX512) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_STRASSEN -DUSE_4M $(INC) $(QD_INC) matmulbench_cqd.cc $(LIB_AVX512) -o matmulbench_cqd_strassen_4m_avx512
+	$(CPP_AVX512) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_OZ $(INC) $(QD_INC) matmulbench_cqd.cc $(LIB_AVX512) -o matmulbench_cqd_oz_3m_avx512
+	$(CPP_AVX512) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_OZ -DUSE_4M $(INC) $(QD_INC) matmulbench_cqd.cc $(LIB_AVX512) -o matmulbench_cqd_oz_4m_avx512
+	$(CPP_AVX512) $(OPENMP) -DUSE_OMP -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_OZ $(INC) $(QD_INC) matmulbench_cqd.cc $(LIB_AVX512_OMP) -o matmulbench_cqd_oz_3m_omp_avx512
+	$(CPP_AVX512) $(OPENMP) -DUSE_OMP -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_OZ -DUSE_4M $(INC) $(QD_INC) matmulbench_cqd.cc $(LIB_AVX512_OMP) -o matmulbench_cqd_oz_4m_omp_avx512
+
+matmulbench_cqd_neon: matmulbench_cqd.cc
+	$(CPP_NEON) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -I$(MPLAPACK_INC_PATH) $(INC) matmulbench_cqd.cc $(LIB_NEON) -o matmulbench_cqd_neon
+	$(CPP_NEON) -DUSE_GMP -DUSE_MPFR -DUSE_MBLAS -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_cqd.cc -L$(MPLAPACK_LIB_PATH) -l$(MPBLAS_LIBNAME)_qd $(LIB_NEON) -o matmulbench_cqd_mblas_neon
+	$(CPP_NEON) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_BLOCK -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_cqd.cc $(LIB_NEON) -o matmulbench_cqd_block_neon
+	$(CPP_NEON) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_STRASSEN -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_cqd.cc $(LIB_NEON) -o matmulbench_cqd_strassen_neon
+	$(CPP_NEON) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_BLOCK -DUSE_4M -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_cqd.cc $(LIB_NEON) -o matmulbench_cqd_block_4m_neon
+	$(CPP_NEON) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_STRASSEN -DUSE_4M -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_cqd.cc $(LIB_NEON) -o matmulbench_cqd_strassen_4m_neon
+	$(CPP_NEON) $(OPENMP) -DUSE_OMP -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -I$(MPLAPACK_INC_PATH) $(INC) matmulbench_cqd.cc $(LIB_NEON_OMP) -o matmulbench_cqd_omp_neon
+	$(CPP_NEON) $(OPENMP) -DUSE_OMP -DUSE_GMP -DUSE_MPFR -DUSE_MBLAS -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_cqd.cc -L$(MPLAPACK_LIB_PATH) -l$(MPBLAS_LIBNAME)_qd $(LIB_NEON_OMP) -o matmulbench_cqd_mblas_omp_neon
+	$(CPP_NEON) $(OPENMP) -DUSE_OMP -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_BLOCK -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_cqd.cc $(LIB_NEON_OMP) -o matmulbench_cqd_block_omp_neon
+	$(CPP_NEON) $(OPENMP) -DUSE_OMP -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_STRASSEN -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_cqd.cc $(LIB_NEON_OMP) -o matmulbench_cqd_strassen_omp_neon
+	$(CPP_NEON) $(OPENMP) -DUSE_OMP -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_BLOCK -DUSE_4M -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_cqd.cc $(LIB_NEON_OMP) -o matmulbench_cqd_block_4m_omp_neon
+	$(CPP_NEON) $(OPENMP) -DUSE_OMP -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_STRASSEN -DUSE_4M -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_cqd.cc $(LIB_NEON_OMP) -o matmulbench_cqd_strassen_4m_omp_neon
+
+matmulbench_ctd: matmulbench_ctd.cc
+	$(CPP) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -I$(MPLAPACK_INC_PATH) $(INC) matmulbench_ctd.cc $(LIB) -o matmulbench_ctd
+	$(CPP) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_BLOCK -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_ctd.cc $(LIB) -o matmulbench_ctd_block
+	$(CPP) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_STRASSEN -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_ctd.cc $(LIB) -o matmulbench_ctd_strassen
+	$(CPP) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_BLOCK -DUSE_4M -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_ctd.cc $(LIB) -o matmulbench_ctd_block_4m
+	$(CPP) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_STRASSEN -DUSE_4M -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_ctd.cc $(LIB) -o matmulbench_ctd_strassen_4m
+	$(CPP) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_OZ -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_ctd.cc $(LIB) -o matmulbench_ctd_oz_3m
+	$(CPP) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_OZ -DUSE_4M -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_ctd.cc $(LIB) -o matmulbench_ctd_oz_4m
+
+matmulbench_ctd_avx2: matmulbench_ctd.cc
+	$(CPP_AVX2) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -I$(MPLAPACK_INC_PATH) $(INC) matmulbench_ctd.cc $(LIB_AVX2) -o matmulbench_ctd_avx2
+	$(CPP_AVX2) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_BLOCK -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_ctd.cc $(LIB_AVX2) -o matmulbench_ctd_block_avx2
+	$(CPP_AVX2) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_STRASSEN -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_ctd.cc $(LIB_AVX2) -o matmulbench_ctd_strassen_avx2
+	$(CPP_AVX2) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_BLOCK -DUSE_4M -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_ctd.cc $(LIB_AVX2) -o matmulbench_ctd_block_4m_avx2
+	$(CPP_AVX2) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_STRASSEN -DUSE_4M -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_ctd.cc $(LIB_AVX2) -o matmulbench_ctd_strassen_4m_avx2
+	$(CPP_AVX2) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_OZ -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_ctd.cc $(LIB_AVX2) -o matmulbench_ctd_oz_3m_avx2
+	$(CPP_AVX2) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_OZ -DUSE_4M-I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_ctd.cc $(LIB) -o matmulbench_ctd_oz_4m_avx2
+	$(CPP_AVX2) $(OPENMP) -DUSE_OMP -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -I$(MPLAPACK_INC_PATH) $(INC) matmulbench_ctd.cc $(LIB_AVX2_OMP) -o matmulbench_ctd_omp_avx2
+	$(CPP_AVX2) $(OPENMP) -DUSE_OMP -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_BLOCK -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_ctd.cc $(LIB_AVX2_OMP) -o matmulbench_ctd_block_omp_avx2
+	$(CPP_AVX2) $(OPENMP) -DUSE_OMP -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_STRASSEN -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_ctd.cc $(LIB_AVX2_OMP) -o matmulbench_ctd_strassen_omp_avx2
+	$(CPP_AVX2) $(OPENMP) -DUSE_OMP -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_BLOCK -DUSE_4M -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_ctd.cc $(LIB_AVX2_OMP) -o matmulbench_ctd_block_4m_omp_avx2
+	$(CPP_AVX2) $(OPENMP) -DUSE_OMP -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_STRASSEN -DUSE_4M -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_ctd.cc $(LIB_AVX2_OMP) -o matmulbench_ctd_strassen_4m_omp_avx2
+	$(CPP_AVX2) $(OPENMP) -DUSE_OMP -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_OZ -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_ctd.cc $(LIB_AVX2_OMP) -o matmulbench_ctd_oz_3m_omp_avx2
+	$(CPP_AVX2) $(OPENMP) -DUSE_OMP -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_OZ -DUSE_4M -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_ctd.cc $(LIB_AVX2_OMP) -o matmulbench_ctd_oz_4m_omp_avx512
+
+matmulbench_ctd_avx512: matmulbench_ctd.cc
+	$(CPP_AVX512) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -I$(MPLAPACK_INC_PATH) $(INC) matmulbench_ctd.cc $(LIB_AVX512) -o matmulbench_ctd_avx512
+	$(CPP_AVX512) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_BLOCK -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_ctd.cc $(LIB_AVX512) -o matmulbench_ctd_block_avx512
+	$(CPP_AVX512) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_STRASSEN -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_ctd.cc $(LIB_AVX512) -o matmulbench_ctd_strassen_avx512
+	$(CPP_AVX512) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_BLOCK -DUSE_4M -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_ctd.cc $(LIB_AVX512) -o matmulbench_ctd_block_4m_avx512
+	$(CPP_AVX512) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_STRASSEN -DUSE_4M -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_ctd.cc $(LIB_AVX512) -o matmulbench_ctd_strassen_4m_avx512
+	$(CPP_AVX512) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_OZ -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_ctd.cc $(LIB_AVX512) -o matmulbench_ctd_oz_3m_avx512
+	$(CPP_AVX512) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_OZ -DUSE_4M-I$(MPLAPACK_INC_PATH)  $(INC) $(QD_INC) matmulbench_ctd.cc $(LIB) -o matmulbench_ctd_oz_4m_avx512
+	$(CPP_AVX512) $(OPENMP) -DUSE_OMP -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_OZ -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_ctd.cc $(LIB_AVX512_OMP) -o matmulbench_ctd_oz_3m_omp_avx512
+	$(CPP_AVX512) $(OPENMP) -DUSE_OMP -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_OZ -DUSE_4M -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_ctd.cc $(LIB_AVX512_OMP) -o matmulbench_ctd_oz_4m_omp_avx512
+
+matmulbench_ctd_neon: matmulbench_ctd.cc
+	$(CPP_NEON) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -I$(MPLAPACK_INC_PATH) $(INC) matmulbench_ctd.cc $(LIB_NEON) -o matmulbench_ctd_neon
+	$(CPP_NEON) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_BLOCK -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_ctd.cc $(LIB_NEON) -o matmulbench_ctd_block_neon
+	$(CPP_NEON) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_STRASSEN -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_ctd.cc $(LIB_NEON) -o matmulbench_ctd_strassen_neon
+	$(CPP_NEON) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_BLOCK -DUSE_4M -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_ctd.cc $(LIB_NEON) -o matmulbench_ctd_block_4m_neon
+	$(CPP_NEON) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_STRASSEN -DUSE_4M -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_ctd.cc $(LIB_NEON) -o matmulbench_ctd_strassen_4m_neon
+	$(CPP_NEON) $(OPENMP) -DUSE_OMP -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -I$(MPLAPACK_INC_PATH) $(INC) matmulbench_ctd.cc $(LIB_NEON_OMP) -o matmulbench_ctd_omp_neon
+	$(CPP_NEON) $(OPENMP) -DUSE_OMP -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_BLOCK -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_ctd.cc $(LIB_NEON_OMP) -o matmulbench_ctd_block_omp_neon
+	$(CPP_NEON) $(OPENMP) -DUSE_OMP -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_STRASSEN -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_ctd.cc $(LIB_NEON_OMP) -o matmulbench_ctd_strassen_omp_neon
+	$(CPP_NEON) $(OPENMP) -DUSE_OMP -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_BLOCK -DUSE_4M -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_ctd.cc $(LIB_NEON_OMP) -o matmulbench_ctd_block_4m_omp_neon
+	$(CPP_NEON) $(OPENMP) -DUSE_OMP -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_STRASSEN -DUSE_4M -I$(MPLAPACK_INC_PATH) $(INC) $(QD_INC) matmulbench_ctd.cc $(LIB_NEON_OMP) -o matmulbench_ctd_strassen_4m_omp_neon
+
+#---------------------------------------
+# Matrix-Vector multiplication
+#---------------------------------------
+matvecbench_dd: matvecbench_dd.cc
+	$(CPP) -DUSE_DDLINEAR $(INC) -I$(MPLAPACK_INC_PATH) $(QD_INC) matvecbench_dd.cc $(LIB) -o matvecbench_dd
+	$(CPP) -DUSE_DDLINEAR -DUSE_MBLAS $(INC) -I$(MPLAPACK_INC_PATH) $(QD_INC) matvecbench_dd.cc -L$(MPLAPACK_LIB_PATH) -l$(MPBLAS_LIBNAME)_dd $(LIB) -o matvecbench_dd_mblas
+	$(CPP) $(OPENMP) -DUSE_OMP -DUSE_DDLINEAR $(INC) -I$(MPLAPACK_INC_PATH) $(QD_INC) matvecbench_dd.cc $(LIB_OMP) -o matvecbench_dd_omp
+	$(CPP) $(OPENMP) -DUSE_OMP -DUSE_DDLINEAR -DUSE_MBLAS $(INC) -I$(MPLAPACK_INC_PATH) $(QD_INC) matvecbench_dd.cc -L$(MPLAPACK_LIB_PATH) -l$(MPBLAS_LIBNAME)_dd $(LIB_OMP) -o matvecbench_dd_mblas_omp
+
+matvecbench_cdd: matvecbench_cdd.cc
+	$(CPP) -DUSE_DDLINEAR $(INC) -I$(MPLAPACK_INC_PATH) $(QD_INC) matvecbench_cdd.cc $(LIB) -o matvecbench_cdd
+	$(CPP) -DUSE_DDLINEAR -DUSE_MBLAS $(INC) -I$(MPLAPACK_INC_PATH) $(QD_INC) matvecbench_cdd.cc -L$(MPLAPACK_LIB_PATH) -l$(MPBLAS_LIBNAME)_dd $(LIB) -o matvecbench_cdd_mblas
+	$(CPP) $(OPENMP) -DUSE_OMP -DUSE_DDLINEAR $(INC) -I$(MPLAPACK_INC_PATH) $(QD_INC) matvecbench_cdd.cc $(LIB_OMP) -o matvecbench_cdd_omp
+	$(CPP) $(OPENMP) -DUSE_OMP -DUSE_DDLINEAR -DUSE_MBLAS $(INC) -I$(MPLAPACK_INC_PATH) $(QD_INC) matvecbench_cdd.cc -L$(MPLAPACK_LIB_PATH) -l$(MPBLAS_LIBNAME)_dd $(LIB_OMP) -o matvecbench_cdd_mblas_omp
+
+
+cond_mat: cond_mat.c $(BNCMATMUL_LIBNAME)
+	$(CC) $(INC) cond_mat.c $(LIB) -o cond_mat
+
+#c_dd_qd: c_dd.c c_qd.c c_dd_qd.h
+c_dd_qd: c_dd_qd.h
+#	$(CC) $(INC) -c fpu.c -o fpu.o
+#	$(CC) $(INC) -c c_dd.c -o c_dd.o
+#	$(CC) $(INC) -c c_qd.c -o c_qd.o
+#	$(AR) libc_dd_qd.a fpu.o
+#	$(AR) libc_dd_qd.a c_dd.o
+#	$(AR) libc_dd_qd.a c_qd.o
+	$(CC) $(INC) -c ddlinear.c -o ddlinear_c.o
+	$(CC) $(INC) -DDEBUG ddlinear.c $(COMMON_LIB) rdd.o -o ddlinear_test_c
+
+test_iterative_ref: test_iterative_ref.c ../include/matmul_strassen.h
+	$(CC) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_MPFLINEAR $(INC) test_iterative_ref.c get_linear_system.c $(LIB) -o test_iterative_ref
+	$(CC) -DUSE_GMP -DUSE_MPFR $(OPENMP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_MPFLINEAR $(INC) test_iterative_ref.c get_linear_system.c mpflu.c $(LIB_OMP) -o test_iterative_ref_omp
+
+test_iterative_ref_avx2: test_iterative_ref.c ../include/matmul_strassen.h
+	$(CC_AVX2) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_MPFLINEAR $(INC) test_iterative_ref.c get_linear_system.c mpflu.c $(LIB_AVX2) -o test_iterative_ref_avx2
+	$(CC_AVX2) -DUSE_GMP -DUSE_MPFR $(OPENMP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_MPFLINEAR $(INC) test_iterative_ref.c get_linear_system.c mpflu.c $(LIB_OMP_AVX2) -o test_iterative_ref_omp_avx2
+
+#---------------------------------------%
+# Vector bench
+#---------------------------------------%
+vecbench: vecbench.c 
+	$(CC_AVX2) $(INC) -DFVEC vecbench.c  $(BNCMATMUL_LIB_AVX2) $(COMMON_LIB) -lm -o vecbench_f
+	$(CC_AVX2) $(INC) -DDVEC vecbench.c  $(BNCMATMUL_LIB_AVX2) $(COMMON_LIB) -lm -o vecbench_d
+	$(CC_AVX2) $(INC) -DDDVEC vecbench.c  $(BNCMATMUL_LIB_AVX2) $(COMMON_LIB) -lm -o vecbench_dd
+#	$(CC) $(INC) -DTDVEC vecbench.c  $(BNCMATMUL_LIB_AVX2) $(COMMON_LIB) -lm -o vecbench_td
+	$(CC_AVX2) $(INC) -DTDVEC vecbench.c  $(BNCMATMUL_LIB_AVX2) $(COMMON_LIB) -lm -o vecbench_td_avx2
+	$(CC_AVX2) $(INC) -DTDVEC -DUSE_RTD_ADD vecbench.c  $(BNCMATMUL_LIB_AVX2) $(COMMON_LIB) -lm -o vecbench_tdt
+	$(CC_AVX2) $(INC) -DQDVEC vecbench.c  $(BNCMATMUL_LIB_AVX2) $(COMMON_LIB) -lm -o vecbench_qd
+	$(CC_AVX2) $(INC) -DDSVEC vecbench.c  $(BNCMATMUL_LIB_AVX2) $(COMMON_LIB) -lm -o vecbench_ds
+	$(CC_AVX2) $(INC) -DTSVEC vecbench.c  $(BNCMATMUL_LIB_AVX2) $(COMMON_LIB) -lm -o vecbench_ts
+	$(CC_AVX2) $(INC) -DTSVEC -DUSE_RTS_ADD vecbench.c  $(BNCMATMUL_LIB_AVX2) $(COMMON_LIB) -lm -o vecbench_tst
+	$(CC_AVX2) $(INC) -DQSVEC vecbench.c  $(BNCMATMUL_LIB_AVX2) $(COMMON_LIB) -lm -o vecbench_qs
+
+vecbench512: vecbench.c 
+	$(CC_AVX512) $(INC) -DDVEC vecbench.c  $(BNCMATMUL_LIB_AVX512) $(COMMON_LIB) -lm -o vecbench_d_512
+	$(CC_AVX512) $(INC) -DDDVEC vecbench.c  $(BNCMATMUL_LIB_AVX512) $(COMMON_LIB) -lm -o vecbench_dd_512
+	$(CC_AVX512) $(INC) -DTDVEC vecbench.c  $(BNCMATMUL_LIB_AVX512) $(COMMON_LIB) -lm -o vecbench_td_avx512
+	$(CC_AVX512) $(INC) -DTDVEC -DUSE_RTD_ADD vecbench.c  $(BNCMATMUL_LIB_AVX512) $(COMMON_LIB) -lm -o vecbench_tdt_512
+	$(CC_AVX512) $(INC) -DQDVEC vecbench.c  $(BNCMATMUL_LIB_AVX512) $(COMMON_LIB) -lm -o vecbench_qd_512
+
+
+#---------------------------------------%
+# Run all benchmark tests
+#---------------------------------------%
+allrun: run_matmulbench_mpf run_matmulbench_dd run_matmulbench_qd
+
+allrun_omp: run_matmulbench_mpf_omp run_matmulbench_dd_omp run_matmulbench_qd_omp 
+
+run_matmulbench_d:
+	-./matmulbench_d $(CACHE_SIZE) $(MAX_SECONDS)
+	-./matmulbench_d_strassen $(CACHE_SIZE) $(MAX_SECONDS)
+	-./matmulbench_d_strassen_static2 $(CACHE_SIZE) $(MAX_SECONDS)
+	-./matmulbench_d_winograd $(CACHE_SIZE) $(MAX_SECONDS)
+
+run_matmulbench_mpf:
+	-./matmulbench_mpf $(MPF_PREC) $(MAX_SECONDS)
+	-./matmulbench_mpf_rec $(MPF_PREC) $(MAX_SECONDS)
+	-./matmulbench_mpf_block $(MPF_PREC) $(MIN_DIM) $(MAX_SECONDS)
+	-./matmulbench_mpf_strassen $(MPF_PREC) $(MIN_DIM) $(MAX_SECONDS)
+	-./matmulbench_mpf_winograd $(MPF_PREC) $(MIN_DIM) $(MAX_SECONDS)
+#	-./matmulbench_mpf_block_rec $(MPF_PREC) $(ROW_DIM) $(MAX_SECONDS)
+#	-./matmulbench_mpf_strassen_static $(MPF_PREC) $(MAX_SECONDS)
+#	-./matmulbench_mpf_strassen_rec $(MPF_PREC) $(MAX_SECONDS)
+#	-./matmulbench_mpf_winograd_static $(MPF_PREC) $(MIN_DIM) $(MAX_SECONDS)
+#	-./matmulbench_mpf_winograd_rec $(MPF_PREC) $(ROW_DIM) $(MAX_SECONDS)
+
+run_matmulbench_mpf_omp:
+	-./matmulbench_mpf_omp $(MPF_PREC) $(OMP_NUM_THREADS) $(MAX_SECONDS)
+	-./matmulbench_mpf_block_omp $(MPF_PREC) $(MIN_DIM) $(OMP_NUM_THREADS) $(MAX_SECONDS)
+	-./matmulbench_mpf_strassen_omp $(MPF_PREC) $(MIN_DIM) $(OMP_NUM_THREADS) $(MAX_SECONDS)
+	-./matmulbench_mpf_winograd_omp $(MPF_PREC) $(MIN_DIM) $(OMP_NUM_THREADS) $(MAX_SECONDS)
+#	-./matmulbench_mpf_strassen_static_omp $(MPF_PREC) $(MIN_DIM) $(OMP_NUM_THREADS) $(MAX_SECONDS)
+#	-./matmulbench_mpf_winograd_static_omp $(MPF_PREC) $(MIN_DIM) $(OMP_NUM_THREADS) $(MAX_SECONDS)
+
+run_matmulbench_dd:
+	-./matmulbench_dd $(MAX_SECONDS)
+	-./matmulbench_dd_block $(MIN_DIM) $(MAX_SECONDS)
+	-./matmulbench_dd_strassen $(MIN_DIM) $(MAX_SECONDS)
+	-./matmulbench_dd_winograd $(MIN_DIM) $(MAX_SECONDS)
+#	-./matmulbench_dd_strassen_static $(MIN_DIM) $(MAX_SECONDS)
+#	-./matmulbench_dd_winograd_static $(MIN_DIM) $(MAX_SECONDS)
+
+run_matmulbench_dd_omp:
+	-./matmulbench_dd_omp $(OMP_NUM_THREADS) $(MAX_SECONDS)
+	-./matmulbench_dd_block_omp $(MIN_DIM) $(OMP_NUM_THREADS) $(MAX_SECONDS)
+	-./matmulbench_dd_strassen_omp $(MIN_DIM) $(OMP_NUM_THREADS) $(MAX_SECONDS)
+	-./matmulbench_dd_winograd_omp $(MIN_DIM) $(OMP_NUM_THREADS) $(MAX_SECONDS)
+#	-./matmulbench_dd_strassen_static_omp $(MIN_DIM) $(OMP_NUM_THREADS) $(MAX_SECONDS)
+#	-./matmulbench_dd_winograd_static_omp $(MIN_DIM) $(OMP_NUM_THREADS) $(MAX_SECONDS)
+
+run_matmulbench_qd:
+	-./matmulbench_qd $(MAX_SECONDS)
+	-./matmulbench_qd_block $(MIN_DIM) $(MAX_SECONDS)
+	-./matmulbench_qd_strassen $(MIN_DIM) $(MAX_SECONDS)
+	-./matmulbench_qd_winograd $(MIN_DIM) $(MAX_SECONDS)
+#	-./matmulbench_qd_strassen_static $(MIN_DIM) $(MAX_SECONDS)
+#	-./matmulbench_qd_winograd_static $(MIN_DIM) $(MAX_SECONDS)
+
+run_matmulbench_qd_omp:
+	-./matmulbench_qd_omp $(OMP_NUM_THREADS) $(MAX_SECONDS)
+	-./matmulbench_qd_block_omp $(MIN_DIM) $(OMP_NUM_THREADS) $(MAX_SECONDS)
+	-./matmulbench_qd_strassen_omp $(MIN_DIM) $(OMP_NUM_THREADS) $(MAX_SECONDS)
+	-./matmulbench_qd_winograd_omp $(MIN_DIM) $(OMP_NUM_THREADS) $(MAX_SECONDS)
+#	-./matmulbench_qd_strassen_static_omp $(MIN_DIM) $(OMP_NUM_THREADS) $(MAX_SECONDS)
+#	-./matmulbench_qd_winograd_static_omp $(MIN_DIM) $(OMP_NUM_THREADS) $(MAX_SECONDS)
+
+run_lu_bench_mpf:
+	-./lu_bench $(LU_DIM) $(MPF_PREC) 
+	-./lu_bench_block $(LU_DIM) $(MPF_PREC)
+	-./lu_bench_winograd $(LU_DIM) $(MPF_PREC)
+#	-./lu_bench_scale $(LU_DIM) $(MPF_PREC)
+#	-./lu_bench_block_scale $(LU_DIM) $(MPF_PREC)
+#	-./lu_bench_winograd_scale $(LU_DIM) $(MPF_PREC)
+
+run_lu_bench_dd:
+	-./lu_bench_dd $(LU_DIM)
+	-./lu_bench_dd_block $(LU_DIM)
+	-./lu_bench_dd_winograd $(LU_DIM)
+#	-./lu_bench_dd_scale $(LU_DIM)
+#	-./lu_bench_dd_block_scale $(LU_DIM)
+#	-./lu_bench_dd_winograd_scale $(LU_DIM)
+
+run_lu_bench_qd:
+	-./lu_bench_qd $(LU_DIM)
+	-./lu_bench_qd_block $(LU_DIM)
+	-./lu_bench_qd_winograd $(LU_DIM)
+#	-./lu_bench_qd_scale $(LU_DIM)
+#	-./lu_bench_qd_block_scale $(LU_DIM)
+#	-./lu_bench_qd_winograd_scale $(LU_DIM)
+
+run_lu_bench_mpf_lotkin:
+	-./lu_bench_lotkin $(LU_DIM)
+	-./lu_bench_block_lotkin $(LU_DIM)
+	-./lu_bench_winograd_lotkin $(LU_DIM)
+#	-./lu_bench_scale_lotkin $(LU_DIM)
+#	-./lu_bench_block_scale_lotkin $(LU_DIM)
+#	-./lu_bench_winograd_scale_lotkin $(LU_DIM)
+
+run_lu_bench_mpf_im_rand:
+	-./lu_bench_block_im_rand $(LU_DIM)
+	-./lu_bench_im_rand $(LU_DIM)
+	-./lu_bench_winograd_im_rand $(LU_DIM)
+#	-./lu_bench_block_scale_im_rand $(LU_DIM)
+#	-./lu_bench_scale_im_rand $(LU_DIM)
+#	-./lu_bench_winograd_scale_im_rand $(LU_DIM)
+
+run_lu_bench_mpf_omp:
+	-./lu_bench_omp $(LU_DIM) $(MPF_PREC) $(OMP_NUM_THREADS)
+	-./lu_bench_block_omp $(LU_DIM) $(MPF_PREC) $(OMP_NUM_THREADS)
+	-./lu_bench_winograd_omp $(LU_DIM) $(MPF_PREC) $(OMP_NUM_THREADS)
+
+run_lu_bench_dd_omp:
+	-./lu_bench_dd_omp $(LU_DIM) $(OMP_NUM_THREADS)
+	-./lu_bench_dd_block_omp $(LU_DIM) $(OMP_NUM_THREADS)
+	-./lu_bench_dd_winograd_omp $(LU_DIM) $(OMP_NUM_THREADS)
+
+run_lu_bench_qd_omp:
+	-./lu_bench_qd_omp $(LU_DIM) $(OMP_NUM_THREADS)
+	-./lu_bench_qd_block_omp $(LU_DIM) $(OMP_NUM_THREADS)
+	-./lu_bench_qd_winograd_omp $(LU_DIM) $(OMP_NUM_THREADS)
+
+run_lu_bench_mpf_lotkin_omp:
+	-./lu_bench_lotkin_omp $(LU_DIM) $(MPF_PREC) $(OMP_NUM_THREADS)
+	-./lu_bench_block_lotkin_omp $(LU_DIM) $(MPF_PREC) $(OMP_NUM_THREADS)
+	-./lu_bench_winograd_lotkin_omp $(LU_DIM) $(MPF_PREC) $(OMP_NUM_THREADS)
+
+run_lu_bench_mpf_im_rand_omp:
+	-./lu_bench_block_im_rand_omp $(LU_DIM) $(MPF_PREC) $(OMP_NUM_THREADS)
+	-./lu_bench_im_rand_omp $(LU_DIM) $(MPF_PREC) $(OMP_NUM_THREADS)
+	-./lu_bench_winograd_im_rand_omp $(LU_DIM) $(MPF_PREC) $(OMP_NUM_THREADS)
+
+#---------------------------------------
+# DD / TD / QD (double-double, triple-double, quad-double) bench targets
+# (verify mul_ddmatrix / mul_tdmatrix / mul_qdmatrix against an MPFR reference;
+#  companions to the bench_{ds,ts,qs}linear below).
+# Common defines: -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR
+#---------------------------------------
+DTQ_DEFS = -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR
+
+# Normal (scalar)
+bench_ddlinear: bench_ddlinear.cc
+	$(CPP) $(DTQ_DEFS) $(INC) bench_ddlinear.cc $(LIB) -o bench_ddlinear
+bench_tdlinear: bench_tdlinear.cc
+	$(CPP) $(DTQ_DEFS) $(INC) bench_tdlinear.cc $(LIB) -o bench_tdlinear
+bench_qdlinear: bench_qdlinear.cc
+	$(CPP) $(DTQ_DEFS) $(INC) bench_qdlinear.cc $(LIB) -o bench_qdlinear
+
+# AVX2
+bench_ddlinear_avx2: bench_ddlinear.cc
+	$(CPP_AVX2) $(DTQ_DEFS) $(INC) bench_ddlinear.cc $(LIB_AVX2) -o bench_ddlinear_avx2
+bench_tdlinear_avx2: bench_tdlinear.cc
+	$(CPP_AVX2) $(DTQ_DEFS) $(INC) bench_tdlinear.cc $(LIB_AVX2) -o bench_tdlinear_avx2
+bench_qdlinear_avx2: bench_qdlinear.cc
+	$(CPP_AVX2) $(DTQ_DEFS) $(INC) bench_qdlinear.cc $(LIB_AVX2) -o bench_qdlinear_avx2
+
+# AVX-512
+bench_ddlinear_avx512: bench_ddlinear.cc
+	$(CPP_AVX512) $(DTQ_DEFS) $(INC) bench_ddlinear.cc $(LIB_AVX512) -o bench_ddlinear_avx512
+bench_tdlinear_avx512: bench_tdlinear.cc
+	$(CPP_AVX512) $(DTQ_DEFS) $(INC) bench_tdlinear.cc $(LIB_AVX512) -o bench_tdlinear_avx512
+bench_qdlinear_avx512: bench_qdlinear.cc
+	$(CPP_AVX512) $(DTQ_DEFS) $(INC) bench_qdlinear.cc $(LIB_AVX512) -o bench_qdlinear_avx512
+
+# NEON
+bench_ddlinear_neon: bench_ddlinear.cc
+	$(CPP_NEON) $(DTQ_DEFS) $(INC) bench_ddlinear.cc $(LIB_NEON) -o bench_ddlinear_neon
+bench_tdlinear_neon: bench_tdlinear.cc
+	$(CPP_NEON) $(DTQ_DEFS) $(INC) bench_tdlinear.cc $(LIB_NEON) -o bench_tdlinear_neon
+bench_qdlinear_neon: bench_qdlinear.cc
+	$(CPP_NEON) $(DTQ_DEFS) $(INC) bench_qdlinear.cc $(LIB_NEON) -o bench_qdlinear_neon
+
+# SVE2 (Grace / Neoverse V2 build target — see bncmatmul.inc)
+bench_ddlinear_sve2: bench_ddlinear.cc
+	$(CPP_SVE2) $(DTQ_DEFS) $(INC) bench_ddlinear.cc $(LIB_SVE2) -o bench_ddlinear_sve2
+bench_tdlinear_sve2: bench_tdlinear.cc
+	$(CPP_SVE2) $(DTQ_DEFS) $(INC) bench_tdlinear.cc $(LIB_SVE2) -o bench_tdlinear_sve2
+bench_qdlinear_sve2: bench_qdlinear.cc
+	$(CPP_SVE2) $(DTQ_DEFS) $(INC) bench_qdlinear.cc $(LIB_SVE2) -o bench_qdlinear_sve2
+
+.PHONY: bench_dtq bench_dtq_avx2 bench_dtq_avx512 bench_dtq_neon bench_dtq_sve2 bench_dtq_all
+bench_dtq:        bench_ddlinear         bench_tdlinear         bench_qdlinear
+bench_dtq_avx2:   bench_ddlinear_avx2    bench_tdlinear_avx2    bench_qdlinear_avx2
+bench_dtq_avx512: bench_ddlinear_avx512  bench_tdlinear_avx512  bench_qdlinear_avx512
+bench_dtq_neon:   bench_ddlinear_neon    bench_tdlinear_neon    bench_qdlinear_neon
+bench_dtq_sve2:   bench_ddlinear_sve2    bench_tdlinear_sve2    bench_qdlinear_sve2
+bench_dtq_all:    bench_dtq bench_dtq_avx2 bench_dtq_avx512 bench_dtq_neon bench_dtq_sve2
+
+#---------------------------------------
+# DS / TS / QS (float-float, triple-single, quadruple-single) bench targets
+# Mirror of matmul_bench_dd / _td / _qd targets above.
+#---------------------------------------
+# Individual targets — Normal (scalar) version
+bench_dslinear: bench_dslinear.cc
+	$(CPP) -DUSE_DSLINEAR $(INC) bench_dslinear.cc $(LIB) -o bench_dslinear
+
+bench_tslinear: bench_tslinear.cc
+	$(CPP) -DUSE_TSLINEAR $(INC) bench_tslinear.cc $(LIB) -o bench_tslinear
+
+bench_qslinear: bench_qslinear.cc
+	$(CPP) -DUSE_QSLINEAR $(INC) bench_qslinear.cc $(LIB) -o bench_qslinear
+
+# Individual targets — AVX2 version
+bench_dslinear_avx2: bench_dslinear.cc
+	$(CPP_AVX2) -DUSE_DSLINEAR $(INC) bench_dslinear.cc $(LIB_AVX2) -o bench_dslinear_avx2
+
+bench_tslinear_avx2: bench_tslinear.cc
+	$(CPP_AVX2) -DUSE_TSLINEAR $(INC) bench_tslinear.cc $(LIB_AVX2) -o bench_tslinear_avx2
+
+bench_qslinear_avx2: bench_qslinear.cc
+	$(CPP_AVX2) -DUSE_QSLINEAR $(INC) bench_qslinear.cc $(LIB_AVX2) -o bench_qslinear_avx2
+
+# Individual targets — AVX-512 version
+bench_dslinear_avx512: bench_dslinear.cc
+	$(CPP_AVX512) -DUSE_DSLINEAR $(INC) bench_dslinear.cc $(LIB_AVX512) -o bench_dslinear_avx512
+
+bench_tslinear_avx512: bench_tslinear.cc
+	$(CPP_AVX512) -DUSE_TSLINEAR $(INC) bench_tslinear.cc $(LIB_AVX512) -o bench_tslinear_avx512
+
+bench_qslinear_avx512: bench_qslinear.cc
+	$(CPP_AVX512) -DUSE_QSLINEAR $(INC) bench_qslinear.cc $(LIB_AVX512) -o bench_qslinear_avx512
+
+# Individual targets — NEON version
+bench_dslinear_neon: bench_dslinear.cc
+	$(CPP_NEON) -DUSE_DSLINEAR $(INC) bench_dslinear.cc $(LIB_NEON) -o bench_dslinear_neon
+
+bench_tslinear_neon: bench_tslinear.cc
+	$(CPP_NEON) -DUSE_TSLINEAR $(INC) bench_tslinear.cc $(LIB_NEON) -o bench_tslinear_neon
+
+bench_qslinear_neon: bench_qslinear.cc
+	$(CPP_NEON) -DUSE_QSLINEAR $(INC) bench_qslinear.cc $(LIB_NEON) -o bench_qslinear_neon
+
+# Individual targets — SVE2 version (Armv9-A, Grace / Neoverse V2 on DGX Spark)
+bench_dslinear_sve2: bench_dslinear.cc
+	$(CPP_SVE2) -DUSE_DSLINEAR $(INC) bench_dslinear.cc $(LIB_SVE2) -o bench_dslinear_sve2
+
+bench_tslinear_sve2: bench_tslinear.cc
+	$(CPP_SVE2) -DUSE_TSLINEAR $(INC) bench_tslinear.cc $(LIB_SVE2) -o bench_tslinear_sve2
+
+bench_qslinear_sve2: bench_qslinear.cc
+	$(CPP_SVE2) -DUSE_QSLINEAR $(INC) bench_qslinear.cc $(LIB_SVE2) -o bench_qslinear_sve2
+
+#---------------------------------------
+# Umbrella targets — build all three (ds/ts/qs) for a chosen SIMD flavor
+#   make -f Makefile.legacy bench_dtqs              # scalar
+#   make -f Makefile.legacy bench_dtqs_avx2         # AVX2
+#   make -f Makefile.legacy bench_dtqs_avx512       # AVX-512
+#   make -f Makefile.legacy bench_dtqs_neon         # NEON
+#   make -f Makefile.legacy bench_dtqs_sve2         # SVE2
+#   make -f Makefile.legacy bench_dtqs_all          # everything above
+#---------------------------------------
+.PHONY: bench_dtqs bench_dtqs_avx2 bench_dtqs_avx512 bench_dtqs_neon bench_dtqs_sve2 bench_dtqs_all
+
+bench_dtqs:        bench_dslinear         bench_tslinear         bench_qslinear
+bench_dtqs_avx2:   bench_dslinear_avx2    bench_tslinear_avx2    bench_qslinear_avx2
+bench_dtqs_avx512: bench_dslinear_avx512  bench_tslinear_avx512  bench_qslinear_avx512
+bench_dtqs_neon:   bench_dslinear_neon    bench_tslinear_neon    bench_qslinear_neon
+bench_dtqs_sve2:   bench_dslinear_sve2    bench_tslinear_sve2    bench_qslinear_sve2
+bench_dtqs_all:    bench_dtqs bench_dtqs_avx2 bench_dtqs_avx512 bench_dtqs_neon bench_dtqs_sve2
+
+# Build both families (dd/td/qd AND ds/ts/qs) for one SIMD flavor / everything
+.PHONY: bench_mp bench_mp_avx2 bench_mp_avx512 bench_mp_neon bench_mp_sve2 bench_mp_all
+bench_mp:        bench_dtq        bench_dtqs
+bench_mp_avx2:   bench_dtq_avx2   bench_dtqs_avx2
+bench_mp_avx512: bench_dtq_avx512 bench_dtqs_avx512
+bench_mp_neon:   bench_dtq_neon   bench_dtqs_neon
+bench_mp_sve2:   bench_dtq_sve2   bench_dtqs_sve2
+bench_mp_all:    bench_dtq_all    bench_dtqs_all
+
+# Backwards-compatible aliases for the names previously introduced
+bench_dtqslinear:        bench_dtqs
+bench_dtqslinear_avx2:   bench_dtqs_avx2
+bench_dtqslinear_avx512: bench_dtqs_avx512
+bench_dtqslinear_neon:   bench_dtqs_neon
+bench_dtqslinear_sve2:   bench_dtqs_sve2
+
+# ----------------------------------------------------------------------------
+# OpenMP-parallel Strassen benchmark (serial mul_<prec>matrix_strassen vs.
+# parallel _bncomp_mul_<prec>matrix_strassen, all 6 multi-precision layers).
+# Needs an OpenMP library: build  'make -C src -f Makefile.legacy omp'  (and
+# 'omp_neon' / 'omp_sve2' for the SIMD-tuned variants) first.
+#   Usage:  ./bench_strassen_omp [num_threads] [min_dim] [N1,N2,...]
+# ----------------------------------------------------------------------------
+MP_DEFS_OMP = -DUSE_OMP -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_DSLINEAR -DUSE_TSLINEAR -DUSE_QSLINEAR
+
+bench_strassen_omp: bench_strassen_omp.cc ../include/matmul_strassen.h ../include/bncomp.h
+	$(CPP) $(OPENMP) $(MP_DEFS_OMP) $(INC) bench_strassen_omp.cc $(LIB_OMP) -o bench_strassen_omp
+
+bench_strassen_omp_neon: bench_strassen_omp.cc ../include/matmul_strassen.h ../include/bncomp.h
+	$(CPP_NEON) $(OPENMP) $(MP_DEFS_OMP) $(INC) bench_strassen_omp.cc $(LIB_NEON_OMP) -o bench_strassen_omp_neon
+
+bench_strassen_omp_sve2: bench_strassen_omp.cc ../include/matmul_strassen.h ../include/bncomp.h
+	$(CPP_SVE2) $(OPENMP) $(MP_DEFS_OMP) $(INC) bench_strassen_omp.cc $(LIB_SVE2_OMP) -o bench_strassen_omp_sve2
+
+bench_strassen_omp_avx2: bench_strassen_omp.cc ../include/matmul_strassen.h ../include/bncomp.h
+	$(CPP_AVX2) $(OPENMP) $(MP_DEFS_OMP) $(INC) bench_strassen_omp.cc $(LIB_AVX2_OMP) -o bench_strassen_omp_avx2
+
+bench_strassen_omp_avx512: bench_strassen_omp.cc ../include/matmul_strassen.h ../include/bncomp.h
+	$(CPP_AVX512) $(OPENMP) $(MP_DEFS_OMP) $(INC) bench_strassen_omp.cc $(LIB_AVX512_OMP) -o bench_strassen_omp_avx512
+
+bench_strassen_omp_all: bench_strassen_omp bench_strassen_omp_neon bench_strassen_omp_sve2
+
+# ----------------------------------------------------------------------------
+# OpenMP-parallel BLOCK matmul benchmark (sister of bench_strassen_omp).
+# Measures serial mul_<prec>matrix_block vs. parallel _bncomp_mul_<prec>matrix_block
+# for all 6 multi-precision layers; reports speedup + relative Frobenius error.
+#   Usage:  ./bench_block_omp [num_threads] [min_dim] [N1,N2,...]
+# ----------------------------------------------------------------------------
+bench_block_omp: bench_block_omp.cc ../include/matmul_strassen.h ../include/bncomp.h
+	$(CPP) $(OPENMP) $(MP_DEFS_OMP) $(INC) bench_block_omp.cc $(LIB_OMP) -o bench_block_omp
+
+bench_block_omp_neon: bench_block_omp.cc ../include/matmul_strassen.h ../include/bncomp.h
+	$(CPP_NEON) $(OPENMP) $(MP_DEFS_OMP) $(INC) bench_block_omp.cc $(LIB_NEON_OMP) -o bench_block_omp_neon
+
+bench_block_omp_sve2: bench_block_omp.cc ../include/matmul_strassen.h ../include/bncomp.h
+	$(CPP_SVE2) $(OPENMP) $(MP_DEFS_OMP) $(INC) bench_block_omp.cc $(LIB_SVE2_OMP) -o bench_block_omp_sve2
+
+bench_block_omp_avx2: bench_block_omp.cc ../include/matmul_strassen.h ../include/bncomp.h
+	$(CPP_AVX2) $(OPENMP) $(MP_DEFS_OMP) $(INC) bench_block_omp.cc $(LIB_AVX2_OMP) -o bench_block_omp_avx2
+
+bench_block_omp_avx512: bench_block_omp.cc ../include/matmul_strassen.h ../include/bncomp.h
+	$(CPP_AVX512) $(OPENMP) $(MP_DEFS_OMP) $(INC) bench_block_omp.cc $(LIB_AVX512_OMP) -o bench_block_omp_avx512
+
+bench_block_omp_all: bench_block_omp bench_block_omp_neon bench_block_omp_sve2
+
+# ----------------------------------------------------------------------------
+# OpenMP-parallel scalar * vector benchmark (cousin of bench_strassen_omp).
+# Measures serial cmul_<prec>vector vs. parallel _bncomp_cmul_<prec>vector
+# for all 6 multi-precision layers; reports speedup + relative Euclidean error.
+#   Usage:  ./bench_cmul_vector_omp [num_threads] [N1,N2,...]
+# ----------------------------------------------------------------------------
+bench_cmul_vector_omp: bench_cmul_vector_omp.cc ../include/bncomp.h
+	$(CPP) $(OPENMP) $(MP_DEFS_OMP) $(INC) bench_cmul_vector_omp.cc $(LIB_OMP) -o bench_cmul_vector_omp
+
+bench_cmul_vector_omp_neon: bench_cmul_vector_omp.cc ../include/bncomp.h
+	$(CPP_NEON) $(OPENMP) $(MP_DEFS_OMP) $(INC) bench_cmul_vector_omp.cc $(LIB_NEON_OMP) -o bench_cmul_vector_omp_neon
+
+bench_cmul_vector_omp_sve2: bench_cmul_vector_omp.cc ../include/bncomp.h
+	$(CPP_SVE2) $(OPENMP) $(MP_DEFS_OMP) $(INC) bench_cmul_vector_omp.cc $(LIB_SVE2_OMP) -o bench_cmul_vector_omp_sve2
+
+bench_cmul_vector_omp_avx2: bench_cmul_vector_omp.cc ../include/bncomp.h
+	$(CPP_AVX2) $(OPENMP) $(MP_DEFS_OMP) $(INC) bench_cmul_vector_omp.cc $(LIB_AVX2_OMP) -o bench_cmul_vector_omp_avx2
+
+bench_cmul_vector_omp_avx512: bench_cmul_vector_omp.cc ../include/bncomp.h
+	$(CPP_AVX512) $(OPENMP) $(MP_DEFS_OMP) $(INC) bench_cmul_vector_omp.cc $(LIB_AVX512_OMP) -o bench_cmul_vector_omp_avx512
+
+bench_cmul_vector_omp_all: bench_cmul_vector_omp bench_cmul_vector_omp_neon bench_cmul_vector_omp_sve2
+
+# ----------------------------------------------------------------------------
+# OpenMP-parallel matrix * vector benchmark (cousin of bench_strassen_omp).
+# Measures serial mul_<prec>matrix_<prec>vec vs. parallel _bncomp_mul_<prec>matrix_<prec>vec
+# for all 6 multi-precision layers; reports speedup + relative Euclidean error.
+#   Usage:  ./bench_matvec_omp [num_threads] [N1,N2,...]
+# ----------------------------------------------------------------------------
+bench_matvec_omp: bench_matvec_omp.cc ../include/bncomp.h
+	$(CPP) $(OPENMP) $(MP_DEFS_OMP) $(INC) bench_matvec_omp.cc $(LIB_OMP) -o bench_matvec_omp
+
+bench_matvec_omp_neon: bench_matvec_omp.cc ../include/bncomp.h
+	$(CPP_NEON) $(OPENMP) $(MP_DEFS_OMP) $(INC) bench_matvec_omp.cc $(LIB_NEON_OMP) -o bench_matvec_omp_neon
+
+bench_matvec_omp_sve2: bench_matvec_omp.cc ../include/bncomp.h
+	$(CPP_SVE2) $(OPENMP) $(MP_DEFS_OMP) $(INC) bench_matvec_omp.cc $(LIB_SVE2_OMP) -o bench_matvec_omp_sve2
+
+bench_matvec_omp_avx2: bench_matvec_omp.cc ../include/bncomp.h
+	$(CPP_AVX2) $(OPENMP) $(MP_DEFS_OMP) $(INC) bench_matvec_omp.cc $(LIB_AVX2_OMP) -o bench_matvec_omp_avx2
+
+bench_matvec_omp_avx512: bench_matvec_omp.cc ../include/bncomp.h
+	$(CPP_AVX512) $(OPENMP) $(MP_DEFS_OMP) $(INC) bench_matvec_omp.cc $(LIB_AVX512_OMP) -o bench_matvec_omp_avx512
+
+bench_matvec_omp_all: bench_matvec_omp bench_matvec_omp_neon bench_matvec_omp_sve2
+
+# remove all bench_{dd,td,qd,ds,ts,qs}linear[_simd] binaries
+.PHONY: clean_dtqs clean_dtq clean_mp
+clean_dtq:
+	-rm -f bench_ddlinear  bench_tdlinear  bench_qdlinear
+	-rm -f bench_ddlinear_avx2    bench_tdlinear_avx2    bench_qdlinear_avx2
+	-rm -f bench_ddlinear_avx512  bench_tdlinear_avx512  bench_qdlinear_avx512
+	-rm -f bench_ddlinear_neon    bench_tdlinear_neon    bench_qdlinear_neon
+	-rm -f bench_ddlinear_sve2    bench_tdlinear_sve2    bench_qdlinear_sve2
+clean_dtqs:
+	-rm -f bench_dslinear  bench_tslinear  bench_qslinear
+	-rm -f bench_dslinear_avx2    bench_tslinear_avx2    bench_qslinear_avx2
+	-rm -f bench_dslinear_avx512  bench_tslinear_avx512  bench_qslinear_avx512
+	-rm -f bench_dslinear_neon    bench_tslinear_neon    bench_qslinear_neon
+	-rm -f bench_dslinear_sve2    bench_tslinear_sve2    bench_qslinear_sve2
+clean_mp: clean_dtq clean_dtqs
+
+# clear
+clean: clean_dtqs clean_dtq
+	-rm lu_bench
+	-rm lu_bench_dd
+	-rm lu_bench_dd_avx2
+	-rm lu_bench_dd_block
+	-rm lu_bench_dd_block_im_rand
+	-rm lu_bench_dd_block_avx2
+	-rm lu_bench_dd_oz_mnd*
+	-rm lu_bench_qd
+	-rm lu_bench_qd_avx2
+	-rm lu_bench_qd_block
+	-rm lu_bench_qd_block_im_rand
+	-rm lu_bench_qd_block_avx2
+	-rm lu_bench_qd_oz_mnd*
+	-rm clu_bench
+	-rm clu_bench_dd
+	-rm clu_bench_dd_avx2
+	-rm clu_bench_dd_block
+	-rm clu_bench_dd_block_avx2
+	-rm clu_bench_dd_oz_mnd*
+	-rm clu_bench
+	-rm clu_bench_td
+	-rm clu_bench_td_avx2
+	-rm clu_bench_td_block
+	-rm clu_bench_td_block_avx2
+	-rm clu_bench_td_oz_mnd*
+	-rm clu_bench
+	-rm clu_bench_qd
+	-rm clu_bench_qd_avx2
+	-rm clu_bench_qd_block
+	-rm clu_bench_qd_block_avx2
+	-rm clu_bench_qd_oz_mnd*
+	-rm clu_bench_qd_omp*
+	-rm matmulbench_dd
+	-rm matmulbench_td
+	-rm matmulbench_qd
+	-rm matmulbench_cdd
+	-rm matmulbench_ctd
+	-rm matmulbench_cqd
+	-rm matvecbench_dd
+	-rm matvecbench_cdd

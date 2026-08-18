@@ -1,0 +1,659 @@
+%------------------------------------------------%
+% Chap. 3
+%------------------------------------------------%
+\chapter{\bi{Basic linear computation}{基本的な線形計算}}\label{chap:basiclinear}
+
+%------------------------------------------------%
+% DD, TD, QD linear computation
+%------------------------------------------------%
+\section{\bi{Detatypes of D, DD, TD, QD and MPFR vector and matrix}{D, DD, TD, QD および MPFR のベクトルと行列のデータ型}}
+
+\bi{Vector datatypes of DD, TD, QD and MPFR precision are shown as follows:}{DD, TD, QD および MPFR 精度のベクトルのデータ型は次のとおりです。}
+\begin{description}
+    \item[DDVector, TDVector, QDVector]\strut\par
+    \begin{lstlisting}
+    typedef struct
+    {
+        long int dim; // dim <= real_dim
+        long int real_dim; // multiplier of _BNC_D_WIDTH
+        double *element[DDSIZE]; // [TDSIZE] and [QDSIZE] used as TDVector and QDVector
+    } ddvector;
+
+    typedef *DDVector; // DDVector, TDVector, QDVector are pointers.
+    \end{lstlisting}
+ 
+    \item[MPFVector]\strut\par
+    \begin{lstlisting}
+    typedef struct{
+        unsigned long int prec; // default precision of element
+        mpf_t *element;
+        long int dim;
+        long int real_dim;
+    } mpfvector;
+    
+    typedef mpfvector *MPFVector; // MPFVector is a pointer.
+    \end{lstlisting}
+    
+\end{description}
+
+\bi{Matrix datatypes of DD, TD, QD and MPFR precision are shown as follows:}{DD, TD, QD および MPFR 精度の行列のデータ型は次のとおりです。}
+\begin{description}
+    \item[DDMatrix, TDMatrix, QDMatrix]\strut\par
+    \begin{lstlisting}
+    // DD matrix
+    typedef struct{
+        long int row_dim, col_dim;
+        long int real_row_dim, real_col_dim; // multiplier of _BNC_D_WIDTH
+        double *element[DDSIZE];
+    } ddmatrix;
+
+    typedef *DDMatrix;
+    \end{lstlisting}
+
+    \item[MPFMatrix]\strut\par
+    \begin{lstlisting}
+    typedef struct{
+        unsigned long int prec;
+        mpf_t *element;
+        long int row_dim, col_dim;
+        long int real_row_dim, real_col_dim;
+        void *element_block; // mantissa block
+    } mpfmatrix;
+
+    typedef mpfmatrix *MPFMatrix;
+    \end{lstlisting}
+\end{description}
+
+\section{\bi{Vector arithmetic}{ベクトル演算}}
+
+\begin{itemize}
+    \funcitem{ddfloat}{get\_ddvector\_i\_ddfloat}{\varnameddvec{vec, long int index}} $\cdots$ \bi{Get index-th element of vec as ddfloat datatype.}{vec の index 番目の要素を ddfloat 型として取得します。}
+    \funcitem{tdfloat}{get\_tdvector\_i\_tdfloat}{\varnametdvec{vec, long int index}}
+    \funcitem{qdfloat}{get\_qdvector\_i\_qdfloat}{\varnameqdvec{vec, long int index}}
+
+    \macroitem{GET\_DDVECTOR\_I}{vec, index} $\cdots$ \bi{Get index-th element as pointer to ddfloat.}{index 番目の要素を ddfloat へのポインタとして取得します。}
+    \macroitem{get\_ddvector\_i}{vec, index}
+    \macroitem{GET\_TDVECTOR\_I}{vec, index} $\cdots$ \bi{Get index-th element as pointer to tdfloat.}{index 番目の要素を tdfloat へのポインタとして取得します。}
+    \macroitem{get\_tdvector\_i}{vec, index}
+    \macroitem{GET\_QDVECTOR\_I}{vec, index} $\cdots$ \bi{Get index-th element as pointer to qdfloat.}{index 番目の要素を qdfloat へのポインタとして取得します。}
+    \macroitem{get\_qdvector\_i}{vec, index}
+    \macroitem{GET\_MPFVECTOR\_I}{vec, index} $\cdots$ \bi{Get index-th element as pointer to mpf\_t (mpfr\_t).}{index 番目の要素を mpf\_t (mpfr\_t) へのポインタとして取得します。}
+    \macroitem{get\_mpfvector\_i}{vec, index}
+
+
+    \funcitem{void}{set\_ddvector\_i}{\varnameddvec{vec}, \varname{long int}{index}, \varname{double *}{val}} $\cdots$ \bi{Store val to index-th element of vec.}{val を vec の index 番目の要素に格納します。}
+    \macroitem{SET\_DDVECTOR\_I}{vec, index, val}
+    \funcitem{void}{set\_tdvector\_i}{\varnametdvec{vec}, \varname{long int}{index}, \varname{double *}{val}}
+    \macroitem{SET\_TDVECTOR\_I}{vec, index, val}
+    \funcitem{void}{set\_qdvector\_i}{\varnameqdvec{vec}, \varname{long int}{index}, \varname{double *}{val}}
+    \macroitem{SET\_QDVECTOR\_I}{vec, index, val}
+    \funcitem{void}{set\_qdvector\_i}{\varnameqdvec{vec}, \varname{long int}{index}, \varname{double *}{val}}
+    \macroitem{SET\_QDVECTOR\_I}{vec, index, val}
+    
+    \funcitem{void}{set\_ddvector\_i\_d}{\varnameddvec{vec}, \varname{long int}{index}, \varname{double}{val}}$\cdots$ \bi{Store val to index-th element of vec as double.}{val を double として vec の index 番目の要素に格納します。}
+    \macroitem{SET\_DDVECTOR\_I\_D}{vec, index, val}
+    \funcitem{void}{set\_tdvector\_i\_d}{\varnametdvec{vec}, \varname{long int}{index}, \varname{double}{val}}
+    \macroitem{SET\_TDVECTOR\_I\_D}{vec, index, val}
+    \funcitem{void}{set\_qdvector\_i\_d}{\varnameqdvec{vec}, \varname{long int}{index}, \varname{double}{val}}
+    \macroitem{SET\_QDVECTOR\_I\_D}{vec, index, val}
+    
+    \funcitem{void}{set0\_ddvector\_i}{\varnameddvec{vec}, \varname{long int}{index}} $\cdots$ \bi{Store zero to index-th element of vec.}{vec の index 番目の要素に 0 を格納します。}
+    \macroitem{SET0\_DDVECTOR\_I}{vec, index}
+    \funcitem{void}{set0\_tdvector\_i}{\varnametdvec{vec}, \varname{long int}{index}}
+    \macroitem{SET0\_TDVECTOR\_I}{vec, index}
+    \funcitem{void}{set0\_qdvector\_i}{\varnameqdvec{vec}, \varname{long int}{index}}
+    \macroitem{SET0\_QDVECTOR\_I}{vec, index}
+    
+    
+    \funcitem{DDVector}{init\_ddvector}{\varname{in}{dimension}} $\cdots$ \bi{Allocate and initialize a vector and set it as zero vector.}{ベクトルを確保・初期化し、零ベクトルとして設定します。}
+    \funcitem{TDVector}{init\_tdvector}{\varname{in}{dimension}}
+    \funcitem{QDVector}{init\_qdvector}{\varname{in}{dimension}}
+    \funcitem{MPFVector}{init\_mpfvector}{\varname{in}{dimension}} $\cdots$ \bi{Allocate and initialize a MPFVector in default precision in bits with }{}\verb|bnc_set_default_prec|\bi{ and set it as zero vector.}{ によるビット単位の既定精度で MPFVector を確保・初期化し、零ベクトルとして設定します。}
+    \funcitem{MPFVector}{init2\_mpfvector}{\varname{int}{dimension}, \varname{unsigned long}{prec}} $\cdots$ \bi{Initialize a MPFVector in prec bits and set it as zero vector.}{prec ビットで MPFVector を初期化し、零ベクトルとして設定します。}
+    
+    \funcitem{void}{free\_ddvector}{\varnameddvec{vec}} $\cdots$ \bi{Free vec.}{vec を解放します。}
+    \funcitem{void}{free\_tdvector}{\varnametdvec{vec}}
+    \funcitem{void}{free\_qdvector}{\varnameqdvec{vec}}
+    \funcitem{void}{free\_mpfvector}{\varname{MPFVector}{vec}}
+    
+    \funcitem{void}{set\_ddfloat\_ddvec}{\varname{ddfloat}{ret[]}, \varname{int}{ret\_dim}, \varnameddvec{vec}} $\cdots$ \bi{Convert vec to ddfloat array.}{vec を ddfloat 配列に変換します。}
+    \funcitem{void}{set\_tdfloat\_tdvec}{\varname{tdfloat}{ret[]}, \varname{int}{ret\_dim}, \varnametdvec{vec}} $\cdots$ \bi{Convert vec to tdfloat array.}{vec を tdfloat 配列に変換します。}
+    \funcitem{void}{set\_qdfloat\_qdvec}{\varname{qdfloat}{ret[]}, \varname{int}{ret\_dim}, \varnameqdvec{vec}} $\cdots$ \bi{Convert vec to qdfloat array.}{vec を qdfloat 配列に変換します。}
+    
+    \funcitem{void}{set\_ddvector\_ddfloat}{\varnameddvec{ret}, \varname{ddfloat}{array[]}, \varname{int}{array\_dim}} $\cdots$ \bi{Convert ddfloat array to \varnameddvec{ret}.}{ddfloat 配列を \varnameddvec{ret} に変換します。}
+    \funcitem{void}{set\_tdvector\_tdfloat}{\varnametdvec{ret}, \varname{tdfloat}{array[]}, \varname{int}{array\_dim}} $\cdots$ \bi{Convert tdfloat array to \varnametdvec{ret}.}{tdfloat 配列を \varnametdvec{ret} に変換します。}
+    \funcitem{void}{set\_qdvector\_qdfloat}{\varnameqdvec{ret}, \varname{qdfloat}{array[]}, \varname{int}{array\_dim}} $\cdots$ \bi{Convert qdfloat array to \varnameqdvec{ret}.}{qdfloat 配列を \varnameqdvec{ret} に変換します。}
+
+    \funcitem{void}{print\_ddvector}{\varnameddvec{vec}} $\cdots$ \bi{Print vec.}{vec を表示します。}
+    \funcitem{void}{print\_tdvector}{\varnametdvec{vec}}
+    \funcitem{void}{print\_qdvector}{\varnameqdvec{vec}}
+    \funcitem{void}{print\_mpfvector}{\varname{MPFVector}{vec}}
+    
+    \funcitem{void}{set0\_ddvector}{\varnameddvec{vec}} $\cdots$ \bi{Set vec as zero vector.}{vec を零ベクトルに設定します。}
+    \funcitem{void}{set0\_tdvector}{\varnametdvec{vec}}
+    \funcitem{void}{set0\_qdvector}{\varnameqdvec{vec}}
+    \funcitem{void}{set0\_mpfvector}{\varname{MPFVector}{vec}}
+    
+    \funcitem{void}{set\_ddvector\_i\_str}{\varnameddvec{vec}, \varname{long int}{index}, \varname{const char *}{str}} $\cdots$ \bi{Set *str expressed in decimal to index-th element of vec.}{10 進数で表現された *str を vec の index 番目の要素に設定します。}
+    \funcitem{void}{set\_tdvector\_i\_str}{\varnametdvec{vec}, \varname{long int}{index}, \varname{const char *}{str}}
+    \funcitem{void}{set\_qdvector\_i\_str}{\varnameqdvec{vec}, \varname{long int}{index}, \varname{const char *}{str}}
+    \funcitem{void}{set\_mpfvector\_i\_str}{\varnamempfvec{vec}, \varname{long int}{index}, \varname{const char *}{str}}
+
+    \funcitem{void}{add\_ddvector}{\varname{DDVector}{c}, \varname{DDVector}{a}, \varname{DDVector}{b}} $\cdots$  $c := a + b$
+    \funcitem{void}{add\_tdvector}{\varname{TDVector}{c}, \varname{TDVector}{a}, \varname{TDVector}{b}}
+    \funcitem{void}{add\_qdvector}{\varname{QDVector}{c}, \varname{QDVector}{a}, \varname{QDVector}{b}}
+    \funcitem{void}{add\_mpfvector}{\varname{MPFVector}{c}, \varname{MPFVector}{a}, \varname{MPFVector}{b}}
+
+    \funcitem{void}{add2\_ddvector}{\varnameddvec{c}, \varnameddvec{a}} $cdots$ $c := c + a$
+    \funcitem{void}{add2\_tdvector}{\varnametdvec{c}, \varnametdvec{a}}
+    \funcitem{void}{add2\_qdvector}{\varnametdvec{c}, \varnameqdvec{a}}
+    \funcitem{void}{add2\_mpfvector}{\varnamempfvec{c}, \varnamempfvec{a}}
+
+    \funcitem{void}{sub\_ddvector}{\varnameddvec{c}, \varnameddvec{a}, \varnameddvec{b}} $\cdots$ $c := a - b$
+    \funcitem{void}{sub\_tdvector}{\varnametdvec{c}, \varnametdvec{a}, \varnametdvec{b}}
+    \funcitem{void}{sub\_qdvector}{\varnameqdvec{c}, \varnameqdvec{a}, \varnameqdvec{b}}
+    \funcitem{void}{sub\_mpfvector}{\varnamempfvec{c}, \varnamempfvec{a}, \varnamempfvec{b}}
+
+    \funcitem{void}{sub2\_ddvector}{\varnameddvec{c}, \varnameddvec{a}} $\cdots$ $c -= a$
+    \funcitem{void}{sub2\_tdvector}{\varnametdvec{c}, \varnametdvec{a}}
+    \funcitem{void}{sub2\_qdvector}{\varnameqdvec{c}, \varnameqdvec{a}}
+    \funcitem{void}{sub2\_mpfvector}{\varnamempfvec{c}, \varnamempfvec{a}}
+
+    \funcitem{void}{cmul\_ddvector}{\varnameddvec{c}, \varname{double}{val[DDSIZE]}, \varnameddvec{a}} $\cdots$ $c := \mbox{val} \times a$
+    \funcitem{void}{cmul\_tdvector}{\varnametdvec{c}, \varname{double}{val[TDSIZE]}, \varnametdvec{a}}
+    \funcitem{void}{cmul\_qdvector}{\varnameqdvec{c}, \varname{double}{val[QDSIZE]}, \varnameqdvec{a}}
+    \funcitem{void}{cmul\_mpfvector}{\varnamempfvec{c}, \varname{mpf\_t}{val}, \varnamempfvec{a}}
+
+    \funcitem{void}{cmul2\_ddvector}{\varnameddvec{c}, \varname{double}{val[DDSIZE]}} $\cdots$ $c := val \times c$
+    \funcitem{void}{cmul2\_ddvector}{\varnametdvec{c}, \varname{double}{val[TDSIZE]}}
+    \funcitem{void}{cmul2\_ddvector}{\varnameqdvec{c}, \varname{double}{val[QDSIZE]}}
+    \funcitem{void}{cmul2\_ddvector}{\varnamempfvec{c}, \varname{mpf\_t}{val}}
+
+    \funcitem{void}{add\_cmul\_ddvector}{\varnameddvec{c}, \varnameddvec{a}, \varname{double}{val[DDSIZE]}, \varnameddvec{b}} $\cdots$ $c := a + val * b$
+    \funcitem{void}{add\_cmul\_tdvector}{\varnametdvec{c}, \varnametdvec{a}, \varname{double}{val[TDSIZE]}, \varnametdvec{b}}
+    \funcitem{void}{add\_cmul\_qdvector}{\varnameqdvec{c}, \varnameqdvec{a}, \varname{double}{val[QDSIZE]}, \varnameqdvec{b}} 
+    \funcitem{void}{add\_cmul\_mpfvector}{\varnamempfvec{c}, \varnamempfvec{a}, \varname{mpf\_t}{val}, \varnamempfvec{b}} 
+
+    \funcitem{void}{ip\_ddvector}{\varname{double}{ret[DDSIZE]}, \varnameddvec{a}, \varnameddvec{b}} $\cdots$ \bi{Calculate the dot product of $a$ and $b$}{$a$ と $b$ の内積を計算します。}
+    \funcitem{void}{ip\_tdvector}{\varname{double}{ret[TDSIZE]}, \varnametdvec{a}, \varnametdvec{b}}
+    \funcitem{void}{ip\_qdvector}{\varname{double}{ret[QDSIZE]}, \varnameqdvec{a}, \varnameqdvec{b}}
+    \funcitem{void}{ip\_mpfvector}{\varname{mpf\_t}{ret}, \varnamempfvec{a}, \varnamempfvec{b}}
+    
+    \funcitem{void}{neg\_ddvector}{\varnameddvec{c}, \varnameddvec{a}} $\cdots$  $c := -a$
+    \funcitem{void}{neg\_tdvector}{\varnametdvec{c}, \varnametdvec{a}}
+    \funcitem{void}{neg\_qdvector}{\varnameqdvec{c}, \varnameqdvec{a}}
+    \funcitem{void}{neg\_mpfvector}{\varnamempfvec{c}, \varnamempfvec{a}}
+
+    \funcitem{void}{norm1\_ddvector}{\varname{double}{ret[DDSIZE]}, \varnameddvec{a}} $\cdots$ $\|a\|_1$
+    \funcitem{void}{norm1\_tdvector}{\varname{double}{ret[TDSIZE]}, \varnametdvec{a}}
+    \funcitem{void}{norm1\_qdvector}{\varname{double}{ret[QDSIZE]}, \varnameqdvec{a}}
+    \funcitem{void}{norm1\_mpfvector}{\varname{mpf\_t}{ret}, \varnamempfvec{a}}
+
+    \funcitem{void}{normi\_ddvector}{\varname{double}{ret[DDSIZE]}, \varnameddvec{a}} $\cdots$ $\|a\|_\infty$
+    \funcitem{void}{normi\_tdvector}{\varname{double}{ret[TDSIZE]}, \varnametdvec{a}} 
+    \funcitem{void}{normi\_qdvector}{\varname{double}{ret[QDSIZE]}, \varnameqdvec{a}} 
+    \funcitem{void}{normi\_mpfvector}{\varname{mpf\_t}{ret}, \varnamempfvec{a}} 
+
+    \funcitem{void}{norm2\_ddvector}{\varname{double}{ret[DDSIZE]}, \varnameddvec{vec}} $\cdots$ $\|a\|_2$
+    \funcitem{void}{norm2\_tdvector}{\varname{double}{ret[TDSIZE]}, \varnametdvec{vec}}
+    \funcitem{void}{norm2\_qdvector}{\varname{double}{ret[QDSIZE]}, \varnameqdvec{vec}}
+    \funcitem{void}{norm2\_mpfvector}{\varname{mpf\_t}{ret}, \varnamempfvec{vec}}
+    
+\end{itemize}
+
+\section{\bi{Matrix arithmetic}{行列演算}}
+
+\begin{itemize}   
+    \funcitem{ddfloat}{get\_ddmatrix\_ij\_ddfloat}{\varnameddmat{mat}, \varname{long int}{i}, \varname{long int}{j}} $\cdots$ \bi{Get the $(i, j)$-th element of mat.}{mat の $(i, j)$ 番目の要素を取得します。}
+    \macroitem{GET\_DDMATRIX\_IJ}{mat, i, j} ((get\_ddmatrix\_ij\_ddfloat((mat), (i), (j)).val))
+    \macroitem{get\_ddmatrix\_ij}{mat, i, j} ((get\_ddmatrix\_ij\_ddfloat((mat), (i), (j)).val))
+    \funcitem{tdfloat}{get\_tdmatrix\_ij\_tdfloat}{\varnametdmat{mat}, \varname{long int}{i}, \varname{long int}{j}}
+    \macroitem{GET\_TDMATRIX\_IJ}{mat, i, j} ((get\_tdmatrix\_ij\_tdfloat((mat), (i), (j)).val))
+    \macroitem{get\_tdmatrix\_ij}{mat, i, j} ((get\_tdmatrix\_ij\_tdfloat((mat), (i), (j)).val))
+    \funcitem{qdfloat}{get\_qdmatrix\_ij\_qdfloat}{\varnameqdmat{mat}, \varname{long int}{i}, \varname{long int}{j}}
+    \macroitem{GET\_QDMATRIX\_IJ}{mat, i, j} ((get\_qdmatrix\_ij\_qdfloat((mat), (i), (j)).val))
+    \macroitem{get\_qdmatrix\_ij}{mat, i, j} ((get\_qdmatrix\_ij\_qdfloat((mat), (i), (j)).val))
+    \macroitem{GET\_MPFMATRIX\_IJ}{mat, i, j} ((get\_mpfmatrix\_ij((mat), (i), (j))))
+    \funcitem{mpf\_ptr}{get\_mpfmatrix\_ij}{\varnamempfmat{mat}, \varname{long int}{i}, \varname{long int}{j}} 
+    
+    \funcitem{void}{set\_ddmatrix\_ij}{\varnameddmat{mat}, \varname{long int}{i}, \varname{long int}{j}, \varname{double *}{val}}
+    \macroitem{SET\_DDMATRIX\_IJ}{mat, i, j, val} set\_ddmatrix\_ij((mat), (i), (j), (val))
+    \funcitem{void}{set\_tdmatrix\_ij}{\varnametdmat{mat}, \varname{long int}{i}, \varname{long int}{j}, \varname{double *}{val}}
+    \macroitem{SET\_TDMATRIX\_IJ}{mat, i, j, val} set\_tdmatrix\_ij((mat), (i), (j), (val))
+    \funcitem{void}{set\_qdmatrix\_ij}{\varnameqdmat{mat}, \varname{long int}{i}, \varname{long int}{j}, \varname{double *}{val}}
+    \macroitem{SET\_QDMATRIX\_IJ}{mat, i, j, val} set\_qdmatrix\_ij((mat), (i), (j), (val))
+    \funcitem{void}{set\_mpfmatrix\_ij}{\varnamempfmat{mat}, \varname{long int}{i}, \varname{long int}{j}, \varname{mpf\_t}{val}}
+    \macroitem{SET\_MPFMATRIX\_IJ}{mat, i, j, val} set\_mpfmatrix\_ij((mat), (i), (j), (val))
+    
+    \funcitem{void}{set\_ddmatrix\_ij\_d}{\varnameddmat{mat}, \varname{long int}{i}, \varname{long int}{j}, \varname{double}{val}}
+    \macroitem{SET\_DDMATRIX\_IJ\_D}{mat, i, j, val} set\_ddmatrix\_ij\_d((mat), (i), (j), (val))
+    \macroitem{SET\_DDMATRIX\_IJ\_UI}{mat, i, j, val} set\_ddmatrix\_ij\_d((mat), (i), (j), (double)(val))
+    \macroitem{set\_ddmatrix\_ij\_ui}{mat, i, j, val} set\_ddmatrix\_ij\_d((mat), (i), (j), (double)(val))
+    
+    \funcitem{void}{set0\_ddmatrix\_ij}{\varnameddmat{mat}, \varname{long int}{i}, \varname{long int}{j}}
+    \macroitem{SET0\_DDMATRIX\_IJ}{mat, i, j} set0\_ddmatrix\_ij((mat), (i), (j))
+    
+    \funcitem{void}{set0\_ddmatrix}{\varnameddmat{mat}} $\cdots$ \bi{set mat as zero matrix}{mat を零行列に設定します。}
+    \funcitem{void}{set0\_tdmatrix}{\varnametdmat{mat}}
+    \funcitem{void}{set0\_qdmatrix}{\varnameqdmat{mat}}
+    \funcitem{void}{set0\_mpfmatrix}{\varnamempfmat{mat}}
+    
+    \funcitem{DDMatrix}{init\_ddmatrix}{\varname{long int}{row\_dim}, \varname{long int}{col\_dim}} $\cdots$ \bi{Initialize DDMatrix.}{DDMatrix を初期化します。}
+    \funcitem{TDMatrix}{init\_tdmatrix}{\varname{long int}{row\_dim}, \varname{long int}{col\_dim}} $\cdots$ \bi{Initialize TDMatrix.}{TDMatrix を初期化します。}
+    \funcitem{QDMatrix}{init\_qdmatrix}{\varname{long int}{row\_dim}, \varname{long int}{col\_dim}} $\cdots$ \bi{Initialize QDMatrix.}{QDMatrix を初期化します。}
+    \funcitem{MPFMatrix}{init\_mpfmatrix}{\varname{long int}{row\_dim}, \varname{long int}{col\_dim}} $\cdots$ \bi{Initialize MPFMatrix.}{MPFMatrix を初期化します。}
+    \funcitem{MPFMatrix}{init2\_mpfmatrix}{\varname{long int}{row\_dim}, \varname{long int}{col\_dim}, \varname{unsigned long}{prec}} $\cdots$ \bi{Initialize MPFMatrix as prec-bit precision.}{MPFMatrix を prec ビット精度で初期化します。}
+
+    
+    \funcitem{void}{free\_ddmatrix}{\varnameddmat{mat}} $\cdots$ \bi{Free mat}{mat を解放します。}
+    \funcitem{void}{free\_tdmatrix}{\varnametdmat{mat}}
+    \funcitem{void}{free\_qdmatrix}{\varnameqdmat{mat}}
+    \funcitem{void}{free\_mpfmatrix}{\varnamempfmat{mat}} 
+    
+    \funcitem{void}{print\_ddmatrix}{\varnameddmat{mat}} $\cdots$ \bi{Print mat.}{mat を表示します。}
+    \funcitem{void}{print\_tdmatrix}{\varnametdmat{mat}}
+    \funcitem{void}{print\_qdmatrix}{\varnameqdmat{mat}}
+    \funcitem{void}{print\_mpfmatrix}{\varnamempfmat{mat}}
+    
+    \funcitem{void}{set\_ddfloat\_ddmat}{\varname{ddfloat}{ret[]}, \varname{int}{ret\_dim}, \varnameddmat{mat}} $\cdots$ \bi{Convert DDMatrix mat to ddfloat array.}{DDMatrix mat を ddfloat 配列に変換します。}
+    \funcitem{void}{set\_tdfloat\_tdmat}{\varname{tdfloat}{ret[]}, \varname{int}{ret\_dim}, \varnameddmat{mat}} $\cdots$ \bi{Convert TDMatrix mat to tdfloat array.}{TDMatrix mat を tdfloat 配列に変換します。}
+    \funcitem{void}{set\_qdfloat\_qdmat}{\varname{qdfloat}{ret[]}, \varname{int}{ret\_dim}, \varnameddmat{mat}} $\cdots$ \bi{Convert QDMatrix mat to qdfloat array.}{QDMatrix mat を qdfloat 配列に変換します。}
+
+    \funcitem{void}{set\_ddmatrix\_ddfloat}{\varnameddmat{ret}, \varname{ddfloat}{array[]}, \varname{int}{array\_dim}} $\cdots$ \bi{Convert ddfloat array to DDMatrix.}{ddfloat 配列を DDMatrix に変換します。}
+    \funcitem{void}{set\_tdmatrix\_tdfloat}{\varnametdmat{ret}, \varname{tdfloat}{array[]}, \varname{int}{array\_dim}} $\cdots$ \bi{Convert tdfloat array to TDMatrix.}{tdfloat 配列を TDMatrix に変換します。}
+    \funcitem{void}{set\_qdmatrix\_qdfloat}{\varnameqdmat{ret}, \varname{qdfloat}{array[]}, \varname{int}{array\_dim}} $\cdots$ \bi{Convert qdfloat array to QDMatrix}{qdfloat 配列を QDMatrix に変換します。}
+    
+    \funcitem{void}{mul\_ddmatrix}{\varnameddmat{ret}, \varnameddmat{a}, \varnameddmat{b}} $\cdots$ \bi{Simple matrix multiplication.}{単純な行列乗算です。}
+    \funcitem{void}{mul\_tdmatrix}{\varnametdmat{ret}, \varnametdmat{a}, \varnametdmat{b}} 
+    \funcitem{void}{mul\_qdmatrix}{\varnameqdmat{ret}, \varnameqdmat{a}, \varnameqdmat{b}} 
+    \funcitem{void}{mul\_mpfmatrix}{\varnamempfmat{ret}, \varnamempfmat{a}, \varnamempfmat{b}} 
+    
+    \funcitem{void}{normf\_ddmatrix}{\varname{double}{ret[DDSIZE]}, \varnameddmat{mat}} $\cdots$ \bi{Get the value of Frobenius norm of mat.}{mat のフロベニウスノルムの値を取得します。}
+    \funcitem{void}{normf\_tdmatrix}{\varname{double}{ret[TDSIZE]}, \varnametdmat{mat}}
+    \funcitem{void}{normf\_qdmatrix}{\varname{double}{ret[QDSIZE]}, \varnameqdmat{mat}}
+    \funcitem{void}{normf\_mpfmatrix}{\varname{mpf\_t}{ret}, \varnamempfmat{mat}}
+    
+    \funcitem{void}{print\_normf\_ddmatrix}{\varname{const char *}{str}, \varnameddmat{mat}} $\cdots$ \bi{print the Frobenius norm of mat.}{mat のフロベニウスノルムを表示します。}
+    
+    \funcitem{void}{normi\_ddmatrix}{\varname{double}{ret[DDSIZE]}, \varnameddmat{mat}} $\cdots$ \bi{Infinity norm of matrix.}{行列の無限大ノルムです。}
+    \funcitem{void}{normi\_tdmatrix}{\varname{double}{ret[TDSIZE]}, \varnametdmat{mat}} 
+    \funcitem{void}{normi\_qdmatrix}{\varname{double}{ret[QDSIZE]}, \varnameqdmat{mat}} 
+    \funcitem{void}{normi\_mpfmatrix}{\varname{mpf\_t}{ret}, \varnametdmat{mat}} 
+
+    \funcitem{void}{norm1\_ddmatrix}{\varname{double}{ret[DDSIZE]}, \varnameddmat{mat}} $\cdots$ \bi{1-norm of matrix.}{行列の 1 ノルムです。}
+    \funcitem{void}{norm1\_tdmatrix}{\varname{double}{ret[TDSIZE]}, \varnametdmat{mat}}
+    \funcitem{void}{norm1\_qdmatrix}{\varname{double}{ret[QDSIZE]}, \varnameqdmat{mat}}
+    \funcitem{void}{norm1\_mpfmatrix}{\varname{mpf\_t}{ret}, \varnamempfmat{mat}}
+    
+    \funcitem{void}{add\_ddmatrix}{\varnameddmat{c}, \varnameddmat{a}, \varnameddmat{b}} $\cdots $ $c := a + b$
+    \funcitem{void}{add\_tdmatrix}{\varnametdmat{c}, \varnametdmat{a}, \varnametdmat{b}} 
+    \funcitem{void}{add\_qdmatrix}{\varnameqdmat{c}, \varnameqdmat{a}, \varnameqdmat{b}} 
+    \funcitem{void}{add\_mpfmatrix}{\varnamempfmat{c}, \varnamempfmat{a}, \varnamempfmat{b}} 
+    
+    \funcitem{void}{sub\_ddmatrix}{\varnameddmat{c}, \varnameddmat{a}, \varnameddmat{b}} $\cdots $ $c := a - b$
+    \funcitem{void}{sub\_tdmatrix}{\varnametdmat{c}, \varnametdmat{a}, \varnametdmat{b}}
+    \funcitem{void}{sub\_qdmatrix}{\varnameqdmat{c}, \varnameqdmat{a}, \varnameqdmat{b}}
+    \funcitem{void}{sub\_mpfmatrix}{\varnamempfmat{c}, \varnamempfmat{a}, \varnamempfmat{b}} 
+    
+    \funcitem{void}{cmul\_ddmatrix}{\varnameddmat{c}, \varname{double}{sc[DDSIZE]}, \varnameddmat{a}} $\cdots $ $c := sc\times a$
+    \funcitem{void}{cmul\_tdmatrix}{\varnametdmat{c}, \varname{double}{sc[TDSIZE]}, \varnametdmat{a}}
+    \funcitem{void}{cmul\_ddmatrix}{\varnameqdmat{c}, \varname{double}{sc[QDSIZE]}, \varnameqdmat{a}}
+    \funcitem{void}{cmul\_mpfmatrix}{\varnamempfmat{c}, \varname{mpf\_t}{sc}, \varnamempfmat{a}}
+    
+    \funcitem{void}{transpose\_ddmatrix}{\varnameddmat{c}, \varnameddmat{a}} $\cdots$ $c := a^T$
+    \funcitem{void}{transpose\_tdmatrix}{\varnametdmat{c}, \varnametdmat{a}}
+    \funcitem{void}{transpose\_qdmatrix}{\varnameqdmat{c}, \varnameqdmat{a}}
+    \funcitem{void}{transpose\_mpfmatrix}{\varnamempfmat{c}, \varnamempfmat{a}}
+    
+    \funcitem{void}{subst\_ddmatrix}{\varnameddmat{c}, \varnameddmat{a}} $\cdots$ $c := a$
+    \funcitem{void}{subst\_tdmatrix}{\varnametdmat{c}, \varnametdmat{a}}
+    \funcitem{void}{subst\_qdmatrix}{\varnameqdmat{c}, \varnameqdmat{a}}
+    \funcitem{void}{subst\_mpfmatrix}{\varnamempfmat{c}, \varnamempfmat{a}} 
+    
+    \funcitem{void}{setI\_ddmatrix}{\varnameddmat{c}} $\cdots$ $c := I$
+    \funcitem{void}{setI\_tdmatrix}{\varnametdmat{c}}
+    \funcitem{void}{setI\_qdmatrix}{\varnameqdmat{c}}
+    \funcitem{void}{setI\_mpfmatrix}{\varnamempfmat{c}} 
+    
+    \funcitem{void}{mul\_ddmatrix\_ddvec}{\varnameddvec{v}, \varnameddmat{a}, \varnameddvec{vb}} $\cdots$ $v := a * vb$
+    \funcitem{void}{mul\_tdmatrix\_tdvec}{\varnametdvec{v}, \varnametdmat{a}, \varnametdvec{vb}}
+    \funcitem{void}{mul\_qdmatrix\_qdvec}{\varnameqdvec{v}, \varnameqdmat{a}, \varnameqdvec{vb}}
+    \funcitem{void}{mul\_mpfmatrix\_mpfvec}{\varnamempfvec{v}, \varnamempfmat{a}, \varnamempfvec{vb}} 
+    
+    \funcitem{void}{mul\_ddmatrixt\_ddvec}{\varnameddvec{v}, \varnameddmat{a}, \varnameddvec{vb}} $\cdots$ $v := a^T * vb$
+    \funcitem{void}{mul\_tdmatrixt\_tdvec}{\varnametdvec{v}, \varnametdmat{a}, \varnametdvec{vb}}
+    \funcitem{void}{mul\_qdmatrixt\_qdvec}{\varnameqdvec{v}, \varnameqdmat{a}, \varnameqdvec{vb}}
+    \funcitem{void}{mul\_mpfmatrixt\_mpfvec}{\varnamempfvec{v}, \varnamempfmat{a}, \varnamempfvec{vb}}
+    
+    \funcitem{void}{inv\_ddmatrix}{\varnameddmat{a}} $\cdots$ $a := a^{-1}$ (only for square matrix)
+    \funcitem{void}{inv\_tdmatrix}{\varnametdmat{a}}
+    \funcitem{void}{inv\_qdmatrix}{\varnameqdmat{a}}
+    \funcitem{void}{inv\_mpfmatrix}{\varnamempfmat{a}}
+
+\end{itemize}
+
+\begin{itemize}
+
+    \funcitem{void}{subst\_mpfvector\_ddvec}{\varnamempfvec{c}, \varnameddvec{a}}$\cdots$ $c := (mpf)a$   
+
+    \funcitem{void}{subst\_ddvector\_mpfvec}{\varnameddvec{c}, \varnamempfvec{MPFVector a}} $\cdots$ $ c := (dd)a$
+    
+    \funcitem{void}{subst\_mpfmatrix\_ddmat}{\varnamempfmat{c}, \varnameddmat{a}} $\cdots$ $c := (mpf)a$
+    
+    \funcitem{void}{subst\_ddmatrix\_mpfmat}{\varnameddmat{c}, \varnamempfmat{a}} $\cdots$ $c := (dd)a$
+    
+
+    \funcitem{void}{relerr\_ddvector\_mpfvec}{\varname{double}{relerr[DDSIZE]}, \varnameddvec{approx\_vec}, \varnamempfvec{true\_vec,} \varname{int}{norm\_type}} $\cdots$ \bi{Norm relative error of vector.}{ベクトルのノルム相対誤差です。}
+
+    \funcitem{void}{relerr\_element\_ddvector\_mpf}{\varname{double}{max\_relerr[DDSIZE]}, \varname{double}{min\_relerr[DDSIZE]}, \varname{double}{norm\_relerr[DDSIZE]}, \varnameddvec{approx\_vec}, \varnamempfvec{true\_vec}, \varname{int}{norm\_type}} $\cdots$ \bi{E lementwise relative errors of vector.}{ベクトルの要素ごとの相対誤差です。}
+    
+    /* c := (dd)a */
+    \funcitem{void}{subst\_ddvector\_dvec}{\varnameddvec{c}, \varnamedvec{sa}} $\cdots$ $c := (dd)a$
+    
+    /* c := (d)a */
+    \funcitem{void}{subst\_dvector\_ddvec}{\varnamedvec{c}, \varnameddvec{a}} $\cdots$ $c := (double)a$
+    
+    /* c := (dd)a */
+    \funcitem{void}{subst\_ddmatrix\_dmat}{\varnameddmat{c}, \varnamedmat{a}} $\cdots$ $c := (dd)a$
+    
+    /* c := (d)a */
+    \funcitem{void}{subst\_dmatrix\_ddmat}{\varnamedmat{c}, \varnameddmat{a}} $\cdots$ $c := (double)a$
+    
+    \funcitem{void}{relerr\_ddvector}{\varname{double}{relerr[DDSIZE]}, \varnameddvec{approx\_vec}, \varnameddvec{true\_vec}, \varname{int}{norm\_type}} $\cdots$ \bi{Norm relative error of vector.}{ベクトルのノルム相対誤差です。}
+    
+    \funcitem{void}{relerr\_element\_ddvector}{\varname{double}{max\_relerr[DDSIZE]}, \varname{double}{min\_relerr[DDSIZE]}, \varname{double}{norm\_relerr[DDSIZE]}, \varnameddvec{approx\_vec}, \varnameddvec{true\_vec}, \varname{int}{norm\_type}} $\cdots$ \bi{E lementwise relative errors of vector.}{ベクトルの要素ごとの相対誤差です。}
+    
+    \funcitem{void}{row\_swap\_ddmatrix}{\varnameddmat{mat}, \varname{long int}{row\_index0}, \varname{long int}{row\_index1}, \varname{long int}{col\_start}, \varname{long int}{col\_end}} $\cdots$ \bi{Exchange a(row\_index0, col\_start:col\_end) to a(row\_index1, col\_start:col\_end)}{a(row\_index0, col\_start:col\_end) と a(row\_index1, col\_start:col\_end) を入れ替えます。}
+\end{itemize}
+
+\section{\bi{File I/O with matrix and vector}{行列とベクトルのファイル入出力}}
+
+\begin{itemize}
+    \funcitem{void}{fread\_ddmatrix}{\varname{FILE *}{fp}, \varnameddmat{mat}} $\cdots$ \bi{Read matrix elements from fp and store theme in mat.}{fp から行列の要素を読み込み、mat に格納します。}
+    \funcitem{void}{fread\_tdmatrix}{\varname{FILE *}{fp}, \varnametdmat{mat}}
+    \funcitem{void}{fread\_qdmatrix}{\varname{FILE *}{fp}, \varnameqdmat{mat}}
+    \funcitem{void}{fread\_mpfmatrix}{\varname{FILE *}{fp}, \varnameqdmat{mat}}
+
+    \funcitem{void}{fread\_ddmatrix\_fname}{\varname{const char *}{fname}, \varnameddmat{mat}} $\cdots$ \bi{Read matrix elements from fname and store theme in mat.}{fname から行列の要素を読み込み、mat に格納します。}
+    \funcitem{void}{fread\_tdmatrix\_fname}{\varname{const char *}{fname}, \varnametdmat{mat}}
+    \funcitem{void}{fread\_qdmatrix\_fname}{\varname{const char *}{fname}, \varnameqdmat{mat}}
+    \funcitem{void}{fread\_mpfmatrix\_fname}{\varname{const char *}{fname}, \varnamempfmat{mat}}
+
+
+    \funcitem{void}{fwrite\_ddmatrix}{\varname{FILE *}{fp}, \varnameddmat{mat}} $\cdots$ \bi{Write matrix elements of mat to fp.}{mat の行列要素を fp に書き込みます。}
+    \funcitem{void}{fwrite\_tdmatrix}{\varname{FILE *}{fp}, \varnametdmat{mat}}
+    \funcitem{void}{fwrite\_qdmatrix}{\varname{FILE *}{fp}, \varnameqdmat{mat}}
+    \funcitem{void}{fwrite\_mpfmatrix}{\varname{FILE *}{fp}, \varnamempfmat{mat}}
+
+
+    \funcitem{void}{fwrite\_ddmatrix\_fname}{\varname{const char *}{fname}, \varnameddmat{mat}}$\cdots$ \bi{Write matrix elements of mat to fname.}{mat の行列要素を fname に書き込みます。}
+    \funcitem{void}{fwrite\_tdmatrix\_fname}{\varname{const char *}{fname}, \varnametdmat{mat}}
+    \funcitem{void}{fwrite\_qdmatrix\_fname}{\varname{const char *}{fname}, \varnameqdmat{mat}}
+    \funcitem{void}{fwrite\_mpfmatrix\_fname}{\varname{const char *}{fname}, \varnamempfmat{mat}}
+
+    \funcitem{void}{fread\_ddvector}{\varname{FILE *}{fp}, \varnameddvec{vec}}  $\cdots$ \bi{Read vector elements from fp and store theme in vec.}{fp からベクトルの要素を読み込み、vec に格納します。}
+    \funcitem{void}{fread\_tdvector}{\varname{FILE *}{fp}, \varnametdvec{vec}}
+    \funcitem{void}{fread\_qdvector}{\varname{FILE *}{fp}, \varnameqdvec{vec}}
+    \funcitem{void}{fread\_mpfvector}{\varname{FILE *}{fp}, \varnamempfvec{vec}}
+
+    \funcitem{void}{fread\_ddvector\_fname}{\varname{const char *}{fname}, \varnameddvec{vec}}  $\cdots$ \bi{Read vector elements from fname and store theme in vec.}{fname からベクトルの要素を読み込み、vec に格納します。}
+    \funcitem{void}{fread\_tdvector\_fname}{\varname{const char *}{fname}, \varnametdvec{vec}}
+    \funcitem{void}{fread\_qdvector\_fname}{\varname{const char *}{fname}, \varnameqdvec{vec}}
+    \funcitem{void}{fread\_mpfvector\_fname}{\varname{const char *}{fname}, \varnamempfvec{vec}}
+
+    \funcitem{void}{fwrite\_ddvector}{\varname{FILE *}{fp}, \varnameddvec{vec}} $\cdots$ \bi{Write vector elements of vec to fp.}{vec のベクトル要素を fp に書き込みます。}
+    \funcitem{void}{fwrite\_tdvector}{\varname{FILE *}{fp}, \varnametdvec{vec}}
+    \funcitem{void}{fwrite\_qdvector}{\varname{FILE *}{fp}, \varnameqdvec{vec}}
+    \funcitem{void}{fwrite\_mpfvector}{\varname{FILE *}{fp}, \varnamempfvec{vec}}
+
+    \funcitem{void}{fwrite\_ddvector\_fname}{\varname{const char *}{fname}, \varnameddvec{vec}}$\cdots$ \bi{Write vector elements of vec to fname.}{vec のベクトル要素を fname に書き込みます。}
+    \funcitem{void}{fwrite\_tdvector\_fname}{\varname{const char *}{fname}, \varnametdvec{vec}}
+    \funcitem{void}{fwrite\_qdvector\_fname}{\varname{const char *}{fname}, \varnameqdvec{vec}}
+    \funcitem{void}{fwrite\_mpfvector\_fname}{\varname{const char *}{fname}, \varnamempfvec{vec}}
+
+    
+    \funcitem{void}{read\_test\_linear\_eq\_dd}{\varnameddmat{A}, \varnameddvec{true\_x}, \varnameddvec{b}, \varname{long int dim}, \varname{const char *}{fname\_A}, \varname{const char *}{fname\_true\_x}, \varname{const char *}{fname\_b}}  $\cdots$ \bi{Read the coefficient matrix A from fname\_A, the true\_x from fname\_true\_x, and the vector b from fname\_b.}{係数行列 A を fname\_A から、true\_x を fname\_true\_x から、ベクトル b を fname\_b から読み込みます。}
+    \funcitem{void}{read\_test\_linear\_eq\_td}{\varnametdmat{A}, \varnametdvec{true\_x}, \varnametdvec{b}, \varname{long int dim}, \varname{const char *}{fname\_A}, \varname{const char *}{fname\_true\_x}, \varname{const char *}{fname\_b}}
+    \funcitem{void}{read\_test\_linear\_eq\_qd}{\varnameqdmat{A}, \varnameqdvec{true\_x}, \varnameqdvec{b}, \varname{long int dim}, \varname{const char *}{fname\_A}, \varname{const char *}{fname\_true\_x}, \varname{const char *}{fname\_b}}
+    \funcitem{void}{read\_test\_linear\_eq\_mpf}{\varnamempfmat{A}, \varnamempfvec{true\_x}, \varnamempfvec{b}, \varname{long int dim}, \varname{const char *}{fname\_A}, \varname{const char *}{fname\_true\_x}, \varname{const char *}{fname\_b}}
+
+\end{itemize}
+
+\section{\bi{Generating test matrices}{テスト行列の生成}}
+
+\bi{The following functions provide various test matrices for benhmark tests.}{以下の関数は、ベンチマークテスト用にさまざまなテスト行列を提供します。}
+
+\begin{itemize}
+    \funcitem{void}{hilbert\_ddmatrix}{\varnameddmat{a}, \varname{long int}{dim}} $\cdots$ \bi{Hilbert matrix.}{ヒルベルト行列です。}
+    \funcitem{void}{hilbert\_tdmatrix}{\varnametdmat{a}, \varname{long int}{dim}} 
+    \funcitem{void}{hilbert\_qdmatrix}{\varnameqdmat{a}, \varname{long int}{dim}} 
+    \funcitem{void}{hilbert\_mpfmatrix}{\varnamempfmat{a}, \varname{long int}{dim}} 
+
+    \funcitem{void}{lotkin\_ddmatrix}{\varnameddmat{a}, \varname{long int}{dim}} $\cdots$ \bi{Lotkin matrix.}{Lotkin 行列です。}
+    \funcitem{void}{lotkin\_tdmatrix}{\varnametdmat{a}, \varname{long int}{dim}}
+    \funcitem{void}{lotkin\_qdmatrix}{\varnameqdmat{a}, \varname{long int}{dim}} 
+    \funcitem{void}{lotkin\_mpfmatrix}{\varnamempfmat{a}, \varname{long int}{dim}}
+
+    \funcitem{void}{frank\_ddmatrix}{\varnameddmat{a}, \varname{long int}{dim}} $\cdots$ \bi{Symmetric Frank matrix.}{対称 Frank 行列です。}
+    \funcitem{void}{frank\_tdmatrix}{\varnametdmat{a}, \varname{long int}{dim}}
+    \funcitem{void}{frank\_qdmatrix}{\varnameqdmat{a}, \varname{long int}{dim}}
+    \funcitem{void}{frank\_mpfmatrix}{\varnamempfmat{a}, \varname{long int}{dim}}
+
+    \funcitem{void}{tridiag\_ddmatrix}{\varnameddmat{a}, \varnameddvec{low\_subdiag}, \varnameddvec{diag}, \varnameddvec{up\_subdiag}, \varname{long int}{dim}} $\cdots$ \bi{Triagonal matrix.}{三重対角行列です。}
+    \funcitem{void}{tridiag\_tdmatrix}{\varnameddmat{a}, \varnametdvec{low\_subdiag}, \varnametdvec{diag}, \varnametdvec{up\_subdiag}, \varname{long int}{dim}}
+    \funcitem{void}{tridiag\_qdmatrix}{\varnameddmat{a}, \varnameqdvec{low\_subdiag}, \varnameqdvec{diag}, \varnameqdvec{up\_subdiag}, \varname{long int}{dim}}
+    \funcitem{void}{tridiag\_mpfmatrix}{\varnameddmat{a}, \varnamempfvec{low\_subdiag}, \varnamempfvec{diag}, \varnamempfvec{up\_subdiag}, \varname{long int}{dim}} 
+    
+    \funcitem{void}{int\_sym\_rand\_ddmatrix}{\varnameddmat{mat}, \varname{long int}{max}, \varname{long int}{seed}, \varname{long int}{ dim}} $\cdots$ \bi{Integer Symmetrix Random Matrix.}{整数対称ランダム行列です。}
+    \funcitem{void}{int\_sym\_rand\_tdmatrix}{\varnametdmat{mat}, \varname{long int}{max}, \varname{long int}{seed}, \varname{long int}{ dim}}
+    \funcitem{void}{int\_sym\_rand\_qdmatrix}{\varnameqdmat{mat}, \varname{long int}{max}, \varname{long int}{seed}, \varname{long int}{ dim}}
+    \funcitem{void}{int\_sym\_rand\_mpfmatrix}{\varnamempfmat{mat}, \varname{long int}{max}, \varname{long int}{seed}, \varname{long int}{ dim}}
+    
+    \funcitem{void}{int\_unsym\_rand\_ddmatrix}{\varnameddmat{mat}, \varname{long int}{max}, \varname{long int}{seed}, \varname{long int}{ dim}} $\cdots$ \bi{Integer Unsymmetrix Random Matrix.}{整数非対称ランダム行列です。}
+    \funcitem{void}{int\_unsym\_rand\_tdmatrix}{\varnametdmat{mat}, \varname{long int}{max}, \varname{long int}{seed}, \varname{long int}{ dim}} $\cdots$ \bi{Integer Unsymmetrix Random Matrix.}{整数非対称ランダム行列です。}
+    \funcitem{void}{int\_unsym\_rand\_qdmatrix}{\varnameqdmat{mat}, \varname{long int}{max}, \varname{long int}{seed}, \varname{long int}{ dim}} $\cdots$ \bi{Integer Unsymmetrix Random Matrix.}{整数非対称ランダム行列です。}
+    \funcitem{void}{int\_unsym\_rand\_mpfmatrix}{\varnamempfmat{mat}, \varname{long int}{max}, \varname{long int}{seed}, \varname{long int}{ dim}} $\cdots$ \bi{Integer Unsymmetrix Random Matrix.}{整数非対称ランダム行列です。}
+    
+    \funcitem{void}{diag\_ddmatrix}{\varnameddmat{mat}, \varnameddvec{diag}, \varname{long int}{dim}} $\cdots$ \bi{Real Diagonal Matrix.}{実対角行列です。}
+    \funcitem{void}{diag\_tdmatrix}{\varnametdmat{mat}, \varnametdvec{diag}, \varname{long int}{dim}}
+    \funcitem{void}{diag\_qdmatrix}{\varnameqdmat{mat}, \varnameqdvec{diag}, \varname{long int}{dim}}
+    \funcitem{void}{diag\_mpfmatrix}{\varnamempfmat{mat}, \varnamempfvec{diag}, \varname{long int}{dim}}
+    
+    \funcitem{void}{toeplitz\_ddmatrix}{\varnameddmat{mat}, \varname{double}{gamma\_param[DDSIZE]}, \varname{long int}{dim}} $\cdots$ \bi{Toeplitz matrix.}{Toeplitz 行列です。}
+    \funcitem{void}{toeplitz\_tdmatrix}{\varnametdmat{mat}, \varname{double}{gamma\_param[TDSIZE]}, \varname{long int}{dim}}
+    \funcitem{void}{toeplitz\_qdmatrix}{\varnameqdmat{mat}, \varname{double}{gamma\_param[QDSIZE]}, \varname{long int}{dim}}
+    \funcitem{void}{toeplitz\_mpfmatrix}{\varnamempfmat{mat}, \varname{mpf\_t}{gamma\_param}, \varname{long int}{dim}}
+    
+    \funcitem{void}{pascal\_ddmatrix}{\varnameddmat{ret}, \varname{long int}{dim}} $\cdots $ \bi{Pascal matrix.}{Pascal 行列です。}
+    \funcitem{void}{pascal\_tdmatrix}{\varnametdmat{ret}, \varname{long int}{dim}}
+    \funcitem{void}{pascal\_qdmatrix}{\varnameqdmat{ret}, \varname{long int}{dim}}
+    \funcitem{void}{pascal\_mpfmatrix}{\varnamempfmat{ret}, \varname{long int}{dim}}
+    
+    \funcitem{void}{im\_rand\_ddmatrix}{\varnameddmat{ret}, \varname{unsigned long}{seed}} $\cdots $  $ I -  random $
+    \funcitem{void}{im\_rand\_tdmatrix}{\varnametdmat{ret}, \varname{unsigned long}{seed}}
+    \funcitem{void}{im\_rand\_qdmatrix}{\varnameqdmat{ret}, \varname{unsigned long}{seed}}
+    \funcitem{void}{im\_rand\_mpfmatrix}{\varnamempfmat{ret}, \varname{unsigned long}{seed}}
+
+\end{itemize}
+
+
+%------------------------------------------------%
+% matrix multiplication
+%------------------------------------------------%
+\section{\bi{Simple, block, and Strassen matrix multiplication and related functions}{単純法・ブロック法・Strassen 法による行列乗算と関連関数}}
+
+%\begin{lstlisting}  
+%    #ifndef _BNC\_DEFAULT\_MIN\_DIM\_STRASSEN
+%        \macroitem{\_BNC\_DEFAULT\_MIN\_DIM\_STRASSEN 32
+%    #endif // _BNC\_DEFAULT\_MIN\_DIM\_STRASSEN
+%    
+%    #ifndef STRASSEN\_MIN\_DIM
+%    \macroitem{STRASSEN\_MIN\_DIM _BNC\_DEFAULT\_MIN\_DIM\_STRASSEN
+%    #endif // STRASSEN\_MIN\_DIM
+%\end{lstlisting}
+
+\begin{itemize}
+
+    \macroitem{mul\_ddmatrix\_simple}{c, a, b} $\cdots$ \funcname{mul\_ddmatrix}{c, a, b} $\cdots$ \bi{Matrix multiplication based on simple triple-loop way}{単純な三重ループ方式による行列乗算です。}
+    \macroitem{mul\_tdmatrix\_simple}{c, a, b} $\cdots$ \funcname{mul\_tdmatrix}{c, a, b}
+    \macroitem{mul\_qdmatrix\_simple}{c, a, b} $\cdots$ \funcname{mul\_qdmatrix}{c, a, b}
+    \funcitem{void}{mul\_mpfmatrix\_simple}{\varname{MPFMatrix}{c}, \varname{MPFMatrix}{a}, \varname{MPFMatrix b}}
+
+    \funcitem{void}{mul\_dmatrix\_strassen}{\varname{DMatrix}{ret}, \varname{DMatrix}{mat\_a}, \varname{DMatrix}{mat\_b}, \varname{long int}{min\_dim}} $\cdots$ \bi{Matrix multiplication based on Strassen or Winograd algorithms}{Strassen 法または Winograd 法に基づく行列乗算です。}
+    \funcitem{void}{mul\_ddmatrix\_strassen}{\varnameddmat{ret}, \varnameddmat{mat\_a}, \varnameddmat{mat\_b}, \varname{long int}{min\_dim}}
+    \funcitem{void}{mul\_tdmatrix\_strassen}{\varnametdmat{ret}, \varnametdmat{mat\_a}, \varnametdmat{mat\_b}, \varname{long int}{min\_dim}}
+    \funcitem{void}{mul\_qdmatrix\_strassen}{\varnameqdmat{ret}, \varnameqdmat{mat\_a}, \varnameqdmat{mat\_b}, \varname{long int}{min\_dim}}
+    \funcitem{void}{mul\_mpfmatrix\_strassen}{\varname{MPFMatrix}{ret}, \varname{MPFMatrix}{mat\_a}, \varname{MPFMatrix}{mat\_b}, \varname{long int}{min\_dim}} 
+
+    \funcitem{void}{mul\_dmatrix\_block}{DMatrix ret, DMatrix mat\_a, DMatrix mat\_b, \varname{long int}{min\_dim}} $\cdots$ \bi{Block matrix multiplicaiton}{ブロック行列乗算です。}
+    \funcitem{void}{mul\_ddmatrix\_block}{\varnameddmat{ret}, \varnameddmat{mat\_a}, \varnameddmat{mat\_b}, \varname{long int}{min\_dim}}
+    \funcitem{void}{mul\_tdmatrix\_block}{\varnametdmat{ret}, \varnametdmat{mat\_a}, \varnametdmat{mat\_b}, \varname{long int}{min\_dim}}
+    \funcitem{void}{mul\_qdmatrix\_block}{\varnameqdmat{ret}, \varnameqdmat{mat\_}a, \varnameqdmat{mat\_b}, \varname{long int}{min\_dim}}
+    \funcitem{void}{mul\_mpfmatrix\_block}{\varname{MPFMatrix}{ret}, \varname{MPFMatrix}{mat\_a}, \varname{MPFMatrix}{mat\_b}, \varname{long int}{min\_dim}}
+
+    \funcitem{void}{mul\_dmatrix\_strassen\_even}{\varname{DMatrix}{ret}, \varname{DMatrix}{mat\_a}, \varname{DMatrix}{mat\_b,} \varname{long int}{min\_dim}} $\cdots$ \bi{Strassen's Algorithm (even dimension)}{Strassen 法（偶数次元）です。}
+    \funcitem{void}{mul\_ddmatrix\_strassen\_even}{\varnameddmat{ret}, \varnameddmat{mat\_a}, \varnameddmat{mat\_b}, \varname{long int}{min\_dim}}
+    \funcitem{void}{mul\_tdmatrix\_strassen\_even}{\varnametdmat{ret}, \varnametdmat{mat\_a}, \varnametdmat{mat\_b}, \varname{long int}{ min\_dim}}
+    \funcitem{void}{mul\_qdmatrix\_strassen\_even}{\varnameqdmat{ret}, \varnameqdmat{mat\_a}, \varnameqdmat{mat\_b}, \varname{long int}{ min\_dim}}
+    \funcitem{void}{mul\_mpfmatrix\_strassen\_even}{\varname{MPFMatrix}{ret}, \varname{MPFMatrix}{mat\_a}, \varname{MPFMatrix}{mat\_b}, \varname{long int}{min\_dim}}
+    
+
+    \funcitem{void}{mul\_dmatrix\_winograd\_even}{\varname{DMatrix}{ret}, \varname{DMatrix}{mat\_a}, \varname{DMatrix}{mat\_b}, \varname{long int}{min\_dim}} $\cdots$ \bi{Winograd Variant of Strassen's Algorithm}{Strassen 法の Winograd 変種です。}
+    \funcitem{void}{mul\_ddmatrix\_winograd\_even}{\varnameddmat{ret}, \varnameddmat{mat\_a}, \varnameddmat{mat\_b}, \varname{long int}{ min\_dim}}
+    \funcitem{void}{mul\_tdmatrix\_winograd\_even}{\varnametdmat{ret}, \varnametdmat{mat\_a}, \varnametdmat{mat\_b}, \varname{long int}{min\_dim}}
+    \funcitem{void}{mul\_qdmatrix\_winograd\_even}{\varnameqdmat{ret}, \varnameqdmat{mat\_a}, \varnameqdmat{mat\_b}, \varname{long int}{ min\_dim}}     
+    \funcitem{void}{mul\_mpfmatrix\_winograd\_even}{\varname{MPFMatrix}{ret}, \varname{MPFMatrix}{mat\_a}, \varname{MPFMatrix}{mat\_b}, \varname{long int}{min\_dim}}
+    
+    \funcitem{void}{inv\_ddmatrix\_strassen\_even}{\varnameddmat{ret}, \varnameddmat{mat\_a}, \varname{long int}{min\_dim}} $\cdots$ \bi{Computattion of Inverse Matrix by using Strassen's Algorithm}{Strassen 法を用いた逆行列の計算です。}
+    \funcitem{void}{inv\_tdmatrix\_strassen\_even}{\varnametdmat{ret}, \varnametdmat{mat\_a}, \varname{long int}{min\_dim}}
+    \funcitem{void}{inv\_qdmatrix\_strassen\_even}{\varnameqdmat{ret}, \varnameqdmat{mat\_a}, \varname{long int}{min\_dim}}    
+
+\end{itemize}
+
+\subsection{\bi{OpenMP}{OpenMP}}
+
+\begin{itemize}
+   
+    \macroitem{\_bncomp\_mul\_ddmatrix\_simple}{c, a, b} \_bncomp\_mul\_ddmatrix(c, a, b) $\cdots$ \bi{Parallelized simple matrix multiplication,}{並列化された単純な行列乗算です。}
+    \macroitem{\_bncomp\_mul\_tdmatrix\_simple}{c, a, b} \_bncomp\_mul\_tdmatrix(c, a, b)
+    \macroitem{\_bncomp\_mul\_qdmatrix\_simple}{c, a, b} \_bncomp\_mul\_qdmatrix(c, a, b)
+    \macroitem{\_bncomp\_mul\_mpfdmatrix\_simple}{c, a, b} \_bncomp\_mul\_mpfdmatrix(c, a, b)
+    
+
+    \funcitem{void}{\_bncomp\_mul\_ddmatrix\_block}{\varnameddmat{ret}, \varnameddmat{mat\_a}, \varnameddmat{mat\_b}, \varname{long int}{min\_dim}} $\cdots$ \bi{Parallelized block matrix multiplicaiton.}{並列化されたブロック行列乗算です。}
+    \funcitem{void}{\_bncomp\_mul\_tdmatrix\_block}{\varnametdmat{ret}, \varnametdmat{mat\_a}, \varnametdmat{mat\_b}, \varname{long int}{min\_dim}}
+    \funcitem{void}{\_bncomp\_mul\_qdmatrix\_block}{\varnameqdmat{ret}, \varnameqdmat{mat\_a}, \varnameqdmat{mat\_b}, \varname{long int}{min\_dim}} 
+    \funcitem{void}{\_bncomp\_mul\_mpfmatrix\_block}{\varnamempfmat{ret}, \varnamempfmat{mat\_a}, \varnamempfmat{mat\_b}, \varname{long int}{min\_dim}}
+
+
+    \funcitem{void}{\_bncomp\_mul\_ddmatrix\_strassen}{\varnameddmat{ret}, \varnameddmat{mat\_a}, \varnameddmat{mat\_b}, \varname{long int}{min\_dim}} $\cdots$ \bi{Parallelized Strassen and Winograd matrix multiplication (limited performance due to poor coding)}{並列化された Strassen 法および Winograd 法による行列乗算です（実装が未成熟なため性能は限定的です）。}
+    \funcitem{void}{\_bncomp\_mul\_tdmatrix\_strassen}{\varnametdmat{ret}, \varnametdmat{mat\_a}, \varnametdmat{mat\_b}, \varname{long int}{min\_dim}}
+    \funcitem{void}{\_bncomp\_mul\_qdmatrix\_strassen}{\varnameqdmat{ret}, \varnameqdmat{mat\_a}, \varnameqdmat{mat\_b}, \varname{long int}{min\_dim}}
+    \funcitem{void}{\_bncomp\_mul\_mpfmatrix\_strassen}{\varnamempfmat{ret}, \varnamempfmat{mat\_a}, \varnamempfmat{mat\_b}, \varname{long int}{min\_dim}}
+
+
+\end{itemize}
+
+\section{\bi{Getting relative errors of vector and matrix}{ベクトルと行列の相対誤差の取得}}
+
+\begin{itemize}
+        \funcitem{void}{relerr3\_dvector}{\varname{double *}{max\_relerr}, \varname{double *}{min\_relerr}, \varname{double *}{norm\_relerr}, \varnamedvec{vec}, \varnamedvec{vec\_true}, \varname{int}{kind\_of\_norm}} $\cdots$ \bi{Relative errors of vec.}{vec の相対誤差です。}
+        \funcitem{void}{relerr3\_ddvector}{\varname{double}{max\_relerr[DDSIZE]}, \varname{double}{min\_relerr[DDSIZE]}, \varname{double}{norm\_relerr[DDSIZE]}, \varnameddvec{vec}, \varnameddvec{vec\_true}, \varname{int}{kind\_of\_norm}}
+        \funcitem{void}{relerr3\_tdvector}{\varname{double}{max\_relerr[TDSIZE]}}, \varname{double}{min\_relerr[TDSIZE]}, \varname{double}{norm\_relerr[TDSIZE], \varnametdvec{vec}, \varnametdvec{vec\_true}, \varname{int}{kind\_of\_norm}}
+        \funcitem{void}{relerr3\_qdvector}{\varname{double}{max\_relerr[QDSIZE]}}, \varname{double}{min\_relerr[QDSIZE]}, \varname{double}{norm\_relerr[QDSIZE], \varnameqdvec{vec}, \varnameqdvec{vec\_true}, \varname{int}{kind\_of\_norm}}
+        \funcitem{void}{relerr3\_mpfvector}{\varname{mpf\_t}{max\_relerr}, \varname{mpf\_t}{min\_relerr}, \varname{mpf\_t}{norm\_relerr}, \varnamempfvec{vec}, \varnamempfvec{vec\_true}, \varname{int}{kind\_of\_norm}}
+
+        \funcitem{void}{relerr3\_dmatrix}{\varname{double *}{max\_relerr}, \varname{double *}{min\_relerr}, \varname{double *}{norm\_relerr}, \varname{DMatrix}{mat}, \varname{DMatrix}{mat\_true}, \varname{int}{kind\_of\_norm}} $\cdots$ \bi{Relative errors of mat.}{mat の相対誤差です。}
+        \funcitem{void}{relerr3\_ddmatrix}{\varname{double}{max\_relerr[DDSIZE]}, \varname{double}{min\_relerr[DDSIZE]}, \varname{double}{norm\_relerr[DDSIZE]}, \varnameddmat{mat}, \varnameddmat{mat\_true}, \varname{int}{kind\_of\_norm}}
+        \funcitem{void}{relerr3\_tdmatrix}{\varname{double}{max\_relerr[TDSIZE]}, \varname{double}{min\_relerr[TDSIZE]}, \varname{double}{norm\_relerr[TDSIZE]}, \varnametdmat{mat}, \varnametdmat{mat\_true}, \varname{int}{kind\_of\_norm}}
+        \funcitem{void}{relerr3\_qdmatrix}{\varname{double}{max\_relerr[QDSIZE]}, \varname{double}{min\_relerr[QDSIZE]}, \varname{double}{norm\_relerr[QDSIZE]}, \varnameqdmat{mat}, \varnameqdmat{mat\_true}, \varname{int}{kind\_of\_norm}}
+        \funcitem{void}{relerr3\_mpfmatrix}{\varname{mpf\_t}{max\_relerr}, \varname{mpf\_t}{min\_relerr}, \varname{mpf\_t}{norm\_relerr}, \varname{MPFMatrix}{mat}, \varname{MPFMatrix}{mat\_true}, \varname{int}{kind\_of\_norm}}
+\end{itemize}
+
+%------------------------------------------------%
+% matrix multiplication
+%------------------------------------------------%
+\section{\bi{Ozaki scheme and related functions}{尾崎スキームと関連関数}}
+
+\bi{These following functions are necessary for Ozaki scheme and multi-fold precision arithmetic.}{以下の関数は、尾崎スキームおよび多倍長精度演算に必要です。}
+
+\begin{itemize}
+
+    \funcitem{void}{extract\_dvector}{\varname{DVector}{ret\_high\_vec}, \varname{DVector}{ret\_low\_vec}, \varname{DVector}{org\_vec}, \varname{double}{num\_bits}}$\cdots$ \bi{ret\_high + ret\_low = org\_vec}{ret\_high + ret\_low = org\_vec となります。}
+    \funcitem{void}{split\_dmatrix}{\varname{DMatrix ret\_high\_mat}, \varname{DMatrix}{ret\_low\_mat}, \varname{DMatrix org\_mat}}$\cdots$ \bi{split org\_mat to ret\_high\_mat and ret\_low\_mat in row direction}{org\_mat を行方向に ret\_high\_mat と ret\_low\_mat に分割します。}
+    \funcitem{void}{split\_dmatrix\_t}{\varname{DMatrix ret\_high\_mat},\varname{DMatrix}{ret\_low\_mat}, \varname{DMatrix org\_mat}}$\cdots$ \bi{split org\_mat to ret\_high\_mat and ret\_low\_mat in column direction}{org\_mat を列方向に ret\_high\_mat と ret\_low\_mat に分割します。}
+
+    \funcitem{int}{split\_ddvector\_dvec}{\varname{DVector}{ret\_vec[]}, \varname{int}{num\_div}, \varname{DDVector}{org\_vec}} $\cdots$
+     \bi{Split org\_vec to ret\_vec[0] $+$ ret\_vec[1] $+ ... +$ ret\_vec[num\_div - 1]}{org\_vec を ret\_vec[0] $+$ ret\_vec[1] $+ ... +$ ret\_vec[num\_div - 1] に分割します。}
+    \funcitem{int}{split\_tdvector\_dvec}{\varname{DVector}{ret\_vec[]}, \varname{int}{num\_div}, \varname{TDVector}{org\_vec}} 
+
+    \funcitem{void}{absmax\_ddvector}{\varname{double}{ret[DDSIZE]}, \varname{long int *}{max\_index}, \varname{DDVector}{vec}} $\cdots$ \bi{get absolutely maximum of elements in vec.}{vec の要素のうち絶対値が最大のものを取得します。}
+    \funcitem{void}{absmax\_tdvector}{\varname{double}{ret[TDSIZE]}, \varname{long int *}{max\_index}, \varname{TDVector}{vec}}
+    \funcitem{void}{absmax\_qdvector}{\varname{double}{ret[QDSIZE]}, \varname{long int *}{max\_index}, \varname{QDVector}{vec}}
+    \funcitem{void}{absmax\_mpfvector}{\varname{mpf\_t}{ret}, \varname{long int *}{max\_index}, \varname{MPFVector}{vec}}
+
+    \funcitem{void}{add\_ddvector\_dvec}{\varname{DDVector}{c}, \varname{DDVector}{a}, \varname{DVector}{b}} $\cdots$  $ c := a + (double)b$
+    \funcitem{void}{add\_tdvector\_dvec}{\varname{TDVector}{c}, \varname{TDVector}{a}, \varname{DVector}{b}}
+    \funcitem{void}{add\_qdvector\_dvec}{\varname{QDVector}{c}, \varname{QDVector}{a}, \varname{DVector}{b}}
+    \funcitem{void}{add\_mpfvector\_dvec}{\varname{MPFVector}{c}, \varname{MPFVector}{a}, \varname{DVector}{b}};
+
+    \funcitem{void}{sub\_ddvector\_dvec}{\varname{DDVector}{c}, \varname{DDVector}{a}, \varname{DVector}{b}} $\cdots$  $c := a - (double)b$
+    \funcitem{void}{sub\_tdvector\_dvec}{\varname{TDVector}{c}, \varname{TDVector}{a}, \varname{DVector}{b}}
+    \funcitem{void}{sub\_qdvector\_dvec}{\varname{QDVector}{c}, \varname{QDVector}{a}, \varname{DVector}{b}}
+    \funcitem{void}{sub\_mpfvector\_dvec}{\varname{MPFVector}{c}, \varname{MPFVector}{a}, \varname{DVector}{b}}
+
+    \funcitem{void}{subst\_dvector\_qdvec}{\varname{DVector}{c}, \varname{QDVector}{a}} $\cdots$ $c := (DDVector)a$
+
+    \funcitem{void}{absmax\_row\_ddmatrix}{\varname{double}{mu[DDSIZE]}, \varname{long int *}{max\_j}, \varname{long int}{row\_index}, \varname{DDMatrix}{mat}} $\cdots$ \bi{Return the absolutely maximum element in the max\_j-th row.}{max\_j 番目の行で絶対値が最大の要素を返します。}
+    \funcitem{void}{absmax\_row\_tdmatrix}{\varname{double}{mu[TDSIZE]}, \varname{long int *}{max\_j}, \varname{long int}{row\_index}, \varname{TDMatrix}{mat}}
+    \funcitem{void}{absmax\_row\_qdmatrix}{\varname{double}{mu[QDSIZE]}, \varname{long int *}{max\_j}, \varname{long int}{row\_index}, \varname{QDMatrix}{mat}}
+    \funcitem{void}{absmax\_row\_mpfmatrix}{\varname{mpf\_t}{mu}, \varname{long int *}{max\_j}, \varname{long int}{row\_index}, \varname{MPFMatrix}{mat}}
+
+
+    \funcitem{void}{add\_ddmatrix\_dmat}{\varname{DDMatrix}{c}, \varname{DDMatrix}{a}, \varname{DMatrix}{b}} $\cdots$  $c := a + (DMatrix)b$
+    \funcitem{void}{add\_tdmatrix\_dmat}{\varname{TDMatrix}{c}, \varname{TDMatrix}{a}, \varname{DMatrix}{b}}
+    \funcitem{void}{add\_qdmatrix\_dmat}{\varname{QDMatrix}{c}, \varname{QDMatrix}{a}, \varname{DMatrix}{b}}
+    \funcitem{void}{add\_mpfmatrix\_dmat}{\varname{MPFMatrix}{c}, \varname{MPFMatrix}{a}, \varname{DMatrix}{b}}
+
+    \funcitem{void}{sub\_ddmatrix\_dmat}{\varname{DDMatrix}{c}, \varname{DDMatrix}{a}, \varname{DMatrix}{b}} $\cdots$  $c := a - (DMatrix)b$
+    \funcitem{void}{sub\_tdmatrix\_dmat}{\varname{TDMatrix}{c}, \varname{TDMatrix}{a}, \varname{DMatrix}{b}}
+    \funcitem{void}{sub\_qdmatrix\_dmat}{\varname{QDMatrix}{c}, \varname{QDMatrix}{a}, \varname{DMatrix}{b}}
+    \funcitem{void}{sub\_mpfmatrix\_dmat}{\varname{MPFMatrix}{c}, \varname{MPFMatrix}{a}, \varname{DMatrix}{b}}
+
+    \funcitem{int}{split\_ddmatrix\_dmat}{\varname{DMatrix}{ret\_mat[]}, \varname{int}{num\_div}, \varname{DDMatrix}{org\_mat}} $cdots$ \bi{Split org\_mat to ret\_mat[] in row direction and return real number of divisions}{org\_mat を行方向に ret\_mat[] に分割し、実際の分割数を返します。}
+    \funcitem{int}{split\_tdmatrix\_dmat}{\varname{DMatrix}{ret\_mat[]}, \varname{int}{num\_div}, \varname{TDMatrix}{org\_mat}}
+    \funcitem{int}{split\_qdmatrix\_dmat}{\varname{DMatrix}{ret\_mat[]}, \varname{int}{num\_div}, \varname{QDMatrix}{org\_mat}}
+    \funcitem{int}{split\_mpfmatrix\_dmat}{\varname{DMatrix}{ret\_mat[]}, \varname{int}{num\_div}, \varname{MPFMatrix}{org\_mat}}
+
+    \funcitem{void}{absmax\_col\_ddmatrix}{\varname{double}{mu[DDSIZE]}, \varname{long int *}{max\_i}, \varname{long int}{col\_index}, \varname{DDMatrix}{mat}} $\cdots$ \bi{return absolutely maximum element and its $(i, j)$-index in each column of mat.}{mat の各列について絶対値が最大の要素とその $(i, j)$ インデックスを返します。}
+    \funcitem{void}{absmax\_col\_tdmatrix}{\varname{double}{mu[TDSIZE]}, \varname{long int *}{max\_i}, \varname{long int}{col\_index}, \varname{TDMatrix}{mat}}
+    \funcitem{void}{absmax\_col\_qdmatrix}{\varname{double}{mu[QDSIZE]}, \varname{long int *}{max\_i}, \varname{long int}{col\_index}, \varname{QDMatrix{mat}}}
+    \funcitem{void}{absmax\_col\_mpfmatrix}{\varname{mpf\_t}{mu}, \varname{long int *}{max\_i}, \varname{long int}{col\_index}, \varname{MPFMatrix}{mat}}
+
+    \funcitem{int}{split\_ddmatrix\_t\_dmat}{\varname{DMatrix}{ret\_mat[]}, \varname{int}{num\_div}, \varname{DDMatrix}{org\_mat}} $\cdots$ \bi{Split org\_mat to ret\_mat[] in column direction and return real number of divisions.}{org\_mat を列方向に ret\_mat[] に分割し、実際の分割数を返します。}
+    \funcitem{int}{split\_tdmatrix\_t\_dmat}{\varname{DMatrix}{ret\_mat[]}, \varname{int}{num\_div}, \varname{TDMatrix}{org\_mat}}
+    \funcitem{int}{split\_qdvector\_dvec}{\varname{DVector}{ret\_vec[]}, \varname{int}{num\_div}, \varname{QDVector}{org\_vec}}
+    \funcitem{int}{split\_qdmatrix\_t\_dmat}{\varname{DMatrix}{ret\_mat[]}, \varname{int}{num\_div}, \varname{QDMatrix}{org\_mat}}
+
+    \funcitem{int}{split\_mpfmatrix\_t\_dmat}{\varname{DMatrix}{ret\_mat[]}, \varname{int num\_div}, \varname{MPFMatrix}{org\_mat}}
+
+    \funcitem{void}{subst\_qdmatrix\_dmat}{\varname{QDMatrix}{c}, \varname{DMatrix}{a}}
+    \funcitem{void}{subst\_dmatrix\_qdmat}{\varname{DMatrix}{c}, \varname{QDMatrix}{a}}
+
+
+
+    \funcitem{void}{mul\_ddmatrix\_oz}{\varname{DDMatrix}{ret}, \varname{DDMatrix}{a}, \varname{int}{max\_num\_div\_a}, \varname{DDMatrix}{b}, \varname{int}{max\_num\_div\_b}} $cdots$ \bi{Matrix multiplication based on Ozaki scheme}{尾崎スキームに基づく行列乗算です。}
+    \funcitem{void}{mul\_tdmatrix\_oz}{\varname{TDMatrix}{ret}, \varname{TDMatrix}{a}, \varname{int}{max\_num\_div\_a}, \varname{TDMatrix}{b}, \varname{int}{max\_num\_div\_b}}
+    \funcitem{void}{mul\_qdmatrix\_oz}{\varname{QDMatrix}{ret}, \varname{QDMatrix}{a}, \varname{int}{max\_num\_div\_a}, \varname{QDMatrix}{b}, \varname{int}{max\_num\_div\_b}}
+    \funcitem{void}{mul\_mpfmatrix\_oz}{\varname{MPFMatrix}{ret}, \varname{MPFMatrix}{a}, \varname{int}{max\_num\_div\_a}, \varname{MPFMatrix}{b}, \varname{int}{max\_num\_div\_b}}
+
+    \funcitem{void}{mul\_ddmatrix\_ddvec\_oz}{\varname{DDVector}{ret}, \varname{DDMatrix}{a}, \varname{int}{max\_num\_div\_a}, \varname{DDVector} {vb}, \varname{int}{max\_num\_div\_vb}} $\cdots$ \bi{Matrix-Vector multiplication based on Ozaki scheme}{尾崎スキームに基づく行列ベクトル乗算です。}
+    \funcitem{void}{mul\_tdmatrix\_tdvec\_oz}{\varname{TDVector}{ret}, \varname{TDMatrix}{a}, \varname{int}{max\_num\_div\_a}, \varname{TDVector}{vb}, \varname{int}{max\_num\_div\_vb}}
+    \funcitem{void}{mul\_qdmatrix\_qdvec\_oz}{\varname{QDVector}{ret}, \varname{QDMatrix}{a}, \varname{int}{max\_num\_div\_a}, \varnameqdvec{vb}, \varname{int}{max\_num\_div\_vb}}
+    \funcitem{void}{mul\_mpfmatrix\_dvec\_oz}{\varname{MPFVector}{ret}, \varname{MPFMatrix}{a}, \varname{int}{max\_num\_div\_a}, \varname{MPFVector}{vb}, \varname{int}{max\_num\_div\_vb}}
+    
+\end{itemize}
+
+%------------------------------------------------%
+% End of Document
+%------------------------------------------------%

@@ -1,0 +1,1346 @@
+This is e-upTeX, Version 3.141592653-p4.1.0-u1.29-230214-2.6 (utf8.euc) (TeX Live 2023/Debian) (preloaded format=platex 2026.6.11)  15 AUG 2026 12:19
+entering extended mode
+ restricted \write18 enabled.
+ %&-line parsing enabled.
+**manual_ja.tex
+(./manual_ja.tex
+pLaTeX2e <2023-02-14>+1, based on
+LaTeX2e <2023-11-01> patch level 1
+L3 programming layer <2024-01-22>
+(/usr/share/texlive/texmf-dist/tex/platex/jsclasses/jsbook.cls
+Document Class: jsbook 2023/02/23 jsclasses (okumura, texjporg)
+Class jsbook Info: Autodetected engine: pLaTeX on input line 241.
+\jsc@mpt=\dimen156
+\jsc@mmm=\dimen157
+\jsc@smallskipamount=\skip48
+LaTeX Info: Redefining \textmc on input line 516.
+LaTeX Info: Redefining \textgt on input line 518.
+\symmincho=\mathgroup4
+LaTeX Font Info:    Overwriting symbol font `mincho' in version `bold'
+(Font)                  JY1/mc/m/n --> JY1/gt/m/n on input line 580.
+LaTeX Font Info:    Font shape `JT1/mc/m/n' will be
+(Font)              scaled to size 9.60999pt on input line 774.
+LaTeX Font Info:    Font shape `JY1/mc/m/n' will be
+(Font)              scaled to size 9.60999pt on input line 774.
+\fullwidth=\dimen158
+LaTeX Font Info:    Font shape `JT1/mc/m/n' will be
+(Font)              scaled to size 7.68799pt on input line 935.
+LaTeX Font Info:    Font shape `JY1/mc/m/n' will be
+(Font)              scaled to size 7.68799pt on input line 935.
+\c@part=\count186
+\c@chapter=\count187
+\c@section=\count188
+\c@subsection=\count189
+\c@subsubsection=\count190
+\c@paragraph=\count191
+\c@subparagraph=\count192
+\c@figure=\count193
+\c@table=\count194
+\abovecaptionskip=\skip49
+\belowcaptionskip=\skip50
+\jsc@tocl@width=\dimen159
+\@lnumwidth=\dimen160
+\bibindent=\dimen161
+(/usr/share/texlive/texmf-dist/tex/platex/jsclasses/jslogo.sty
+Package: jslogo 2019/07/25 okumura, texjporg
+LaTeX Info: Redefining \TeX on input line 82.
+LaTeX Info: Redefining \LaTeX on input line 135.
+LaTeX Info: Redefining \LaTeXe on input line 188.
+)
+\heisei=\count195
+)
+(/usr/share/texlive/texmf-dist/tex/latex/graphics/graphicx.sty
+Package: graphicx 2021/09/16 v1.2d Enhanced LaTeX Graphics (DPC,SPQR)
+
+(/usr/share/texlive/texmf-dist/tex/latex/graphics/keyval.sty
+Package: keyval 2022/05/29 v1.15 key=value parser (DPC)
+\KV@toks@=\toks18
+)
+(/usr/share/texlive/texmf-dist/tex/latex/graphics/graphics.sty
+Package: graphics 2022/03/10 v1.4e Standard LaTeX Graphics (DPC,SPQR)
+
+(/usr/share/texlive/texmf-dist/tex/latex/graphics/trig.sty
+Package: trig 2021/08/11 v1.11 sin cos tan (DPC)
+)
+(/usr/share/texlive/texmf-dist/tex/latex/graphics-cfg/graphics.cfg
+File: graphics.cfg 2016/06/04 v1.11 sample graphics configuration
+)
+Package graphics Info: Driver file: dvipdfmx.def on input line 107.
+
+(/usr/share/texlive/texmf-dist/tex/latex/graphics-def/dvipdfmx.def
+File: dvipdfmx.def 2022/09/22 v5.0m Graphics/color driver for dvipdfmx
+))
+\Gin@req@height=\dimen162
+\Gin@req@width=\dimen163
+)
+(/usr/share/texlive/texmf-dist/tex/latex/url/url.sty
+\Urlmuskip=\muskip16
+Package: url 2013/09/16  ver 3.4  Verb mode for urls, etc.
+)
+(/usr/share/texmf/tex/latex/lm/lmodern.sty
+Package: lmodern 2015/05/01 v1.6.1 Latin Modern Fonts
+LaTeX Font Info:    Overwriting symbol font `operators' in version `normal'
+(Font)                  OT1/cmr/m/n --> OT1/lmr/m/n on input line 22.
+LaTeX Font Info:    Overwriting symbol font `letters' in version `normal'
+(Font)                  OML/cmm/m/it --> OML/lmm/m/it on input line 23.
+LaTeX Font Info:    Overwriting symbol font `symbols' in version `normal'
+(Font)                  OMS/cmsy/m/n --> OMS/lmsy/m/n on input line 24.
+LaTeX Font Info:    Overwriting symbol font `largesymbols' in version `normal'
+(Font)                  OMX/cmex/m/n --> OMX/lmex/m/n on input line 25.
+LaTeX Font Info:    Overwriting symbol font `operators' in version `bold'
+(Font)                  OT1/cmr/bx/n --> OT1/lmr/bx/n on input line 26.
+LaTeX Font Info:    Overwriting symbol font `letters' in version `bold'
+(Font)                  OML/cmm/b/it --> OML/lmm/b/it on input line 27.
+LaTeX Font Info:    Overwriting symbol font `symbols' in version `bold'
+(Font)                  OMS/cmsy/b/n --> OMS/lmsy/b/n on input line 28.
+LaTeX Font Info:    Overwriting symbol font `largesymbols' in version `bold'
+(Font)                  OMX/cmex/m/n --> OMX/lmex/m/n on input line 29.
+LaTeX Font Info:    Overwriting math alphabet `\mathbf' in version `normal'
+(Font)                  OT1/cmr/bx/n --> OT1/lmr/bx/n on input line 31.
+LaTeX Font Info:    Overwriting math alphabet `\mathsf' in version `normal'
+(Font)                  OT1/cmss/m/n --> OT1/lmss/m/n on input line 32.
+LaTeX Font Info:    Overwriting math alphabet `\mathit' in version `normal'
+(Font)                  OT1/cmr/m/it --> OT1/lmr/m/it on input line 33.
+LaTeX Font Info:    Overwriting math alphabet `\mathtt' in version `normal'
+(Font)                  OT1/cmtt/m/n --> OT1/lmtt/m/n on input line 34.
+LaTeX Font Info:    Overwriting math alphabet `\mathbf' in version `bold'
+(Font)                  OT1/cmr/bx/n --> OT1/lmr/bx/n on input line 35.
+LaTeX Font Info:    Overwriting math alphabet `\mathsf' in version `bold'
+(Font)                  OT1/cmss/bx/n --> OT1/lmss/bx/n on input line 36.
+LaTeX Font Info:    Overwriting math alphabet `\mathit' in version `bold'
+(Font)                  OT1/cmr/bx/it --> OT1/lmr/bx/it on input line 37.
+LaTeX Font Info:    Overwriting math alphabet `\mathtt' in version `bold'
+(Font)                  OT1/cmtt/m/n --> OT1/lmtt/m/n on input line 38.
+)
+(/usr/share/texlive/texmf-dist/tex/latex/amsmath/amsmath.sty
+Package: amsmath 2023/05/13 v2.17o AMS math features
+\@mathmargin=\skip51
+
+For additional information on amsmath, use the `?' option.
+(/usr/share/texlive/texmf-dist/tex/latex/amsmath/amstext.sty
+Package: amstext 2021/08/26 v2.01 AMS text
+
+(/usr/share/texlive/texmf-dist/tex/latex/amsmath/amsgen.sty
+File: amsgen.sty 1999/11/30 v2.0 generic functions
+\@emptytoks=\toks19
+\ex@=\dimen164
+))
+(/usr/share/texlive/texmf-dist/tex/latex/amsmath/amsbsy.sty
+Package: amsbsy 1999/11/29 v1.2d Bold Symbols
+\pmbraise@=\dimen165
+)
+(/usr/share/texlive/texmf-dist/tex/latex/amsmath/amsopn.sty
+Package: amsopn 2022/04/08 v2.04 operator names
+)
+\inf@bad=\count196
+LaTeX Info: Redefining \frac on input line 234.
+\uproot@=\count197
+\leftroot@=\count198
+LaTeX Info: Redefining \overline on input line 399.
+LaTeX Info: Redefining \colon on input line 410.
+\classnum@=\count199
+\DOTSCASE@=\count266
+LaTeX Info: Redefining \ldots on input line 496.
+LaTeX Info: Redefining \dots on input line 499.
+LaTeX Info: Redefining \cdots on input line 620.
+\Mathstrutbox@=\box68
+\strutbox@=\box69
+LaTeX Info: Redefining \big on input line 722.
+LaTeX Info: Redefining \Big on input line 723.
+LaTeX Info: Redefining \bigg on input line 724.
+LaTeX Info: Redefining \Bigg on input line 725.
+\big@size=\dimen166
+LaTeX Font Info:    Redeclaring font encoding OML on input line 743.
+LaTeX Font Info:    Redeclaring font encoding OMS on input line 744.
+\macc@depth=\count267
+LaTeX Info: Redefining \bmod on input line 905.
+LaTeX Info: Redefining \pmod on input line 910.
+LaTeX Info: Redefining \smash on input line 940.
+LaTeX Info: Redefining \relbar on input line 970.
+LaTeX Info: Redefining \Relbar on input line 971.
+\c@MaxMatrixCols=\count268
+\dotsspace@=\muskip17
+\c@parentequation=\count269
+\dspbrk@lvl=\count270
+\tag@help=\toks20
+\row@=\count271
+\column@=\count272
+\maxfields@=\count273
+\andhelp@=\toks21
+\eqnshift@=\dimen167
+\alignsep@=\dimen168
+\tagshift@=\dimen169
+\tagwidth@=\dimen170
+\totwidth@=\dimen171
+\lineht@=\dimen172
+\@envbody=\toks22
+\multlinegap=\skip52
+\multlinetaggap=\skip53
+\mathdisplay@stack=\toks23
+LaTeX Info: Redefining \[ on input line 2953.
+LaTeX Info: Redefining \] on input line 2954.
+)
+(/usr/share/texlive/texmf-dist/tex/latex/amsfonts/amsfonts.sty
+Package: amsfonts 2013/01/14 v3.01 Basic AMSFonts support
+\symAMSa=\mathgroup5
+\symAMSb=\mathgroup6
+LaTeX Font Info:    Redeclaring math symbol \hbar on input line 98.
+LaTeX Font Info:    Overwriting math alphabet `\mathfrak' in version `bold'
+(Font)                  U/euf/m/n --> U/euf/b/n on input line 106.
+)
+(/usr/share/texlive/texmf-dist/tex/latex/xcolor/xcolor.sty
+Package: xcolor 2023/11/15 v3.01 LaTeX color extensions (UK)
+
+(/usr/share/texlive/texmf-dist/tex/latex/graphics-cfg/color.cfg
+File: color.cfg 2016/01/02 v1.6 sample color configuration
+)
+Package xcolor Info: Driver file: dvips.def on input line 274.
+
+(/usr/share/texlive/texmf-dist/tex/latex/graphics-def/dvips.def
+File: dvips.def 2022/09/22 v3.1e Graphics/color driver for dvips
+)
+(/usr/share/texlive/texmf-dist/tex/latex/graphics/mathcolor.ltx)
+Package xcolor Info: Model `cmy' substituted by `cmy0' on input line 1350.
+Package xcolor Info: Model `RGB' extended on input line 1366.
+Package xcolor Info: Model `HTML' substituted by `rgb' on input line 1368.
+Package xcolor Info: Model `Hsb' substituted by `hsb' on input line 1369.
+Package xcolor Info: Model `tHsb' substituted by `hsb' on input line 1370.
+Package xcolor Info: Model `HSB' substituted by `hsb' on input line 1371.
+Package xcolor Info: Model `Gray' substituted by `gray' on input line 1372.
+Package xcolor Info: Model `wave' substituted by `hsb' on input line 1373.
+)
+(/usr/share/texlive/texmf-dist/tex/latex/algorithms/algorithm.sty
+Package: algorithm 2009/08/24 v0.1 Document Style `algorithm' - floating enviro
+nment
+
+(/usr/share/texlive/texmf-dist/tex/latex/float/float.sty
+Package: float 2001/11/08 v1.3d Float enhancements (AL)
+\c@float@type=\count274
+\float@exts=\toks24
+\float@box=\box70
+\@float@everytoks=\toks25
+\@floatcapt=\box71
+)
+(/usr/share/texlive/texmf-dist/tex/latex/base/ifthen.sty
+Package: ifthen 2022/04/13 v1.1d Standard LaTeX ifthen package (DPC)
+)
+\@float@every@algorithm=\toks26
+\c@algorithm=\count275
+)
+(/usr/share/texlive/texmf-dist/tex/latex/algorithms/algorithmic.sty
+Package: algorithmic 2009/08/24 v0.1 Document Style `algorithmic'
+\c@ALC@unique=\count276
+\c@ALC@line=\count277
+\c@ALC@rem=\count278
+\c@ALC@depth=\count279
+\ALC@tlm=\skip54
+\algorithmicindent=\skip55
+)
+(/usr/share/texlive/texmf-dist/tex/latex/listings/listings.sty
+\lst@mode=\count280
+\lst@gtempboxa=\box72
+\lst@token=\toks27
+\lst@length=\count281
+\lst@currlwidth=\dimen173
+\lst@column=\count282
+\lst@pos=\count283
+\lst@lostspace=\dimen174
+\lst@width=\dimen175
+\lst@newlines=\count284
+\lst@lineno=\count285
+\lst@maxwidth=\dimen176
+
+(/usr/share/texlive/texmf-dist/tex/latex/listings/lstmisc.sty
+File: lstmisc.sty 2023/02/27 1.9 (Carsten Heinz)
+\c@lstnumber=\count286
+\lst@skipnumbers=\count287
+\lst@framebox=\box73
+)
+(/usr/share/texlive/texmf-dist/tex/latex/listings/listings.cfg
+File: listings.cfg 2023/02/27 1.9 listings configuration
+))
+Package: listings 2023/02/27 1.9 (Carsten Heinz)
+
+(/usr/share/texlive/texmf-dist/tex/latex/base/makeidx.sty
+Package: makeidx 2021/10/04 v1.0m Standard LaTeX package
+)
+\@indexfile=\write3
+\openout3 = `manual_ja.idx'.
+
+
+Writing index file manual_ja.idx
+(/usr/share/texlive/texmf-dist/tex/latex/base/fontenc.sty
+Package: fontenc 2021/04/29 v2.0v Standard LaTeX package
+LaTeX Font Info:    Trying to load font information for T1+lmr on input line 11
+2.
+
+(/usr/share/texmf/tex/latex/lm/t1lmr.fd
+File: t1lmr.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
+))
+(/usr/share/texlive/texmf-dist/tex/latex/l3backend/l3backend-dvips.def
+File: l3backend-dvips.def 2024-01-04 L3 backend support: dvips
+\l__pdf_internal_box=\box74
+\g__pdf_backend_object_int=\count288
+\l__pdf_backend_content_box=\box75
+\l__pdf_backend_model_box=\box76
+\g__pdf_backend_annotation_int=\count289
+\g__pdf_backend_link_int=\count290
+\g__pdf_backend_link_sf_int=\count291
+)
+(./manual_ja.aux)
+\openout1 = `manual_ja.aux'.
+
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 60.
+LaTeX Font Info:    ... okay on input line 60.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 60.
+LaTeX Font Info:    ... okay on input line 60.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 60.
+LaTeX Font Info:    ... okay on input line 60.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 60.
+LaTeX Font Info:    ... okay on input line 60.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 60.
+LaTeX Font Info:    ... okay on input line 60.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 60.
+LaTeX Font Info:    ... okay on input line 60.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 60.
+LaTeX Font Info:    ... okay on input line 60.
+LaTeX Font Info:    Checking defaults for JY1/mc/m/n on input line 60.
+LaTeX Font Info:    ... okay on input line 60.
+LaTeX Font Info:    Checking defaults for JT1/mc/m/n on input line 60.
+LaTeX Font Info:    ... okay on input line 60.
+\c@lstlisting=\count292
+LaTeX Font Info:    Font shape `JT1/mc/m/n' will be
+(Font)              scaled to size 16.60605pt on input line 71.
+LaTeX Font Info:    Font shape `JY1/mc/m/n' will be
+(Font)              scaled to size 16.60605pt on input line 71.
+LaTeX Font Info:    Font shape `JT1/mc/m/n' will be
+(Font)              scaled to size 11.53198pt on input line 71.
+LaTeX Font Info:    Font shape `JY1/mc/m/n' will be
+(Font)              scaled to size 11.53198pt on input line 71.
+LaTeX Font Info:    Trying to load font information for OT1+lmr on input line 7
+1.
+ (/usr/share/texmf/tex/latex/lm/ot1lmr.fd
+File: ot1lmr.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
+)
+LaTeX Font Info:    Trying to load font information for OML+lmm on input line 7
+1.
+
+(/usr/share/texmf/tex/latex/lm/omllmm.fd
+File: omllmm.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
+)
+LaTeX Font Info:    Trying to load font information for OMS+lmsy on input line 
+71.
+
+(/usr/share/texmf/tex/latex/lm/omslmsy.fd
+File: omslmsy.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
+)
+LaTeX Font Info:    Trying to load font information for OMX+lmex on input line 
+71.
+
+(/usr/share/texmf/tex/latex/lm/omxlmex.fd
+File: omxlmex.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
+)
+LaTeX Font Info:    External font `lmex10' loaded for size
+(Font)              <12> on input line 71.
+LaTeX Font Info:    External font `lmex10' loaded for size
+(Font)              <8> on input line 71.
+LaTeX Font Info:    External font `lmex10' loaded for size
+(Font)              <6> on input line 71.
+LaTeX Font Info:    Font shape `JY1/mc/m/n' will be
+(Font)              scaled to size 5.76599pt on input line 71.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 71.
+
+
+(/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsa.fd
+File: umsa.fd 2013/01/14 v3.01 AMS symbols A
+)
+LaTeX Font Info:    Trying to load font information for U+msb on input line 71.
+
+
+(/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsb.fd
+File: umsb.fd 2013/01/14 v3.01 AMS symbols B
+)
+LaTeX Font Info:    Font shape `JT1/gt/m/n' will be
+(Font)              scaled to size 11.53198pt on input line 71.
+LaTeX Font Info:    Font shape `JY1/gt/m/n' will be
+(Font)              scaled to size 11.53198pt on input line 71.
+LaTeX Font Info:    Trying to load font information for T1+lmtt on input line 7
+1.
+
+(/usr/share/texmf/tex/latex/lm/t1lmtt.fd
+File: t1lmtt.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
+) [1
+
+
+]
+LaTeX Font Info:    Font shape `JT1/gt/m/n' will be
+(Font)              scaled to size 9.60999pt on input line 78.
+LaTeX Font Info:    Font shape `JY1/gt/m/n' will be
+(Font)              scaled to size 9.60999pt on input line 78.
+LaTeX Font Info:    Trying to load font information for T1+lmss on input line 7
+8.
+
+(/usr/share/texmf/tex/latex/lm/t1lmss.fd
+File: t1lmss.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
+)
+LaTeX Font Info:    Font shape `JT1/mc/m/n' will be
+(Font)              scaled to size 23.90964pt on input line 78.
+LaTeX Font Info:    Font shape `JY1/mc/m/n' will be
+(Font)              scaled to size 23.90964pt on input line 78.
+LaTeX Font Info:    Font shape `JT1/gt/m/n' will be
+(Font)              scaled to size 23.90964pt on input line 78.
+LaTeX Font Info:    Font shape `JY1/gt/m/n' will be
+(Font)              scaled to size 23.90964pt on input line 78.
+ (./manual_ja.toc
+LaTeX Font Info:    External font `lmex10' loaded for size
+(Font)              <10> on input line 2.
+LaTeX Font Info:    External font `lmex10' loaded for size
+(Font)              <7> on input line 2.
+LaTeX Font Info:    External font `lmex10' loaded for size
+(Font)              <5> on input line 2.
+LaTeX Font Info:    Font shape `JY1/mc/m/n' will be
+(Font)              scaled to size 6.72699pt on input line 2.
+LaTeX Font Info:    Font shape `JY1/mc/m/n' will be
+(Font)              scaled to size 4.805pt on input line 2.
+ [1
+
+
+])
+\tf@toc=\write4
+\openout4 = `manual_ja.toc'.
+
+ [2]
+(./chap01.tex
+第1章
+LaTeX Font Info:    Font shape `JT1/mc/m/n' will be
+(Font)              scaled to size 19.9311pt on input line 4.
+LaTeX Font Info:    Font shape `JY1/mc/m/n' will be
+(Font)              scaled to size 19.9311pt on input line 4.
+LaTeX Font Info:    Font shape `JT1/gt/m/n' will be
+(Font)              scaled to size 19.9311pt on input line 4.
+LaTeX Font Info:    Font shape `JY1/gt/m/n' will be
+(Font)              scaled to size 19.9311pt on input line 4.
+LaTeX Font Info:    Font shape `JT1/mc/m/n' will be
+(Font)              scaled to size 13.83836pt on input line 27.
+LaTeX Font Info:    Font shape `JY1/mc/m/n' will be
+(Font)              scaled to size 13.83836pt on input line 27.
+LaTeX Font Info:    Font shape `JT1/gt/m/n' will be
+(Font)              scaled to size 13.83836pt on input line 27.
+LaTeX Font Info:    Font shape `JY1/gt/m/n' will be
+(Font)              scaled to size 13.83836pt on input line 27.
+[1
+
+
+]
+LaTeX Font Info:    Font shape `JY1/gt/m/n' will be
+(Font)              scaled to size 6.72699pt on input line 53.
+LaTeX Font Info:    Font shape `JY1/gt/m/n' will be
+(Font)              scaled to size 4.805pt on input line 53.
+ [2]
+File: fig/multiprec_multifold.pdf Graphic file (type pdf)
+<fig/multiprec_multifold.pdf>
+LaTeX Font Info:    Font shape `JT1/mc/m/n' will be
+(Font)              scaled to size 8.64899pt on input line 69.
+LaTeX Font Info:    Font shape `JY1/mc/m/n' will be
+(Font)              scaled to size 8.64899pt on input line 69.
+ [3]
+LaTeX Font Info:    Font shape `JT1/mc/bx/n' in size <10> not available
+(Font)              Font shape `JT1/gt/m/n' tried instead on input line 87.
+LaTeX Font Info:    Font shape `JT1/gt/m/n' will be
+(Font)              scaled to size 9.60999pt on input line 87.
+LaTeX Font Info:    Font shape `JY1/mc/bx/n' in size <10> not available
+(Font)              Font shape `JY1/gt/m/n' tried instead on input line 87.
+LaTeX Font Info:    Font shape `JY1/gt/m/n' will be
+(Font)              scaled to size 9.60999pt on input line 87.
+LaTeX Font Info:    Font shape `JT1/mc/bx/n' in size <9> not available
+(Font)              Font shape `JT1/gt/m/n' tried instead on input line 88.
+LaTeX Font Info:    Font shape `JT1/gt/m/n' will be
+(Font)              scaled to size 8.64899pt on input line 88.
+LaTeX Font Info:    Font shape `JY1/mc/bx/n' in size <9> not available
+(Font)              Font shape `JY1/gt/m/n' tried instead on input line 88.
+LaTeX Font Info:    Font shape `JY1/gt/m/n' will be
+(Font)              scaled to size 8.64899pt on input line 88.
+LaTeX Font Info:    External font `lmex10' loaded for size
+(Font)              <9> on input line 88.
+LaTeX Font Info:    Font shape `JY1/gt/m/n' will be
+(Font)              scaled to size 5.76599pt on input line 88.
+File: fig/ozaki_scheme_3x3.pdf Graphic file (type pdf)
+<fig/ozaki_scheme_3x3.pdf>
+ [4]
+LaTeX Font Info:    Trying to load font information for TS1+lmr on input line 1
+69.
+ (/usr/share/texmf/tex/latex/lm/ts1lmr.fd
+File: ts1lmr.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
+) [5]
+File: fig/pyrdd.pdf Graphic file (type pdf)
+<fig/pyrdd.pdf>
+ [6]
+Underfull \hbox (badness 2111) in paragraph at lines 206--207
+[]\JY1/mc/m/n/10 要素方向に \T1/lmr/m/n/10 SIMD \JY1/mc/m/n/10 並列化した一括関
+数 \T1/lmtt/m/n/10 bnc_{dd,td,qd}_{exp,log,sin,cos}_array
+ []
+
+
+Overfull \hbox (58.41359pt too wide) in paragraph at lines 208--209
+[]\T1/lmr/m/n/10 div/sqrt-safe \JY1/mc/m/n/10 版 \T1/lmr/m/n/10 FMA \T1/lmtt/m/
+n/10 bnc_{dw,tw,qw}fma[f]_safe \JY1/mc/m/n/10 と \T1/lmr/m/n/10 FMA \JY1/mc/m/n
+/10 駆動除算 \T1/lmtt/m/n/10 bnc_{dd,td,qd,ds,ts,qs}_div_fma
+ []
+
+
+Overfull \hbox (7.3462pt too wide) in paragraph at lines 209--210
+[]\T1/lmr/m/n/10 Python/ctypes \JY1/mc/m/n/10 向けの \T1/lmr/m/n/10 DLL \JY1/mc
+/m/n/10 対応関数エクスポ ート \T1/lmr/m/n/10 API \T1/lmtt/m/n/10 rdd_*\T1/lmr/m
+/n/10 /\T1/lmtt/m/n/10 rtd_*\T1/lmr/m/n/10 /\T1/lmtt/m/n/10 rqd_*\T1/lmr/m/n/10
+ /\T1/lmtt/m/n/10 rds_*\T1/lmr/m/n/10 /\T1/lmtt/m/n/10 rts_*\T1/lmr/m/n/10 /\T1
+/lmtt/m/n/10 rqs_*
+ []
+
+[7]) (./chap02.tex [8]
+第2章
+LaTeX Font Info:    Font shape `JY1/gt/m/n' will be
+(Font)              scaled to size 7.68799pt on input line 29.
+[9
+
+] [10] [11] [12]
+LaTeX Font Info:    Font shape `JT1/mc/m/n' will be
+(Font)              scaled to size 6.72699pt on input line 261.
+LaTeX Font Info:    Font shape `JT1/mc/m/n' will be
+(Font)              scaled to size 4.805pt on input line 261.
+
+Overfull \hbox (9.88278pt too wide) in paragraph at lines 263--264
+[]\T1/lmss/m/n/10 void \T1/lmtt/m/n/10 vseb\T1/lmr/m/n/10 (\T1/lmss/m/n/10 doub
+le * \T1/lmtt/m/n/10 y[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 int \T1/lmtt/m/n/10 ny
+[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 const dou-ble * \T1/lmtt/m/n/10 e[]\T1/lmr/m
+/n/10 , \T1/lmss/m/n/10 int \T1/lmtt/m/n/10 ne[]\T1/lmr/m/n/10 ) []$[] $ $\OML/
+lmm/m/it/10 y\OT1/lmr/m/n/10 [\OML/lmm/m/it/10 n\OT1/lmr/m/n/10 ] := [][]\OML/l
+mm/m/it/10 sum[]err[]branch\OT1/lmr/m/n/10 (\OML/lmm/m/it/10 vseb\OT1/lmr/m/n/1
+0 )(\OML/lmm/m/it/10 k\OT1/lmr/m/n/10 )(\OML/lmm/m/it/10 e\OT1/lmr/m/n/10 [\OML
+/lmm/m/it/10 n\OT1/lmr/m/n/10 ])$ 
+ []
+
+[13] [14]
+Overfull \hbox (11.01875pt too wide) in paragraph at lines 389--390
+\JY1/mc/m/n/10 （\T1/lmr/m/n/10 AVX2 \JY1/mc/m/n/10 版 \T1/lmtt/m/n/10 _bncavx2
+_{dw,tw,qw}fma[f] \JY1/mc/m/n/10 （\T1/lmtt/m/n/10 __m256d\T1/lmr/m/n/10 /\T1/l
+mtt/m/n/10 __m256\JY1/mc/m/n/10 ） と \T1/lmr/m/n/10 AVX-512 \JY1/mc/m/n/10 版 
+\T1/lmtt/m/n/10 _bncavx512_{dw,tw,qw}fma[f]
+ []
+
+LaTeX Font Info:    Font shape `JT1/gt/m/it' in size <10> not available
+(Font)              Font shape `JT1/gt/m/n' tried instead on input line 412.
+LaTeX Font Info:    Font shape `JT1/gt/m/n' will be
+(Font)              scaled to size 9.60999pt on input line 412.
+LaTeX Font Info:    Font shape `JY1/gt/m/it' in size <10> not available
+(Font)              Font shape `JY1/gt/m/n' tried instead on input line 412.
+LaTeX Font Info:    Font shape `JY1/gt/m/n' will be
+(Font)              scaled to size 9.60999pt on input line 412.
+[15] [16]
+Overfull \hbox (34.65363pt too wide) in paragraph at lines 533--534
+\T1/lmtt/m/n/10 const_td_pi \JY1/mc/m/n/10 と \T1/lmtt/m/n/10 const_qd_pi \JY1/
+mc/m/n/10 は $\OML/lmm/m/it/10 ^^Y=\OT1/lmr/m/n/10 1024$ \JY1/mc/m/n/10 の値を
+保持しており 、 \T1/lmr/m/n/10 float \JY1/mc/m/n/10 基の \T1/lmtt/m/n/10 const_
+ds_pi\T1/lmr/m/n/10 /\T1/lmtt/m/n/10 const_ts_pi\T1/lmr/m/n/10 /\T1/lmtt/m/n/10
+ const_qs_pi
+ []
+
+[17]
+Underfull \hbox (badness 1314) in paragraph at lines 625--626
+[]\JY1/mc/m/n/10 精度 ・ 性能ベンチマ ーク （\T1/lmr/m/n/10 MPFR \JY1/mc/m/n/10
+ 基準 ） は \T1/lmtt/m/n/10 bench/elem/ \JY1/mc/m/n/10 にあり 、 移植作業時の実
+測結果は
+ []
+
+[18]
+Underfull \hbox (badness 8056) in paragraph at lines 728--729
+[]\T1/lmss/m/n/10 void \T1/lmtt/m/n/10 rqd_pow\T1/lmr/m/n/10 (double ret[QDSIZE
+], \T1/lmss/m/n/10 dou-ble \T1/lmtt/m/n/10 b[]\T1/lmr/m/n/10 ase[QDSIZE], dou-b
+le power[QDSIZE]) []$[] $
+ []
+
+
+Underfull \hbox (badness 7963) in paragraph at lines 739--740
+[]\T1/lmss/m/n/10 void \T1/lmtt/m/n/10 rtd_pow\T1/lmr/m/n/10 (double ret[TDSIZE
+], \T1/lmss/m/n/10 dou-ble \T1/lmtt/m/n/10 base[TDSIZE][]\T1/lmr/m/n/10 , dou-b
+le power[TDSIZE]) []$[] $
+ []
+
+[19] [20] [21] [22]
+Underfull \hbox (badness 1102) in paragraph at lines 889--890
+[]\T1/lmss/m/n/10 void \T1/lmtt/m/n/10 _bncavx2_rdd_abssum256d\T1/lmr/m/n/10 (\
+T1/lmss/m/n/10 double \T1/lmtt/m/n/10 ret[DDSIZE][]\T1/lmr/m/n/10 , \T1/lmss/m/
+n/10 __m256d \T1/lmtt/m/n/10 ret4[DDSIZE][]\T1/lmr/m/n/10 ) []$[] $ $[] \OT1/lm
+r/m/n/10 :=
+ []
+
+
+Underfull \hbox (badness 1102) in paragraph at lines 891--892
+[]\T1/lmss/m/n/10 void \T1/lmtt/m/n/10 _bncavx2_rdd_absmax256d\T1/lmr/m/n/10 (\
+T1/lmss/m/n/10 double \T1/lmtt/m/n/10 ret[DDSIZE][]\T1/lmr/m/n/10 , \T1/lmss/m/
+n/10 __m256d \T1/lmtt/m/n/10 ret4[DDSIZE][]\T1/lmr/m/n/10 ) []$[] $ $[] \OT1/lm
+r/m/n/10 :=
+ []
+
+
+Underfull \hbox (badness 2828) in paragraph at lines 893--894
+[]\T1/lmss/m/n/10 void \T1/lmtt/m/n/10 _bncavx2_rdd_norm256d\T1/lmr/m/n/10 (\T1
+/lmss/m/n/10 double \T1/lmtt/m/n/10 ret[DDSIZE][]\T1/lmr/m/n/10 , \T1/lmss/m/n/
+10 __m256d \T1/lmtt/m/n/10 ret4[DDSIZE][]\T1/lmr/m/n/10 ) []$[] $ $[] \OT1/lmr/
+m/n/10 :=
+ []
+
+
+Underfull \hbox (badness 1102) in paragraph at lines 924--925
+[]\T1/lmss/m/n/10 void \T1/lmtt/m/n/10 _bncavx2_rtd_abssum256d\T1/lmr/m/n/10 (\
+T1/lmss/m/n/10 double \T1/lmtt/m/n/10 ret[TDSIZE][]\T1/lmr/m/n/10 , \T1/lmss/m/
+n/10 __m256d \T1/lmtt/m/n/10 ret4[TDSIZE][]\T1/lmr/m/n/10 ) []$[] $ $[] \OT1/lm
+r/m/n/10 :=
+ []
+
+
+Underfull \hbox (badness 1102) in paragraph at lines 927--928
+[]\T1/lmss/m/n/10 void \T1/lmtt/m/n/10 _bncavx2_rtd_absmax256d\T1/lmr/m/n/10 (\
+T1/lmss/m/n/10 double \T1/lmtt/m/n/10 ret[TDSIZE][]\T1/lmr/m/n/10 , \T1/lmss/m/
+n/10 __m256d \T1/lmtt/m/n/10 ret4[TDSIZE][]\T1/lmr/m/n/10 ) []$[] $ $[] \OT1/lm
+r/m/n/10 :=
+ []
+
+
+Overfull \hbox (64.91537pt too wide) in paragraph at lines 935--936
+[]\T1/lmss/m/n/10 void \T1/lmtt/m/n/10 _bncavx2_vseb\T1/lmr/m/n/10 (\T1/lmss/m/
+n/10 __m256d \T1/lmtt/m/n/10 y[][]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 int \T1/lmtt
+/m/n/10 ny[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 const __m256d \T1/lmtt/m/n/10 e[][
+]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 int \T1/lmtt/m/n/10 ne[]\T1/lmr/m/n/10 ) []$[
+] $ $\OT1/lmr/m/n/10 y := []$$[]$$([](\OML/lmm/m/it/10 k\OT1/lmr/m/n/10 ))(\OML
+/lmm/m/it/10 e\OT1/lmr/m/n/10 )$ 
+ []
+
+[23]
+Underfull \hbox (badness 1360) in paragraph at lines 981--982
+[]\T1/lmss/m/n/10 void \T1/lmtt/m/n/10 _bncavx2_rqd_absmax256d\T1/lmr/m/n/10 (\
+T1/lmss/m/n/10 double \T1/lmtt/m/n/10 ret[QDSIZE][]\T1/lmr/m/n/10 , \T1/lmss/m/
+n/10 __m256d \T1/lmtt/m/n/10 ret4[QDSIZE][]\T1/lmr/m/n/10 ) []$[] $ ret :=
+ []
+
+
+Underfull \hbox (badness 2828) in paragraph at lines 983--984
+[]\T1/lmss/m/n/10 void \T1/lmtt/m/n/10 _bncavx2_rqd_norm256d\T1/lmr/m/n/10 (\T1
+/lmss/m/n/10 double \T1/lmtt/m/n/10 ret[QDSIZE][]\T1/lmr/m/n/10 , \T1/lmss/m/n/
+10 __m256d \T1/lmtt/m/n/10 ret4[QDSIZE][]\T1/lmr/m/n/10 ) []$[] $ $[] \OT1/lmr/
+m/n/10 :=
+ []
+
+[24]
+Overfull \hbox (4.11786pt too wide) in paragraph at lines 991--992
+[]\T1/lmss/m/n/10 void \T1/lmtt/m/n/10 _bncavx2_three_sum2\T1/lmr/m/n/10 (\T1/l
+mss/m/n/10 __m256d * \T1/lmtt/m/n/10 a[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 __m256
+d * \T1/lmtt/m/n/10 b[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 __m256d * \T1/lmtt/m/n/
+10 c[]\T1/lmr/m/n/10 ) []$[] $ void three_sum2(double
+ []
+
+[25] [26]
+Underfull \hbox (badness 3428) in paragraph at lines 1128--1129
+[]\T1/lmss/m/n/10 void \T1/lmtt/m/n/10 relerr3_ddvector\T1/lmr/m/n/10 (\T1/lmss
+/m/n/10 double \T1/lmtt/m/n/10 max_relerr[DDSIZE][]\T1/lmr/m/n/10 , \T1/lmss/m/
+n/10 dou-ble \T1/lmtt/m/n/10 min_relerr[DDSIZE][]\T1/lmr/m/n/10 , \T1/lmss/m/n/
+10 dou-ble
+ []
+
+
+Underfull \hbox (badness 3428) in paragraph at lines 1129--1130
+[]\T1/lmss/m/n/10 void \T1/lmtt/m/n/10 relerr3_tdvector\T1/lmr/m/n/10 (\T1/lmss
+/m/n/10 double \T1/lmtt/m/n/10 max_relerr[TDSIZE][]\T1/lmr/m/n/10 , \T1/lmss/m/
+n/10 dou-ble \T1/lmtt/m/n/10 min_relerr[TDSIZE][]\T1/lmr/m/n/10 , \T1/lmss/m/n/
+10 dou-ble
+ []
+
+
+Underfull \hbox (badness 3428) in paragraph at lines 1131--1132
+[]\T1/lmss/m/n/10 void \T1/lmtt/m/n/10 relerr3_qdvector\T1/lmr/m/n/10 (\T1/lmss
+/m/n/10 double \T1/lmtt/m/n/10 max_relerr[QDSIZE][]\T1/lmr/m/n/10 , \T1/lmss/m/
+n/10 dou-ble \T1/lmtt/m/n/10 min_relerr[QDSIZE][]\T1/lmr/m/n/10 , \T1/lmss/m/n/
+10 dou-ble
+ []
+
+
+Underfull \hbox (badness 1789) in paragraph at lines 1134--1135
+[]\T1/lmss/m/n/10 void \T1/lmtt/m/n/10 relerr3_cddvector\T1/lmr/m/n/10 (\T1/lms
+s/m/n/10 double \T1/lmtt/m/n/10 max_relerr[DDSIZE][]\T1/lmr/m/n/10 , \T1/lmss/m
+/n/10 dou-ble \T1/lmtt/m/n/10 min_relerr[DDSIZE][]\T1/lmr/m/n/10 , \T1/lmss/m/n
+/10 dou-ble
+ []
+
+
+Overfull \hbox (14.032pt too wide) in paragraph at lines 1134--1135
+\T1/lmtt/m/n/10 max_real_relerr[DDSIZE][]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 dou-b
+le \T1/lmtt/m/n/10 min_real_relerr[DDSIZE][]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 do
+u-ble \T1/lmtt/m/n/10 max_image_relerr[DDSIZE][]\T1/lmr/m/n/10 ,
+ []
+
+
+Underfull \hbox (badness 1789) in paragraph at lines 1135--1136
+[]\T1/lmss/m/n/10 void \T1/lmtt/m/n/10 relerr3_ctdvector\T1/lmr/m/n/10 (\T1/lms
+s/m/n/10 double \T1/lmtt/m/n/10 max_relerr[TDSIZE][]\T1/lmr/m/n/10 , \T1/lmss/m
+/n/10 dou-ble \T1/lmtt/m/n/10 min_relerr[TDSIZE][]\T1/lmr/m/n/10 , \T1/lmss/m/n
+/10 dou-ble
+ []
+
+
+Overfull \hbox (14.032pt too wide) in paragraph at lines 1135--1136
+\T1/lmtt/m/n/10 max_real_relerr[TDSIZE][]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 dou-b
+le \T1/lmtt/m/n/10 min_real_relerr[TDSIZE][]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 do
+u-ble \T1/lmtt/m/n/10 max_image_relerr[TDSIZE][]\T1/lmr/m/n/10 ,
+ []
+
+
+Underfull \hbox (badness 1789) in paragraph at lines 1136--1137
+[]\T1/lmss/m/n/10 void \T1/lmtt/m/n/10 relerr3_cqdvector\T1/lmr/m/n/10 (\T1/lms
+s/m/n/10 double \T1/lmtt/m/n/10 max_relerr[QDSIZE][]\T1/lmr/m/n/10 , \T1/lmss/m
+/n/10 dou-ble \T1/lmtt/m/n/10 min_relerr[QDSIZE][]\T1/lmr/m/n/10 , \T1/lmss/m/n
+/10 dou-ble
+ []
+
+
+Overfull \hbox (14.032pt too wide) in paragraph at lines 1136--1137
+\T1/lmtt/m/n/10 max_real_relerr[QDSIZE][]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 dou-b
+le \T1/lmtt/m/n/10 min_real_relerr[QDSIZE][]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 do
+u-ble \T1/lmtt/m/n/10 max_image_relerr[QDSIZE][]\T1/lmr/m/n/10 ,
+ []
+
+[27]
+Overfull \hbox (17.39362pt too wide) in paragraph at lines 1140--1141
+[]\T1/lmss/m/n/10 void \T1/lmtt/m/n/10 relerr3_cmpfvector\T1/lmr/m/n/10 (\T1/lm
+ss/m/n/10 mpf_t \T1/lmtt/m/n/10 max_abs_relerr[]\T1/lmr/m/n/10 , \T1/lmss/m/n/1
+0 mpf_t \T1/lmtt/m/n/10 min_abs_relerr[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 mpf_t 
+\T1/lmtt/m/n/10 max_real_relerr[]\T1/lmr/m/n/10 ,
+ []
+
+
+Underfull \hbox (badness 6173) in paragraph at lines 1140--1141
+\T1/lmss/m/n/10 mpf_t \T1/lmtt/m/n/10 min_real_relerr[]\T1/lmr/m/n/10 , \T1/lms
+s/m/n/10 mpf_t \T1/lmtt/m/n/10 max_image_relerr[]\T1/lmr/m/n/10 , \T1/lmss/m/n/
+10 mpf_t \T1/lmtt/m/n/10 min_image_relerr[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 mpf
+_t
+ []
+
+
+Underfull \hbox (badness 3428) in paragraph at lines 1156--1157
+[]\T1/lmss/m/n/10 void \T1/lmtt/m/n/10 relerr3_ddmatrix\T1/lmr/m/n/10 (\T1/lmss
+/m/n/10 double \T1/lmtt/m/n/10 max_relerr[DDSIZE][]\T1/lmr/m/n/10 , \T1/lmss/m/
+n/10 dou-ble \T1/lmtt/m/n/10 min_relerr[DDSIZE][]\T1/lmr/m/n/10 , \T1/lmss/m/n/
+10 dou-ble
+ []
+
+
+Underfull \hbox (badness 3428) in paragraph at lines 1158--1159
+[]\T1/lmss/m/n/10 void \T1/lmtt/m/n/10 relerr3_tdmatrix\T1/lmr/m/n/10 (\T1/lmss
+/m/n/10 double \T1/lmtt/m/n/10 max_relerr[TDSIZE][]\T1/lmr/m/n/10 , \T1/lmss/m/
+n/10 dou-ble \T1/lmtt/m/n/10 min_relerr[TDSIZE][]\T1/lmr/m/n/10 , \T1/lmss/m/n/
+10 dou-ble
+ []
+
+
+Underfull \hbox (badness 3428) in paragraph at lines 1160--1161
+[]\T1/lmss/m/n/10 void \T1/lmtt/m/n/10 relerr3_qdmatrix\T1/lmr/m/n/10 (\T1/lmss
+/m/n/10 double \T1/lmtt/m/n/10 max_relerr[QDSIZE][]\T1/lmr/m/n/10 , \T1/lmss/m/
+n/10 dou-ble \T1/lmtt/m/n/10 min_relerr[QDSIZE][]\T1/lmr/m/n/10 , \T1/lmss/m/n/
+10 dou-ble
+ []
+
+
+Underfull \hbox (badness 1789) in paragraph at lines 1164--1165
+[]\T1/lmss/m/n/10 void \T1/lmtt/m/n/10 relerr3_cddmatrix\T1/lmr/m/n/10 (\T1/lms
+s/m/n/10 double \T1/lmtt/m/n/10 max_relerr[DDSIZE][]\T1/lmr/m/n/10 , \T1/lmss/m
+/n/10 dou-ble \T1/lmtt/m/n/10 min_relerr[DDSIZE][]\T1/lmr/m/n/10 , \T1/lmss/m/n
+/10 dou-ble
+ []
+
+
+Overfull \hbox (14.032pt too wide) in paragraph at lines 1164--1165
+\T1/lmtt/m/n/10 max_real_relerr[DDSIZE][]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 dou-b
+le \T1/lmtt/m/n/10 min_real_relerr[DDSIZE][]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 do
+u-ble \T1/lmtt/m/n/10 max_image_relerr[DDSIZE][]\T1/lmr/m/n/10 ,
+ []
+
+
+Underfull \hbox (badness 1789) in paragraph at lines 1166--1167
+[]\T1/lmss/m/n/10 void \T1/lmtt/m/n/10 relerr3_ctdmatrix\T1/lmr/m/n/10 (\T1/lms
+s/m/n/10 double \T1/lmtt/m/n/10 max_relerr[TDSIZE][]\T1/lmr/m/n/10 , \T1/lmss/m
+/n/10 dou-ble \T1/lmtt/m/n/10 min_relerr[TDSIZE][]\T1/lmr/m/n/10 , \T1/lmss/m/n
+/10 dou-ble
+ []
+
+
+Overfull \hbox (14.032pt too wide) in paragraph at lines 1166--1167
+\T1/lmtt/m/n/10 max_real_relerr[TDSIZE][]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 dou-b
+le \T1/lmtt/m/n/10 min_real_relerr[TDSIZE][]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 do
+u-ble \T1/lmtt/m/n/10 max_image_relerr[TDSIZE][]\T1/lmr/m/n/10 ,
+ []
+
+
+Underfull \hbox (badness 1789) in paragraph at lines 1168--1169
+[]\T1/lmss/m/n/10 void \T1/lmtt/m/n/10 relerr3_cqdmatrix\T1/lmr/m/n/10 (\T1/lms
+s/m/n/10 double \T1/lmtt/m/n/10 max_relerr[QDSIZE][]\T1/lmr/m/n/10 , \T1/lmss/m
+/n/10 dou-ble \T1/lmtt/m/n/10 min_relerr[QDSIZE][]\T1/lmr/m/n/10 , \T1/lmss/m/n
+/10 dou-ble
+ []
+
+
+Overfull \hbox (14.032pt too wide) in paragraph at lines 1168--1169
+\T1/lmtt/m/n/10 max_real_relerr[QDSIZE][]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 dou-b
+le \T1/lmtt/m/n/10 min_real_relerr[QDSIZE][]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 do
+u-ble \T1/lmtt/m/n/10 max_image_relerr[QDSIZE][]\T1/lmr/m/n/10 ,
+ []
+
+
+Overfull \hbox (17.39362pt too wide) in paragraph at lines 1170--1171
+[]\T1/lmss/m/n/10 void \T1/lmtt/m/n/10 relerr3_cmpfmatrix\T1/lmr/m/n/10 (\T1/lm
+ss/m/n/10 mpf_t \T1/lmtt/m/n/10 max_abs_relerr[]\T1/lmr/m/n/10 , \T1/lmss/m/n/1
+0 mpf_t \T1/lmtt/m/n/10 min_abs_relerr[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 mpf_t 
+\T1/lmtt/m/n/10 max_real_relerr[]\T1/lmr/m/n/10 ,
+ []
+
+
+Underfull \hbox (badness 6173) in paragraph at lines 1170--1171
+\T1/lmss/m/n/10 mpf_t \T1/lmtt/m/n/10 min_real_relerr[]\T1/lmr/m/n/10 , \T1/lms
+s/m/n/10 mpf_t \T1/lmtt/m/n/10 max_image_relerr[]\T1/lmr/m/n/10 , \T1/lmss/m/n/
+10 mpf_t \T1/lmtt/m/n/10 min_image_relerr[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 mpf
+_t
+ []
+
+) (./chap03.tex [28]
+第3章
+[29
+
+] [30] [31] [32] [33] [34] [35]
+Underfull \hbox (badness 2073) in paragraph at lines 346--347
+[]\T1/lmss/m/n/10 void \T1/lmtt/m/n/10 relerr_ddvector_mpfvec\T1/lmr/m/n/10 (\T
+1/lmss/m/n/10 double \T1/lmtt/m/n/10 relerr[DDSIZE][]\T1/lmr/m/n/10 , \T1/lmss/
+m/n/10 DDVec-tor \T1/lmtt/m/n/10 approx_vec[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 M
+PFVec-tor
+ []
+
+[36]
+Underfull \hbox (badness 1342) in paragraph at lines 366--367
+[]\T1/lmss/m/n/10 void \T1/lmtt/m/n/10 row_swap_ddmatrix\T1/lmr/m/n/10 (\T1/lms
+s/m/n/10 DDMatrix \T1/lmtt/m/n/10 mat[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 long in
+t \T1/lmtt/m/n/10 row_index0[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 long int \T1/lmt
+t/m/n/10 row_index1[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 long
+ []
+
+[37]
+Underfull \hbox (badness 2644) in paragraph at lines 442--443
+[]\T1/lmss/m/n/10 void \T1/lmtt/m/n/10 tridiag_ddmatrix\T1/lmr/m/n/10 (\T1/lmss
+/m/n/10 DDMatrix \T1/lmtt/m/n/10 a[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 DDVec-tor 
+\T1/lmtt/m/n/10 low_subdiag[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 DDVec-tor \T1/lmt
+t/m/n/10 diag[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 DDVec-tor
+ []
+
+
+Underfull \hbox (badness 2903) in paragraph at lines 443--444
+[]\T1/lmss/m/n/10 void \T1/lmtt/m/n/10 tridiag_tdmatrix\T1/lmr/m/n/10 (\T1/lmss
+/m/n/10 DDMatrix \T1/lmtt/m/n/10 a[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 TD-Vec-tor
+ \T1/lmtt/m/n/10 low_subdiag[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 TD-Vec-tor \T1/l
+mtt/m/n/10 diag[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 TD-Vec-tor
+ []
+
+
+Underfull \hbox (badness 2556) in paragraph at lines 444--445
+[]\T1/lmss/m/n/10 void \T1/lmtt/m/n/10 tridiag_qdmatrix\T1/lmr/m/n/10 (\T1/lmss
+/m/n/10 DDMatrix \T1/lmtt/m/n/10 a[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 QD-Vec-tor
+ \T1/lmtt/m/n/10 low_subdiag[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 QD-Vec-tor \T1/l
+mtt/m/n/10 diag[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 QD-Vec-tor
+ []
+
+[38] [39]
+Underfull \hbox (badness 1199) in paragraph at lines 514--515
+[]\T1/lmss/m/n/10 void \T1/lmtt/m/n/10 mul_dmatrix_strassen_even\T1/lmr/m/n/10 
+(\T1/lmss/m/n/10 DMatrix \T1/lmtt/m/n/10 ret[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 
+DMa-trix \T1/lmtt/m/n/10 mat_a[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 DMa-trix \T1/l
+mtt/m/n/10 mat_b,[] \T1/lmss/m/n/10 long int
+ []
+
+[40]
+Underfull \hbox (badness 3428) in paragraph at lines 561--562
+[]\T1/lmss/m/n/10 void \T1/lmtt/m/n/10 relerr3_ddvector\T1/lmr/m/n/10 (\T1/lmss
+/m/n/10 double \T1/lmtt/m/n/10 max_relerr[DDSIZE][]\T1/lmr/m/n/10 , \T1/lmss/m/
+n/10 dou-ble \T1/lmtt/m/n/10 min_relerr[DDSIZE][]\T1/lmr/m/n/10 , \T1/lmss/m/n/
+10 dou-ble
+ []
+
+[41]
+Underfull \hbox (badness 3428) in paragraph at lines 567--568
+[]\T1/lmss/m/n/10 void \T1/lmtt/m/n/10 relerr3_ddmatrix\T1/lmr/m/n/10 (\T1/lmss
+/m/n/10 double \T1/lmtt/m/n/10 max_relerr[DDSIZE][]\T1/lmr/m/n/10 , \T1/lmss/m/
+n/10 dou-ble \T1/lmtt/m/n/10 min_relerr[DDSIZE][]\T1/lmr/m/n/10 , \T1/lmss/m/n/
+10 dou-ble
+ []
+
+
+Underfull \hbox (badness 3428) in paragraph at lines 568--569
+[]\T1/lmss/m/n/10 void \T1/lmtt/m/n/10 relerr3_tdmatrix\T1/lmr/m/n/10 (\T1/lmss
+/m/n/10 double \T1/lmtt/m/n/10 max_relerr[TDSIZE][]\T1/lmr/m/n/10 , \T1/lmss/m/
+n/10 dou-ble \T1/lmtt/m/n/10 min_relerr[TDSIZE][]\T1/lmr/m/n/10 , \T1/lmss/m/n/
+10 dou-ble
+ []
+
+
+Underfull \hbox (badness 3428) in paragraph at lines 569--570
+[]\T1/lmss/m/n/10 void \T1/lmtt/m/n/10 relerr3_qdmatrix\T1/lmr/m/n/10 (\T1/lmss
+/m/n/10 double \T1/lmtt/m/n/10 max_relerr[QDSIZE][]\T1/lmr/m/n/10 , \T1/lmss/m/
+n/10 dou-ble \T1/lmtt/m/n/10 min_relerr[QDSIZE][]\T1/lmr/m/n/10 , \T1/lmss/m/n/
+10 dou-ble
+ []
+
+[42]
+Underfull \hbox (badness 1454) in paragraph at lines 645--646
+[]\T1/lmss/m/n/10 void \T1/lmtt/m/n/10 mul_ddmatrix_oz\T1/lmr/m/n/10 (\T1/lmss/
+m/n/10 DDMatrix \T1/lmtt/m/n/10 ret[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 DDMa-trix
+ \T1/lmtt/m/n/10 a[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 int \T1/lmtt/m/n/10 max_nu
+m_div_a[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 DDMa-trix \T1/lmtt/m/n/10 b[]\T1/lmr/
+m/n/10 , \T1/lmss/m/n/10 int
+ []
+
+
+Underfull \hbox (badness 1590) in paragraph at lines 646--647
+[]\T1/lmss/m/n/10 void \T1/lmtt/m/n/10 mul_tdmatrix_oz\T1/lmr/m/n/10 (\T1/lmss/
+m/n/10 TDMatrix \T1/lmtt/m/n/10 ret[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 TD-Ma-tri
+x \T1/lmtt/m/n/10 a[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 int \T1/lmtt/m/n/10 max_n
+um_div_a[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 TD-Ma-trix \T1/lmtt/m/n/10 b[]\T1/lm
+r/m/n/10 , \T1/lmss/m/n/10 int
+ []
+
+
+Underfull \hbox (badness 1412) in paragraph at lines 647--648
+[]\T1/lmss/m/n/10 void \T1/lmtt/m/n/10 mul_qdmatrix_oz\T1/lmr/m/n/10 (\T1/lmss/
+m/n/10 QDMatrix \T1/lmtt/m/n/10 ret[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 QD-Ma-tri
+x \T1/lmtt/m/n/10 a[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 int \T1/lmtt/m/n/10 max_n
+um_div_a[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 QD-Ma-trix \T1/lmtt/m/n/10 b[]\T1/lm
+r/m/n/10 , \T1/lmss/m/n/10 int
+ []
+
+[43]) (./chap04.tex [44]
+第4章
+[45
+
+]) (./chap05.tex [46]
+第5章
+[47
+
+] [48] [49] [50]
+Underfull \hbox (badness 1838) in paragraph at lines 199--200
+[]\T1/lmss/m/n/10 double _Com-plex \T1/lmtt/m/n/10 eval_cdpoly_horner\T1/lmr/m/
+n/10 (\T1/lmss/m/n/10 CDPoly \T1/lmtt/m/n/10 a[]\T1/lmr/m/n/10 , \T1/lmss/m/n/1
+0 dou-ble _Com-plex \T1/lmtt/m/n/10 x[]\T1/lmr/m/n/10 ) [] (also aliased as
+ []
+
+[51]
+Underfull \hbox (badness 1701) in paragraph at lines 257--258
+[]\T1/lmss/m/n/10 void \T1/lmtt/m/n/10 eval_cddpoly_horner\T1/lmr/m/n/10 (\T1/l
+mss/m/n/10 cddfloat * \T1/lmtt/m/n/10 ret[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 CD-
+DPoly \T1/lmtt/m/n/10 a[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 cddfloat * \T1/lmtt/m
+/n/10 x[]\T1/lmr/m/n/10 ) [] (also aliased as
+ []
+
+[52] [53] [54] [55]
+Overfull \hbox (4.66034pt too wide) in paragraph at lines 414--415
+[]\T1/lmss/m/n/10 void \T1/lmtt/m/n/10 eval_cmpfpoly_horner\T1/lmr/m/n/10 (\T1/
+lmss/m/n/10 mpc_t \T1/lmtt/m/n/10 ret[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 CMPF-Po
+ly \T1/lmtt/m/n/10 pol[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 mpc_t \T1/lmtt/m/n/10 
+x[]\T1/lmr/m/n/10 ) [] (also aliased as []\T1/lmtt/m/n/10 eval_cmpfpoly[]\T1/lm
+r/m/n/10 ) 
+ []
+
+[56] [57]
+Underfull \hbox (badness 1173) in paragraph at lines 536--537
+[]\T1/lmss/m/n/10 void \T1/lmtt/m/n/10 mpf_dka_ozawa_radius\T1/lmr/m/n/10 (\T1/
+lmss/m/n/10 mpf_t \T1/lmtt/m/n/10 ret[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 MPF-Pol
+y \T1/lmtt/m/n/10 pol[]\T1/lmr/m/n/10 ) [] $[] $ Ozawa \JY1/mc/m/n/10 の初期半
+径 ：  $\OML/lmm/m/it/10 r \OT1/lmr/m/n/10 :=
+ []
+
+[58]
+Underfull \hbox (badness 1910) in paragraph at lines 552--553
+[]\T1/lmss/m/n/10 void \T1/lmtt/m/n/10 mpc_dka_init2\T1/lmr/m/n/10 (\T1/lmss/m/
+n/10 CMPFArray \T1/lmtt/m/n/10 x_init[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 CMPF-Po
+ly \T1/lmtt/m/n/10 pol[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 void (*) \T1/lmtt/m/n/
+10 get_radius[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 void (*)
+ []
+
+[59] [60]) (./chap06.tex [61]
+第6章
+
+Overfull \hbox (32.65965pt too wide) in paragraph at lines 32--33
+[]\T1/lmtt/m/n/10 long int real_nzero_total_num \T1/lmr/m/n/10 --- SIMD \JY1/mc
+/m/n/10 アラインされた総数 。 次に等しい ：  $[][] []\OT1/lmr/m/n/10 [\OML/lmm/
+m/it/10 i\OT1/lmr/m/n/10 ]$ 
+ []
+
+
+Overfull \hbox (6.14563pt too wide) in paragraph at lines 40--41
+[]\T1/lmss/m/n/10 DRSMatrix \T1/lmtt/m/n/10 init_drsmatrix\T1/lmr/m/n/10 (\T1/l
+mss/m/n/10 long int \T1/lmtt/m/n/10 row_dim[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 l
+ong int * \T1/lmtt/m/n/10 nzero_col_dim[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 long 
+int \T1/lmtt/m/n/10 nzero_total_num[]\T1/lmr/m/n/10 )
+ []
+
+[62
+
+]
+Overfull \hbox (17.78462pt too wide) in paragraph at lines 81--82
+[]\T1/lmss/m/n/10 CDRSMatrix \T1/lmtt/m/n/10 init_cdrsmatrix\T1/lmr/m/n/10 (\T1
+/lmss/m/n/10 long int \T1/lmtt/m/n/10 row_dim[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10
+ long int * \T1/lmtt/m/n/10 nzero_col_dim[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 lon
+g int \T1/lmtt/m/n/10 nzero_total_num[]\T1/lmr/m/n/10 )
+ []
+
+[63]
+Overfull \hbox (18.61761pt too wide) in paragraph at lines 108--109
+[]\T1/lmss/m/n/10 DDRSMatrix \T1/lmtt/m/n/10 init_ddrsmatrix\T1/lmr/m/n/10 (\T1
+/lmss/m/n/10 long int \T1/lmtt/m/n/10 row_dim[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10
+ long int * \T1/lmtt/m/n/10 nzero_col_dim[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 lon
+g int \T1/lmtt/m/n/10 nzero_total_num[]\T1/lmr/m/n/10 )
+ []
+
+[64]
+Overfull \hbox (6.33188pt too wide) in paragraph at lines 125--126
+[]\T1/lmss/m/n/10 void \T1/lmtt/m/n/10 ddpower_sp\T1/lmr/m/n/10 (\T1/lmss/m/n/1
+0 double \T1/lmtt/m/n/10 max_eig[DDSIZE][]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 DDVe
+c-tor \T1/lmtt/m/n/10 evec[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 DDRS-Ma-trix \T1/l
+mtt/m/n/10 mat[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 dou-ble \T1/lmtt/m/n/10 reps[D
+DSIZE][]\T1/lmr/m/n/10 ,
+ []
+
+
+Underfull \hbox (badness 2302) in paragraph at lines 147--148
+[]\T1/lmss/m/n/10 CDDRSMatrix \T1/lmtt/m/n/10 init_cddrsmatrix\T1/lmr/m/n/10 (\
+T1/lmss/m/n/10 long int \T1/lmtt/m/n/10 row_dim[]\T1/lmr/m/n/10 , \T1/lmss/m/n/
+10 long int * \T1/lmtt/m/n/10 nzero_col_dim[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 l
+ong int
+ []
+
+[65]
+Overfull \hbox (18.20111pt too wide) in paragraph at lines 174--175
+[]\T1/lmss/m/n/10 TDRSMatrix \T1/lmtt/m/n/10 init_tdrsmatrix\T1/lmr/m/n/10 (\T1
+/lmss/m/n/10 long int \T1/lmtt/m/n/10 row_dim[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10
+ long int * \T1/lmtt/m/n/10 nzero_col_dim[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 lon
+g int \T1/lmtt/m/n/10 nzero_total_num[]\T1/lmr/m/n/10 )
+ []
+
+
+Overfull \hbox (5.49887pt too wide) in paragraph at lines 190--191
+[]\T1/lmss/m/n/10 void \T1/lmtt/m/n/10 tdpower_sp\T1/lmr/m/n/10 (\T1/lmss/m/n/1
+0 double \T1/lmtt/m/n/10 max_eig[TDSIZE][]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 TD-V
+ec-tor \T1/lmtt/m/n/10 evec[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 TDRS-Ma-trix \T1/
+lmtt/m/n/10 mat[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 dou-ble \T1/lmtt/m/n/10 reps[
+TDSIZE][]\T1/lmr/m/n/10 ,
+ []
+
+[66]
+Underfull \hbox (badness 2359) in paragraph at lines 212--213
+[]\T1/lmss/m/n/10 CTDRSMatrix \T1/lmtt/m/n/10 init_ctdrsmatrix\T1/lmr/m/n/10 (\
+T1/lmss/m/n/10 long int \T1/lmtt/m/n/10 row_dim[]\T1/lmr/m/n/10 , \T1/lmss/m/n/
+10 long int * \T1/lmtt/m/n/10 nzero_col_dim[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 l
+ong int
+ []
+
+
+Overfull \hbox (18.7566pt too wide) in paragraph at lines 238--239
+[]\T1/lmss/m/n/10 QDRSMatrix \T1/lmtt/m/n/10 init_qdrsmatrix\T1/lmr/m/n/10 (\T1
+/lmss/m/n/10 long int \T1/lmtt/m/n/10 row_dim[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10
+ long int * \T1/lmtt/m/n/10 nzero_col_dim[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 lon
+g int \T1/lmtt/m/n/10 nzero_total_num[]\T1/lmr/m/n/10 )
+ []
+
+[67]
+Overfull \hbox (6.60986pt too wide) in paragraph at lines 254--255
+[]\T1/lmss/m/n/10 void \T1/lmtt/m/n/10 qdpower_sp\T1/lmr/m/n/10 (\T1/lmss/m/n/1
+0 double \T1/lmtt/m/n/10 max_eig[QDSIZE][]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 QD-V
+ec-tor \T1/lmtt/m/n/10 evec[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 QDRS-Ma-trix \T1/
+lmtt/m/n/10 mat[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 dou-ble \T1/lmtt/m/n/10 reps[
+QDSIZE][]\T1/lmr/m/n/10 ,
+ []
+
+
+Underfull \hbox (badness 2277) in paragraph at lines 276--277
+[]\T1/lmss/m/n/10 CQDRSMatrix \T1/lmtt/m/n/10 init_cqdrsmatrix\T1/lmr/m/n/10 (\
+T1/lmss/m/n/10 long int \T1/lmtt/m/n/10 row_dim[]\T1/lmr/m/n/10 , \T1/lmss/m/n/
+10 long int * \T1/lmtt/m/n/10 nzero_col_dim[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 l
+ong int
+ []
+
+[68]
+Underfull \hbox (badness 2302) in paragraph at lines 304--305
+[]\T1/lmss/m/n/10 MPFRSMatrix \T1/lmtt/m/n/10 init_mpfrsmatrix\T1/lmr/m/n/10 (\
+T1/lmss/m/n/10 long int \T1/lmtt/m/n/10 row_dim[]\T1/lmr/m/n/10 , \T1/lmss/m/n/
+10 long int * \T1/lmtt/m/n/10 nzero_col_dim[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 l
+ong int
+ []
+
+
+Underfull \hbox (badness 1584) in paragraph at lines 305--306
+[]\T1/lmss/m/n/10 MPFRSMatrix \T1/lmtt/m/n/10 init2_mpfrsmatrix\T1/lmr/m/n/10 (
+\T1/lmss/m/n/10 long int \T1/lmtt/m/n/10 row_dim[]\T1/lmr/m/n/10 , \T1/lmss/m/n
+/10 long int * \T1/lmtt/m/n/10 nzero_col_dim[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 
+long int
+ []
+
+[69] [70] [71] [72] [73] [74]
+Underfull \hbox (badness 1910) in paragraph at lines 482--483
+[]\T1/lmss/m/n/10 long int \T1/lmtt/m/n/10 DDBiCG\T1/lmr/m/n/10 (\T1/lmss/m/n/1
+0 DDVector \T1/lmtt/m/n/10 ans[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 DDMa-trix \T1/
+lmtt/m/n/10 a[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 DDVec-tor \T1/lmtt/m/n/10 b[]\T
+1/lmr/m/n/10 , \T1/lmss/m/n/10 dou-ble \T1/lmtt/m/n/10 reps[DDSIZE][]\T1/lmr/m/
+n/10 , \T1/lmss/m/n/10 dou-ble
+ []
+
+
+Underfull \hbox (badness 2608) in paragraph at lines 483--484
+[]\T1/lmss/m/n/10 long int \T1/lmtt/m/n/10 DDCGS\T1/lmr/m/n/10 (\T1/lmss/m/n/10
+ DDVector \T1/lmtt/m/n/10 ans[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 DDMa-trix \T1/l
+mtt/m/n/10 a[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 DDVec-tor \T1/lmtt/m/n/10 b[]\T1
+/lmr/m/n/10 , \T1/lmss/m/n/10 dou-ble \T1/lmtt/m/n/10 reps[DDSIZE][]\T1/lmr/m/n
+/10 , \T1/lmss/m/n/10 dou-ble
+ []
+
+
+Underfull \hbox (badness 3623) in paragraph at lines 492--493
+[]\T1/lmss/m/n/10 long int \T1/lmtt/m/n/10 CDDBiCGSTAB_sp_iLU0\T1/lmr/m/n/10 (\
+T1/lmss/m/n/10 CDDVector \T1/lmtt/m/n/10 ans[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 
+CD-DRS-Ma-trix \T1/lmtt/m/n/10 a[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 CD-DVec-tor 
+\T1/lmtt/m/n/10 b[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 dou-ble
+ []
+
+
+Underfull \hbox (badness 3417) in paragraph at lines 492--493
+\T1/lmtt/m/n/10 reps[DDSIZE][]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 dou-ble \T1/lmtt
+/m/n/10 aeps[DDSIZE][]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 long int \T1/lmtt/m/n/10
+ maxtimes[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 CD-DRS-Ma-trix \T1/lmtt/m/n/10 ilu[
+]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 dou-ble *
+ []
+
+
+Overfull \hbox (0.99107pt too wide) in paragraph at lines 493--494
+[]\T1/lmss/m/n/10 long int \T1/lmtt/m/n/10 CDDGPBiCG_sp_iLU0\T1/lmr/m/n/10 (\T1
+/lmss/m/n/10 CDDVector \T1/lmtt/m/n/10 ans[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 CD
+-DRS-Ma-trix \T1/lmtt/m/n/10 a[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 CD-DVec-tor \T
+1/lmtt/m/n/10 b[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 dou-ble \T1/lmtt/m/n/10 reps[
+DDSIZE][]\T1/lmr/m/n/10 ,
+ []
+
+[75]
+Underfull \hbox (badness 4981) in paragraph at lines 500--501
+[]\T1/lmss/m/n/10 long int \T1/lmtt/m/n/10 CDDBiCGSTAB_sp_d_iLU0\T1/lmr/m/n/10 
+(\T1/lmss/m/n/10 CDDVector \T1/lmtt/m/n/10 ans[]\T1/lmr/m/n/10 , \T1/lmss/m/n/1
+0 CDRS-Ma-trix \T1/lmtt/m/n/10 a[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 CD-DVec-tor 
+\T1/lmtt/m/n/10 b[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 dou-
+ []
+
+
+Underfull \hbox (badness 1509) in paragraph at lines 500--501
+\T1/lmss/m/n/10 ble \T1/lmtt/m/n/10 reps[DDSIZE][]\T1/lmr/m/n/10 , \T1/lmss/m/n
+/10 dou-ble \T1/lmtt/m/n/10 aeps[DDSIZE][]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 long
+ int \T1/lmtt/m/n/10 maxtimes[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 CDRS-Ma-trix \T
+1/lmtt/m/n/10 ilu[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 dou-ble *
+ []
+
+
+Overfull \hbox (4.26904pt too wide) in paragraph at lines 501--502
+[]\T1/lmss/m/n/10 long int \T1/lmtt/m/n/10 CDDGPBiCG_sp_d_iLU0\T1/lmr/m/n/10 (\
+T1/lmss/m/n/10 CDDVector \T1/lmtt/m/n/10 ans[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 
+CDRS-Ma-trix \T1/lmtt/m/n/10 a[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 CD-DVec-tor \T
+1/lmtt/m/n/10 b[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 dou-ble \T1/lmtt/m/n/10 reps[
+DDSIZE][]\T1/lmr/m/n/10 ,
+ []
+
+[76]
+Underfull \hbox (badness 2065) in paragraph at lines 527--528
+[]\T1/lmss/m/n/10 long int \T1/lmtt/m/n/10 TDBiCG\T1/lmr/m/n/10 (\T1/lmss/m/n/1
+0 TDVector \T1/lmtt/m/n/10 ans[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 TD-Ma-trix \T1
+/lmtt/m/n/10 a[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 TD-Vec-tor \T1/lmtt/m/n/10 b[]
+\T1/lmr/m/n/10 , \T1/lmss/m/n/10 dou-ble \T1/lmtt/m/n/10 reps[TDSIZE][]\T1/lmr/
+m/n/10 , \T1/lmss/m/n/10 dou-ble
+ []
+
+
+Underfull \hbox (badness 2799) in paragraph at lines 528--529
+[]\T1/lmss/m/n/10 long int \T1/lmtt/m/n/10 TDCGS\T1/lmr/m/n/10 (\T1/lmss/m/n/10
+ TDVector \T1/lmtt/m/n/10 ans[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 TD-Ma-trix \T1/
+lmtt/m/n/10 a[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 TD-Vec-tor \T1/lmtt/m/n/10 b[]\
+T1/lmr/m/n/10 , \T1/lmss/m/n/10 dou-ble \T1/lmtt/m/n/10 reps[TDSIZE][]\T1/lmr/m
+/n/10 , \T1/lmss/m/n/10 dou-ble
+ []
+
+
+Underfull \hbox (badness 1005) in paragraph at lines 530--531
+[]\T1/lmss/m/n/10 long int \T1/lmtt/m/n/10 TDGPBiCG\T1/lmr/m/n/10 (\T1/lmss/m/n
+/10 TDVector \T1/lmtt/m/n/10 ans[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 TD-Ma-trix \
+T1/lmtt/m/n/10 a[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 TD-Vec-tor \T1/lmtt/m/n/10 b
+[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 dou-ble \T1/lmtt/m/n/10 reps[TDSIZE][]\T1/lm
+r/m/n/10 , \T1/lmss/m/n/10 dou-ble
+ []
+
+
+Underfull \hbox (badness 3907) in paragraph at lines 537--538
+[]\T1/lmss/m/n/10 long int \T1/lmtt/m/n/10 CTDBiCGSTAB_sp_iLU0\T1/lmr/m/n/10 (\
+T1/lmss/m/n/10 CTDVector \T1/lmtt/m/n/10 ans[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 
+CT-DRS-Ma-trix \T1/lmtt/m/n/10 a[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 CT-D-Vec-tor
+ \T1/lmtt/m/n/10 b[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 dou-ble
+ []
+
+
+Underfull \hbox (badness 3503) in paragraph at lines 537--538
+\T1/lmtt/m/n/10 reps[TDSIZE][]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 dou-ble \T1/lmtt
+/m/n/10 aeps[TDSIZE][]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 long int \T1/lmtt/m/n/10
+ maxtimes[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 CT-DRS-Ma-trix \T1/lmtt/m/n/10 ilu[
+]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 dou-ble *
+ []
+
+[77]
+Underfull \hbox (badness 5217) in paragraph at lines 545--546
+[]\T1/lmss/m/n/10 long int \T1/lmtt/m/n/10 CTDBiCGSTAB_sp_d_iLU0\T1/lmr/m/n/10 
+(\T1/lmss/m/n/10 CTDVector \T1/lmtt/m/n/10 ans[]\T1/lmr/m/n/10 , \T1/lmss/m/n/1
+0 CDRS-Ma-trix \T1/lmtt/m/n/10 a[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 CT-D-Vec-tor
+ \T1/lmtt/m/n/10 b[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 dou-
+ []
+
+
+Underfull \hbox (badness 1509) in paragraph at lines 545--546
+\T1/lmss/m/n/10 ble \T1/lmtt/m/n/10 reps[TDSIZE][]\T1/lmr/m/n/10 , \T1/lmss/m/n
+/10 dou-ble \T1/lmtt/m/n/10 aeps[TDSIZE][]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 long
+ int \T1/lmtt/m/n/10 maxtimes[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 CDRS-Ma-trix \T
+1/lmtt/m/n/10 ilu[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 dou-ble *
+ []
+
+
+Overfull \hbox (3.43604pt too wide) in paragraph at lines 546--547
+[]\T1/lmss/m/n/10 long int \T1/lmtt/m/n/10 CTDGPBiCG_sp_d_iLU0\T1/lmr/m/n/10 (\
+T1/lmss/m/n/10 CTDVector \T1/lmtt/m/n/10 ans[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 
+CDRS-Ma-trix \T1/lmtt/m/n/10 a[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 CT-D-Vec-tor \
+T1/lmtt/m/n/10 b[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 dou-ble \T1/lmtt/m/n/10 reps
+[TDSIZE][]\T1/lmr/m/n/10 ,
+ []
+
+[78]
+Underfull \hbox (badness 1859) in paragraph at lines 572--573
+[]\T1/lmss/m/n/10 long int \T1/lmtt/m/n/10 QDBiCG\T1/lmr/m/n/10 (\T1/lmss/m/n/1
+0 QDVector \T1/lmtt/m/n/10 ans[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 QD-Ma-trix \T1
+/lmtt/m/n/10 a[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 QD-Vec-tor \T1/lmtt/m/n/10 b[]
+\T1/lmr/m/n/10 , \T1/lmss/m/n/10 dou-ble \T1/lmtt/m/n/10 reps[QDSIZE][]\T1/lmr/
+m/n/10 , \T1/lmss/m/n/10 dou-ble
+ []
+
+
+Underfull \hbox (badness 2547) in paragraph at lines 573--574
+[]\T1/lmss/m/n/10 long int \T1/lmtt/m/n/10 QDCGS\T1/lmr/m/n/10 (\T1/lmss/m/n/10
+ QDVector \T1/lmtt/m/n/10 ans[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 QD-Ma-trix \T1/
+lmtt/m/n/10 a[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 QD-Vec-tor \T1/lmtt/m/n/10 b[]\
+T1/lmr/m/n/10 , \T1/lmss/m/n/10 dou-ble \T1/lmtt/m/n/10 reps[QDSIZE][]\T1/lmr/m
+/n/10 , \T1/lmss/m/n/10 dou-ble
+ []
+
+[79]
+Underfull \hbox (badness 3525) in paragraph at lines 582--583
+[]\T1/lmss/m/n/10 long int \T1/lmtt/m/n/10 CQDBiCGSTAB_sp_iLU0\T1/lmr/m/n/10 (\
+T1/lmss/m/n/10 CQDVector \T1/lmtt/m/n/10 ans[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 
+CQ-DRS-Ma-trix \T1/lmtt/m/n/10 a[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 CQD-Vec-tor 
+\T1/lmtt/m/n/10 b[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 dou-ble
+ []
+
+
+Underfull \hbox (badness 3386) in paragraph at lines 582--583
+\T1/lmtt/m/n/10 reps[QDSIZE][]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 dou-ble \T1/lmtt
+/m/n/10 aeps[QDSIZE][]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 long int \T1/lmtt/m/n/10
+ maxtimes[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 CQ-DRS-Ma-trix \T1/lmtt/m/n/10 ilu[
+]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 dou-ble *
+ []
+
+
+Overfull \hbox (1.40805pt too wide) in paragraph at lines 583--584
+[]\T1/lmss/m/n/10 long int \T1/lmtt/m/n/10 CQDGPBiCG_sp_iLU0\T1/lmr/m/n/10 (\T1
+/lmss/m/n/10 CQDVector \T1/lmtt/m/n/10 ans[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 CQ
+-DRS-Ma-trix \T1/lmtt/m/n/10 a[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 CQD-Vec-tor \T
+1/lmtt/m/n/10 b[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 dou-ble \T1/lmtt/m/n/10 reps[
+QDSIZE][]\T1/lmr/m/n/10 ,
+ []
+
+
+Underfull \hbox (badness 4899) in paragraph at lines 590--591
+[]\T1/lmss/m/n/10 long int \T1/lmtt/m/n/10 CQDBiCGSTAB_sp_d_iLU0\T1/lmr/m/n/10 
+(\T1/lmss/m/n/10 CQDVector \T1/lmtt/m/n/10 ans[]\T1/lmr/m/n/10 , \T1/lmss/m/n/1
+0 CDRS-Ma-trix \T1/lmtt/m/n/10 a[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 CQD-Vec-tor 
+\T1/lmtt/m/n/10 b[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 dou-
+ []
+
+
+Underfull \hbox (badness 1509) in paragraph at lines 590--591
+\T1/lmss/m/n/10 ble \T1/lmtt/m/n/10 reps[QDSIZE][]\T1/lmr/m/n/10 , \T1/lmss/m/n
+/10 dou-ble \T1/lmtt/m/n/10 aeps[QDSIZE][]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 long
+ int \T1/lmtt/m/n/10 maxtimes[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 CDRS-Ma-trix \T
+1/lmtt/m/n/10 ilu[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 dou-ble *
+ []
+
+
+Overfull \hbox (4.54703pt too wide) in paragraph at lines 591--592
+[]\T1/lmss/m/n/10 long int \T1/lmtt/m/n/10 CQDGPBiCG_sp_d_iLU0\T1/lmr/m/n/10 (\
+T1/lmss/m/n/10 CQDVector \T1/lmtt/m/n/10 ans[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 
+CDRS-Ma-trix \T1/lmtt/m/n/10 a[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 CQD-Vec-tor \T
+1/lmtt/m/n/10 b[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 dou-ble \T1/lmtt/m/n/10 reps[
+QDSIZE][]\T1/lmr/m/n/10 ,
+ []
+
+[80] [81] [82]) (./chap07.tex [83]
+第7章
+[84
+
+]
+Underfull \hbox (badness 1077) in paragraph at lines 106--107
+[]\T1/lmss/m/n/10 void \T1/lmtt/m/n/10 set_cdvector_i\T1/lmr/m/n/10 (\T1/lmss/m
+/n/10 CDVector \T1/lmtt/m/n/10 vec[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 long int \
+T1/lmtt/m/n/10 index[]\T1/lmr/m/n/10 , \T1/lmss/m/n/10 dou-ble _Com-plex \T1/lm
+tt/m/n/10 val[]\T1/lmr/m/n/10 ) [] $[] $ \JY1/mc/m/n/10 および
+ []
+
+[85]) (./chap08.tex [86]
+第8章
+[87
+
+] [88]
+Underfull \hbox (badness 4254) in paragraph at lines 207--208
+\T1/lmss/m/n/10 mul_cgddmatrix_cgddvec[]\JY1/mc/m/n/10 ， \T1/lmss/m/n/10 mul_c
+gddmatrixt_cgddvec[]\JY1/mc/m/n/10 。 複素乗算は \T1/lmr/m/n/10 4 \JY1/mc/m/n/1
+0 回の実数乗算による公式
+ []
+
+[89] [90]) (./chap09.tex [91]
+第9章
+[92
+
+] [93] [94]
+Underfull \hbox (badness 1694) in paragraph at lines 195--196
+\JY1/mc/m/n/10 すれば \T1/lmtt/m/n/10 bnc_td_*_array \T1/lmr/m/n/10 / \T1/lmtt/
+m/n/10 bnc_qd_*_array \JY1/mc/m/n/10 にも使えます 。 配列レイアウトはライブラリ
+の
+ []
+
+) [95] [96
+
+]
+No file manual_ja.ind.
+(./manual_ja.aux)
+ ***********
+pLaTeX2e <2023-02-14>+1, based on
+LaTeX2e <2023-11-01> patch level 1
+L3 programming layer <2024-01-22>
+ ***********
+ ) 
+Here is how much of TeX's memory you used:
+ 5279 strings out of 474880
+ 75579 string characters out of 5763303
+ 2010820 words of memory out of 5000000
+ 27392 multiletter control sequences out of 15000+600000
+ 695772 words of font info for 172 fonts, out of 8000000 for 9000
+ 934 hyphenation exceptions out of 8191
+ 57i,10n,65p,1733b,1721s stack positions out of 10000i,1000n,20000p,200000b,200000s
+
+Output written on manual_ja.dvi (99 pages, 467492 bytes).

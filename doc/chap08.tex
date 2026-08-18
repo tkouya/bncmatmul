@@ -1,0 +1,368 @@
+%==============================================================================%
+% Chapter 7 : GPU (CUDA) computation
+%==============================================================================%
+\chapter{\bi{GPU computation with CUDA}{CUDAによるGPU計算}}\label{chap:gpu}
+
+\bi{This chapter describes the CUDA implementation of BNCmatmul, which executes the
+basic linear computation, matrix multiplication, LU decomposition and sparse
+matrix-vector multiplication on an NVIDIA GPU.  It is built on top of
+\textbf{gdtq-0.0.2} (the device multi-component floating-point header layer) and,
+for arbitrary precision, on \textbf{mpc\_cuda-0.0.1} (a device port of MPFR/MPC).
+The reference target is an NVIDIA GB10 (\texttt{sm\_121}, CUDA 13).}{本章では，
+基本的な線形計算，行列乗算，LU分解，および疎行列ベクトル乗算をNVIDIA GPU上で実行する
+BNCmatmulのCUDA実装について説明します。本実装は\textbf{gdtq-0.0.2}（デバイス用多成分
+浮動小数点ヘッダ層）の上に構築されており，任意精度については\textbf{mpc\_cuda-0.0.1}
+（MPFR/MPCのデバイス移植版）を用います。基準とする対象はNVIDIA GB10
+（\texttt{sm\_121}，CUDA 13）です。}
+
+\bi{All GPU functions are gathered into the static library
+\texttt{libbncmatmul-0.24\_cuda.a}.  The single script
+\texttt{bench/build\_cuda\_full.sh} compiles every GPU module into this library and
+runs the whole verification suite (matrix multiplication, matrix-vector product,
+LU and SpMV for every precision, plus the CUDA MPFR/MPC matrix multiplication).}{すべての
+GPU関数は静的ライブラリ\texttt{libbncmatmul-0.24\_cuda.a}にまとめられています。単一の
+スクリプト\texttt{bench/build\_cuda\_full.sh}は，すべてのGPUモジュールをこのライブラリに
+コンパイルし，検証スイート全体（各精度の行列乗算，行列ベクトル積，LU，SpMV，および
+CUDA MPFR/MPC行列乗算）を実行します。}
+
+%------------------------------------------------------------------%
+\section{\bi{Naming convention and data types}{命名規則とデータ型}}
+%------------------------------------------------------------------%
+
+\bi{Every GPU type and function carries a leading \textsf{g} (``GPU'').  The element
+type follows the same multi-component scheme as the CPU side: a \textsf{d}-family
+based on \texttt{double} and an \textsf{s}-family based on \texttt{float}.}{すべての
+GPU型および関数には先頭に\textsf{g}（``GPU''）が付きます。要素型はCPU側と同じ多成分方式に
+従い，\texttt{double}に基づく\textsf{d}系列と，\texttt{float}に基づく\textsf{s}系列が
+あります。}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{l l l l}
+\hline
+GPU prefix & element type & bits ($\approx$) & CPU counterpart \\
+\hline
+\textsf{gf}  & \texttt{float} (\texttt{float})            & 24  & FVector / FMatrix \\
+\textsf{gd}  & \texttt{double} (\texttt{double})          & 53  & DVector / DMatrix \\
+\textsf{gds} & double-single (\texttt{float2})            & 48  & DSVector / DSMatrix \\
+\textsf{gts} & triple-single (\texttt{float3})            & 72  & TSVector / TSMatrix \\
+\textsf{gqs} & quadruple-single (\texttt{float4})         & 96  & QSVector / QSMatrix \\
+\textsf{gdd} & double-double (\texttt{double2})           & 106 & DDVector / DDMatrix \\
+\textsf{gtd} & triple-double (\texttt{double3})           & 159 & TDVector / TDMatrix \\
+\textsf{gqd} & quadruple-double (\texttt{double4})        & 212 & QDVector / QDMatrix \\
+\hline
+\end{tabular}
+\caption{\bi{Real-valued GPU element types.  \textsf{g$\tau$} with
+$\tau\in\{$f, d, ds, ts, qs, dd, td, qd$\}$.}{実数値のGPU要素型。\textsf{g$\tau$}は
+$\tau\in\{$f, d, ds, ts, qs, dd, td, qd$\}$とする。}}
+\end{table}
+
+\bi{For complex numbers two families are provided.  The native complex types
+\textsf{gcd} (complex \texttt{double}) and \textsf{gcf} (complex \texttt{float})
+store the real and imaginary parts as two separate scalar arrays.  The
+multi-component complex types \textsf{cgdd}, \textsf{cgtd}, \textsf{cgqd},
+\textsf{cgds}, \textsf{cgts}, \textsf{cgqs} store the real and imaginary parts as
+two separate arrays of the corresponding \textsf{g$\tau$} element.}{複素数には2つの
+系列が用意されています。ネイティブ複素型\textsf{gcd}（複素\texttt{double}）および
+\textsf{gcf}（複素\texttt{float}）は，実部と虚部を2つの別々のスカラ配列として格納します。
+多成分複素型\textsf{cgdd}，\textsf{cgtd}，\textsf{cgqd}，\textsf{cgds}，\textsf{cgts}，
+\textsf{cgqs}は，実部と虚部を対応する\textsf{g$\tau$}要素の2つの別々の配列として格納します。}
+
+\bi{Each family defines a vector and a matrix object.  For a real type
+\textsf{g$\tau$}:}{各系列はベクトルオブジェクトと行列オブジェクトを定義します。実数型
+\textsf{g$\tau$}の場合は次のとおりです。}
+\begin{verbatim}
+typedef struct { long int dim;                gXX_real *element; } gXXvector;
+typedef struct { long int row_dim, col_dim;   gXX_real *element; } gXXmatrix;
+\end{verbatim}
+\bi{and for the complex types the single \texttt{element} pointer is replaced by a
+pair \texttt{re}, \texttt{im}.  A pointer to the structure is named
+\textsf{GXXVector} / \textsf{GXXMatrix} (upper case), e.g.\ \textsf{GDDVector},
+\textsf{GCDMatrix}, \textsf{CGTSVector}.}{複素型の場合は，単一の\texttt{element}
+ポインタが\texttt{re}，\texttt{im}の対に置き換えられます。構造体へのポインタは
+\textsf{GXXVector} / \textsf{GXXMatrix}（大文字）と名付けられます。例えば
+\textsf{GDDVector}，\textsf{GCDMatrix}，\textsf{CGTSVector}などです。}
+
+\bi{Matrices are stored row-major with stride equal to \texttt{col\_dim} (the GPU side
+does \emph{not} use the SIMD column padding of the CPU side).  Two block/grid
+arguments \varname{int}{num\_blocks\_per\_grid} and
+\varname{int}{num\_threads\_per\_block} are passed to every kernel-launching
+function; typical values are $32$--$128$ each.}{行列は行優先で，ストライドは
+\texttt{col\_dim}に等しい形で格納されます（GPU側はCPU側のSIMD列パディングを
+\emph{使用しません}）。2つのブロック／グリッド引数\varname{int}{num\_blocks\_per\_grid}
+および\varname{int}{num\_threads\_per\_block}が，カーネルを起動するすべての関数に
+渡されます。典型的な値はそれぞれ$32$～$128$です。}
+
+%------------------------------------------------------------------%
+\section{\bi{Device memory and host-device transfer}{デバイスメモリとホスト・デバイス間転送}}
+%------------------------------------------------------------------%
+
+\bi{In the list below \textsf{g$\tau$} stands for any of the real GPU types and
+\textsf{XX} for its CPU counterpart (e.g.\ \textsf{gdd}$\leftrightarrow$\textsf{DD}).}{以下の
+リストにおいて，\textsf{g$\tau$}は実数GPU型のいずれかを表し，\textsf{XX}はそのCPU側の
+対応物を表します（例：\textsf{gdd}$\leftrightarrow$\textsf{DD}）。}
+
+\begin{itemize}
+\funcitem{GXXVector}{init\_gXXvector}{\varnameli{dim}}\ $\cdots$ \bi{Allocate a vector in
+host memory.}{ホストメモリにベクトルを確保します。}
+\funcitem{GXXVector}{init\_gXXvector\_dev}{\varnameli{dim}}\ $\cdots$ \bi{Allocate a vector
+in device (GPU) memory.}{デバイス（GPU）メモリにベクトルを確保します。}
+\funcitem{void}{free\_gXXvector}{\varname{GXXVector}{vec}}
+\funcitem{void}{free\_gXXvector\_dev}{\varname{GXXVector}{vec}}
+\funcitem{GXXMatrix}{init\_gXXmatrix}{\varnameli{row\_dim}, \varnameli{col\_dim}}
+\funcitem{GXXMatrix}{init\_gXXmatrix\_dev}{\varnameli{row\_dim}, \varnameli{col\_dim}}
+\funcitem{void}{free\_gXXmatrix\_dev}{\varname{GXXMatrix}{mat}}
+\funcitem{void}{subst\_gXXvector\_dev\_XXvec}{\varname{GXXVector}{dev}, \varname{XXVector}{src}}\
+$\cdots$ \bi{Copy a CPU vector to the GPU (host $\to$ device).}{CPUのベクトルをGPUへ
+コピーします（ホスト$\to$デバイス）。}
+\funcitem{void}{subst\_XXvector\_gXXvec\_dev}{\varname{XXVector}{dst}, \varname{GXXVector}{dev}}\
+$\cdots$ \bi{Copy a GPU vector back to the CPU (device $\to$ host).}{GPUのベクトルを
+CPUへ戻します（デバイス$\to$ホスト）。}
+\funcitem{void}{subst\_gXXmatrix\_dev\_XXmat}{\varname{GXXMatrix}{dev}, \varname{XXMatrix}{src}}
+\funcitem{void}{subst\_XXmatrix\_gXXmat\_dev}{\varname{XXMatrix}{dst}, \varname{GXXMatrix}{dev}}
+\funcitem{void}{print\_gXXvector\_dev}{\varname{GXXVector}{dev}}
+\funcitem{void}{print\_gXXmatrix\_dev}{\varname{GXXMatrix}{dev}}
+\end{itemize}
+
+\bi{For the native complex types \textsf{gcd}/\textsf{gcf} the CPU counterpart is the
+complex-\texttt{double} \textsf{CDVector}/\textsf{CDMatrix}; the transfer
+functions are \funcname{subst\_gcdvector\_dev\_cdvec}{} and
+\funcname{subst\_cdvector\_gcdvec\_dev}{} (and the matrix variants).  For the
+multi-component complex types \textsf{cg$\tau$} the CPU counterpart is the
+complex multi-component \textsf{CXXVector}/\textsf{CXXMatrix} (e.g.\
+\textsf{CDDMatrix}), with \funcname{subst\_cgddvector\_dev\_cddvec}{} etc.}{ネイティブ
+複素型\textsf{gcd}/\textsf{gcf}のCPU側対応物は，複素\texttt{double}の
+\textsf{CDVector}/\textsf{CDMatrix}です。転送関数は
+\funcname{subst\_gcdvector\_dev\_cdvec}{}および
+\funcname{subst\_cdvector\_gcdvec\_dev}{}（および行列版）です。多成分複素型
+\textsf{cg$\tau$}のCPU側対応物は，複素多成分の\textsf{CXXVector}/\textsf{CXXMatrix}
+（例：\textsf{CDDMatrix}）であり，\funcname{subst\_cgddvector\_dev\_cddvec}{}などを
+用います。}
+
+%------------------------------------------------------------------%
+\section{\bi{Vector and matrix arithmetic}{ベクトルと行列の演算}}
+%------------------------------------------------------------------%
+
+\bi{All routines below run on the GPU and take the two launch arguments
+\varname{int}{nbg} (blocks) and \varname{int}{ntb} (threads); they are omitted
+from the argument lists for brevity.}{以下のルーチンはすべてGPU上で動作し，2つの起動引数
+\varname{int}{nbg}（ブロック数）と\varname{int}{ntb}（スレッド数）を取ります。
+簡潔さのため，これらは引数リストから省略しています。}
+
+\begin{itemize}
+\funcitem{void}{add\_gXXvector\_dev}{\varname{GXXVector}{c}, \varname{GXXVector}{a}, \varname{GXXVector}{b}}\
+$\cdots$ $\mathbf{c} := \mathbf{a}+\mathbf{b}$.
+\funcitem{void}{sub\_gXXvector\_dev}{\varname{GXXVector}{c}, \varname{GXXVector}{a}, \varname{GXXVector}{b}}\
+$\cdots$ $\mathbf{c} := \mathbf{a}-\mathbf{b}$.
+\funcitem{void}{cmul\_gXXvector\_dev}{\varname{GXXVector}{c}, \varname{gXX\_real}{val}, \varname{GXXVector}{a}}\
+$\cdots$ $\mathbf{c} := \mathrm{val}\cdot\mathbf{a}$.
+\funcitem{void}{subst\_gXXvector\_dev}{\varname{GXXVector}{c}, \varname{GXXVector}{a}}\ $\cdots$ $\mathbf{c} := \mathbf{a}$.
+\funcitem{void}{set0\_gXXvector\_dev}{\varname{GXXVector}{c}}\ $\cdots$ $\mathbf{c} := \mathbf{0}$.
+\funcitem{void}{ip\_gXXvector\_dev}{\varname{gXX\_real*}{ret\_dev}, \varname{GXXVector}{a}, \varname{GXXVector}{b}}\
+$\cdots$ \bi{inner product $(\mathbf{a},\mathbf{b})$, result written to device scalar \texttt{ret\_dev}.}{内積$(\mathbf{a},\mathbf{b})$。結果はデバイススカラ\texttt{ret\_dev}に書き込まれます。}
+\funcitem{void}{norm2\_gXXvector\_dev}{\varname{gXX\_real*}{ret\_dev}, \varname{GXXVector}{a}}\ $\cdots$ $\|\mathbf{a}\|_2$.
+\funcitem{void}{norm1\_gXXvector\_dev}{\varname{gXX\_real*}{ret\_dev}, \varname{GXXVector}{a}}\ $\cdots$ $\|\mathbf{a}\|_1$.
+\funcitem{void}{normi\_gXXvector\_dev}{\varname{gXX\_real*}{ret\_dev}, \varname{GXXVector}{a}}\ $\cdots$ $\|\mathbf{a}\|_\infty$.
+
+\funcitem{void}{add\_gXXmatrix\_dev}{\varname{GXXMatrix}{C}, \varname{GXXMatrix}{A}, \varname{GXXMatrix}{B}}\ $\cdots$ $C := A+B$.
+\funcitem{void}{sub\_gXXmatrix\_dev}{\varname{GXXMatrix}{C}, \varname{GXXMatrix}{A}, \varname{GXXMatrix}{B}}\ $\cdots$ $C := A-B$.
+\funcitem{void}{cmul\_gXXmatrix\_dev}{\varname{GXXMatrix}{C}, \varname{gXX\_real}{sc}, \varname{GXXMatrix}{A}}\ $\cdots$ $C := \mathrm{sc}\cdot A$.
+\funcitem{void}{transpose\_gXXmatrix\_dev}{\varname{GXXMatrix}{C}, \varname{GXXMatrix}{A}}\ $\cdots$ $C := A^{T}$.
+\funcitem{void}{subst\_gXXmatrix\_dev}{\varname{GXXMatrix}{C}, \varname{GXXMatrix}{A}}\ $\cdots$ $C := A$.
+\funcitem{void}{set0\_gXXmatrix\_dev}{\varname{GXXMatrix}{C}}\ $\cdots$ $C := O$.
+\funcitem{void}{setI\_gXXmatrix\_dev}{\varname{GXXMatrix}{C}}\ $\cdots$ $C := I$.
+\funcitem{void}{normf\_gXXmatrix\_dev}{\varname{gXX\_real*}{ret\_dev}, \varname{GXXMatrix}{A}}\ $\cdots$ \bi{Frobenius norm $\|A\|_F$.}{フロベニウスノルム$\|A\|_F$。}
+\end{itemize}
+
+\bi{The complex families additionally provide
+\funcname{conjtrans\_gcdmatrix\_dev}{} / \funcname{conjtrans\_cgXXmatrix\_dev}{}
+($C := A^{H}$, conjugate transpose), and the complex scalar multiplication takes
+the real and imaginary parts as two arguments, e.g.\
+\funcname{cmul\_gcdvector\_dev}{\varname{GCDVector}{c}, \varname{double}{val\_re}, \varname{double}{val\_im}, \varname{GCDVector}{a}}.}{複素系列は
+さらに\funcname{conjtrans\_gcdmatrix\_dev}{} / \funcname{conjtrans\_cgXXmatrix\_dev}{}
+（$C := A^{H}$，共役転置）を提供します。また複素スカラ乗算は実部と虚部を2つの引数として
+取ります。例：\funcname{cmul\_gcdvector\_dev}{\varname{GCDVector}{c}, \varname{double}{val\_re}, \varname{double}{val\_im}, \varname{GCDVector}{a}}。}
+
+%------------------------------------------------------------------%
+\section{\bi{Matrix multiplication and matrix-vector product}{行列乗算と行列ベクトル積}}
+%------------------------------------------------------------------%
+
+\begin{itemize}
+\funcitem{void}{mul\_gXXmatrix\_dev}{\varname{GXXMatrix}{C}, \varname{GXXMatrix}{A}, \varname{GXXMatrix}{B}}\
+$\cdots$ \bi{$C := AB$ (one thread per output row, grid-stride).}{$C := AB$（出力行ごとに1スレッド，グリッドストライド）。}
+\funcitem{void}{mul\_gXXmatrix\_gXXvec}{\varname{GXXVector}{v}, \varname{GXXMatrix}{A}, \varname{GXXVector}{vb}}\
+$\cdots$ $\mathbf{v} := A\mathbf{vb}$.
+\funcitem{void}{mul\_gXXmatrixt\_gXXvec}{\varname{GXXVector}{v}, \varname{GXXMatrix}{A}, \varname{GXXVector}{vb}}\
+$\cdots$ $\mathbf{v} := A^{T}\mathbf{vb}$.
+\end{itemize}
+
+\bi{For the complex families the same three routines exist, e.g.\
+\funcname{mul\_gcdmatrix\_dev}{}, \funcname{mul\_cgddmatrix\_dev}{},
+\funcname{mul\_cgddmatrix\_cgddvec}{} and \funcname{mul\_cgddmatrixt\_cgddvec}{};
+complex multiplication uses the $4$-real-multiply formula
+$\mathrm{Re}(AB)=A_rB_r-A_iB_i$, $\mathrm{Im}(AB)=A_rB_i+A_iB_r$.}{複素系列にも同じ3つの
+ルーチンが存在します。例：\funcname{mul\_gcdmatrix\_dev}{}，
+\funcname{mul\_cgddmatrix\_dev}{}，\funcname{mul\_cgddmatrix\_cgddvec}{}，
+\funcname{mul\_cgddmatrixt\_cgddvec}{}。複素乗算は4回の実数乗算による公式
+$\mathrm{Re}(AB)=A_rB_r-A_iB_i$，$\mathrm{Im}(AB)=A_rB_i+A_iB_r$を用います。}
+
+\bi{A Strassen matrix multiplication for the multi-component types is provided in
+\texttt{src/matmul\_strassen\_general\_g\{dd,td,qd,ds,ts,qs\}.cu}.}{多成分型に対する
+Strassen行列乗算が
+\texttt{src/matmul\_strassen\_general\_g\{dd,td,qd,ds,ts,qs\}.cu}に提供されています。}
+
+\bi{Verified accuracy of $C:=AB$ on the GB10 against the corresponding CPU routine:
+\textsf{gf} and the quadruple-single \textsf{cgqs} are bit-identical
+($0$); \textsf{gd} $\sim10^{-16}$, \textsf{gcd} $\sim10^{-19}$, \textsf{gdd}
+$\sim10^{-31}$, \textsf{gds} $\sim10^{-14}$, \textsf{gts} $\sim10^{-22}$.}{GB10上で
+対応するCPUルーチンと比較して検証した$C:=AB$の精度は次のとおりです。\textsf{gf}および
+4倍単精度の\textsf{cgqs}はビット単位で一致（$0$）。\textsf{gd}は$\sim10^{-16}$，
+\textsf{gcd}は$\sim10^{-19}$，\textsf{gdd}は$\sim10^{-31}$，\textsf{gds}は$\sim10^{-14}$，
+\textsf{gts}は$\sim10^{-22}$です。}
+
+%------------------------------------------------------------------%
+\section{\bi{LU decomposition and linear solver on GPU}{GPU上のLU分解と線形ソルバ}}
+%------------------------------------------------------------------%
+
+\bi{A right-looking LU decomposition with partial pivoting and a forward/back
+substitution solver are provided for every real type and for the native complex
+types.  The decomposition and the solve are combined in one driver:}{部分ピボット選択を
+伴う右向き（right-looking）LU分解と，前進／後退代入ソルバが，すべての実数型および
+ネイティブ複素型に対して提供されています。分解と求解は1つのドライバにまとめられています。}
+
+\begin{itemize}
+\funcitem{int}{gXX\_lu\_solve\_dev}{\varname{GXXMatrix}{A}, \varname{GXXVector}{b}, \varname{GXXVector}{x}, \varnameli{ch[]}, \varname{int}{blocks}, \varname{int}{threads}}\
+$\cdots$ \bi{Overwrite $A$ with its $LU$ factors and solve $A\mathbf{x}=\mathbf{b}$
+into $\mathbf{x}$ (all device objects).  The pivot row chosen at each step is
+recorded in \texttt{ch[]} (host, length $n$; may be \texttt{NULL}).  Returns $0$ on
+success.}{$A$をその$LU$因子で上書きし，$A\mathbf{x}=\mathbf{b}$を解いて
+$\mathbf{x}$に格納します（すべてデバイスオブジェクト）。各ステップで選択された
+ピボット行は\texttt{ch[]}（ホスト，長さ$n$。\texttt{NULL}でもよい）に記録されます。
+成功時に$0$を返します。}
+\end{itemize}
+
+\bi{\texttt{XX} is one of \texttt{d}, \texttt{f}, \texttt{dd}, \texttt{td}, \texttt{qd},
+\texttt{ds}, \texttt{ts}, \texttt{qs} (real, e.g.\ \funcname{gqs\_lu\_solve\_dev}{}),
+or \texttt{cd}, \texttt{cf} (native complex, \funcname{gcd\_lu\_solve\_dev}{} /
+\funcname{gcf\_lu\_solve\_dev}{}).  All ten drivers are declared
+\texttt{extern "C"}.  Verified maximum relative error against the known solution
+(dimension $100$): \textsf{gd} $1.2\times10^{-12}$, \textsf{gf}
+$9.5\times10^{-7}$, \textsf{gcd} $2.8\times10^{-15}$, \textsf{gdd}/\textsf{gtd}/\textsf{gds} $0$,
+\textsf{gts} $7.7\times10^{-22}$, \textsf{gqs} $2.8\times10^{-29}$.}{\texttt{XX}は
+\texttt{d}，\texttt{f}，\texttt{dd}，\texttt{td}，\texttt{qd}，\texttt{ds}，\texttt{ts}，
+\texttt{qs}（実数。例：\funcname{gqs\_lu\_solve\_dev}{}），または\texttt{cd}，\texttt{cf}
+（ネイティブ複素。\funcname{gcd\_lu\_solve\_dev}{} / \funcname{gcf\_lu\_solve\_dev}{}）の
+いずれかです。10個のドライバはすべて\texttt{extern "C"}として宣言されています。既知の解に
+対して検証した最大相対誤差（次元$100$）は次のとおりです。\textsf{gd}は
+$1.2\times10^{-12}$，\textsf{gf}は$9.5\times10^{-7}$，\textsf{gcd}は$2.8\times10^{-15}$，
+\textsf{gdd}/\textsf{gtd}/\textsf{gds}は$0$，\textsf{gts}は$7.7\times10^{-22}$，
+\textsf{gqs}は$2.8\times10^{-29}$です。}
+
+%------------------------------------------------------------------%
+\section{\bi{Sparse matrix-vector multiplication (SpMV)}{疎行列ベクトル乗算（SpMV）}}
+%------------------------------------------------------------------%
+
+\bi{The GPU sparse matrix is stored in the standard CSR (Compressed Sparse Row)
+format, independent of the CPU ``DRS'' format.  The structure holds the
+dimensions, the number of non-zeros, and three device arrays:}{GPUの疎行列は，CPUの
+``DRS''形式とは独立に，標準的なCSR（Compressed Sparse Row）形式で格納されます。構造体は
+次元，非ゼロ要素数，および3つのデバイス配列を保持します。}
+
+\begin{verbatim}
+typedef struct {
+    long int row_dim, col_dim, nnz;
+    long int *row_ptr;   /* length row_dim + 1 */
+    long int *col_idx;   /* length nnz         */
+    gXX_real *val;       /* length nnz         */
+} gXXspmatrix;           /* GXXSPMatrix = gXXspmatrix *  */
+\end{verbatim}
+
+\begin{itemize}
+\funcitem{GXXSPMatrix}{init\_gXXspmatrix\_dev}{\varnameli{row\_dim}, \varnameli{col\_dim}, \varnameli{nnz}, \varname{const long int*}{row\_ptr}, \varname{const long int*}{col\_idx}, \varname{const gXX\_real*}{val}}\
+$\cdots$ \bi{Build a device CSR matrix from host CSR arrays.}{ホストのCSR配列から
+デバイスのCSR行列を構築します。}
+\funcitem{void}{free\_gXXspmatrix\_dev}{\varname{GXXSPMatrix}{mat}}
+\funcitem{void}{mul\_gXXspmatrix\_gXXvec}{\varname{GXXVector}{ret}, \varname{GXXSPMatrix}{A}, \varname{GXXVector}{x}, \varname{int}{nbg}, \varname{int}{ntb}}\
+$\cdots$ \bi{$\mathbf{ret} := A\mathbf{x}$ (one thread per row).}{$\mathbf{ret} := A\mathbf{x}$（行ごとに1スレッド）。}
+\end{itemize}
+
+\bi{The native \textsf{gd}/\textsf{gf} SpMV uses the \textsf{GDVector}/\textsf{GFVector}
+dense vectors as above; the multi-component real types (\textsf{gdd}\dots
+\textsf{gqs}) take raw device \texttt{gXX\_real *} arrays for $\mathbf{x}$ and
+$\mathbf{ret}$ via \funcname{mul\_gXXspmatrix}{\varname{gXX\_real*}{y}, \varname{GXXSPMatrix}{A}, \varname{const gXX\_real*}{x}, \dots}.
+The native complex \textsf{gcd}/\textsf{gcf} and multi-component complex
+\textsf{cg$\tau$} SpMV keep the real/imaginary value arrays separate, e.g.\
+\funcname{mul\_gcdspmatrix}{\varname{double*}{yre}, \varname{double*}{yim}, \varname{GCDSPMatrix}{A}, \varname{const double*}{xre}, \varname{const double*}{xim}, \dots}.
+The transpose product $A^{T}\mathbf{x}$ is obtained either by the native
+\funcname{mul\_gdspmatrixt\_gdvec}{} (atomic scatter) or, for the multi-component
+types, by building the CSR of $A^{T}$ on the host and reusing the $A\mathbf{x}$
+kernel.}{ネイティブの\textsf{gd}/\textsf{gf} SpMVは，上記のとおり
+\textsf{GDVector}/\textsf{GFVector}の密ベクトルを使用します。多成分実数型
+（\textsf{gdd}\dots\textsf{gqs}）は，$\mathbf{x}$と$\mathbf{ret}$に対して生のデバイス
+\texttt{gXX\_real *}配列を取り，\funcname{mul\_gXXspmatrix}{\varname{gXX\_real*}{y}, \varname{GXXSPMatrix}{A}, \varname{const gXX\_real*}{x}, \dots}を介して扱います。
+ネイティブ複素\textsf{gcd}/\textsf{gcf}および多成分複素\textsf{cg$\tau$}のSpMVは，
+実部／虚部の値配列を分離して保持します。例：\funcname{mul\_gcdspmatrix}{\varname{double*}{yre}, \varname{double*}{yim}, \varname{GCDSPMatrix}{A}, \varname{const double*}{xre}, \varname{const double*}{xim}, \dots}。
+転置積$A^{T}\mathbf{x}$は，ネイティブの\funcname{mul\_gdspmatrixt\_gdvec}{}
+（アトミックスキャッタ）によって，または多成分型の場合は$A^{T}$のCSRをホスト上で構築して
+$A\mathbf{x}$カーネルを再利用することによって得られます。}
+
+%------------------------------------------------------------------%
+\section{\bi{Arbitrary precision matrix multiplication (CUDA MPFR / MPC)}{任意精度行列乗算（CUDA MPFR / MPC）}}
+%------------------------------------------------------------------%
+
+\bi{Using the device port \textsf{mpc\_cuda}, the dot products of a matrix
+multiplication or a matrix-vector product can be accumulated at an arbitrary
+compile-time precision (default $1024$ bits) on the GPU.  The matrices and
+vectors are passed as plain row-major \texttt{double} arrays (the complex
+variants use separate real/imaginary \texttt{double} arrays).}{デバイス移植版
+\textsf{mpc\_cuda}を用いると，行列乗算または行列ベクトル積の内積を，コンパイル時に指定した
+任意精度（既定$1024$ビット）でGPU上に累算できます。行列とベクトルは，単純な行優先の
+\texttt{double}配列として渡されます（複素版は実部／虚部を分離した\texttt{double}配列を
+使用します）。}
+
+\begin{itemize}
+\funcitem{int}{cuda\_mul\_mpfmatrix}{\varname{double*}{C}, \varname{const double*}{A}, \varname{const double*}{B}, \varname{int}{n}, \varname{int}{lblocks}, \varname{int}{lthreads}}\
+$\cdots$ \bi{$C := AB$ ($n\times n$), each entry accumulated in MPFR at \texttt{PREC} bits.}{$C := AB$（$n\times n$）。各要素を\texttt{PREC}ビットのMPFRで累算します。}
+\funcitem{int}{cuda\_mul\_mpfmatrix\_vec}{\varname{double*}{y}, \varname{const double*}{A}, \varname{const double*}{x}, \varname{int}{n}, \varname{int}{lblocks}, \varname{int}{lthreads}}\
+$\cdots$ $\mathbf{y} := A\mathbf{x}$.
+\funcitem{int}{cuda\_mul\_cmpfmatrix}{\varname{double*}{Cr}, \varname{double*}{Ci}, \varname{const double*}{Ar}, \varname{const double*}{Ai}, \varname{const double*}{Br}, \varname{const double*}{Bi}, \varname{int}{n}, \varname{int}{lblocks}, \varname{int}{lthreads}}\
+$\cdots$ \bi{Complex $C := AB$ accumulated in MPC.}{複素$C := AB$。MPCで累算します。}
+\funcitem{int}{cuda\_mul\_cmpfmatrix\_vec}{\varname{double*}{yr}, \varname{double*}{yi}, \varname{const double*}{Ar}, \varname{const double*}{Ai}, \varname{const double*}{xr}, \varname{const double*}{xi}, \varname{int}{n}, \varname{int}{lblocks}, \varname{int}{lthreads}}
+\end{itemize}
+
+\bi{These routines link the static library \texttt{/usr/local/lib/libmpc\_cuda.a} and
+require the device stack/heap limits to be enlarged (the drivers set
+\texttt{cudaLimitStackSize} and the device heap internally).  Verified on the
+GB10: both the MPFR ($n=96$) and MPC ($n=80$) matrix multiplication and
+matrix-vector product agree with the CPU result to $0$ at $1024$ bits.}{これらの
+ルーチンは静的ライブラリ\texttt{/usr/local/lib/libmpc\_cuda.a}をリンクし，デバイスの
+スタック／ヒープ上限を拡大する必要があります（ドライバは内部で
+\texttt{cudaLimitStackSize}とデバイスヒープを設定します）。GB10上で検証した結果，
+MPFR（$n=96$）とMPC（$n=80$）の行列乗算および行列ベクトル積は，いずれも$1024$ビットで
+CPUの結果と$0$まで一致しました。}
+
+%------------------------------------------------------------------%
+\section{\bi{Building and running the GPU suite}{GPUスイートのビルドと実行}}
+%------------------------------------------------------------------%
+
+\begin{verbatim}
+sh bench/build_cuda_full.sh
+\end{verbatim}
+\bi{compiles every module listed above into \texttt{libbncmatmul-0.24\_cuda.a} and runs
+the complete verification.  The device-math operators are supplied by the
+\textsf{gdtq} aggregators: \texttt{gqd.cu} (\texttt{double2/3/4}) for the
+\textsf{d}-family and \texttt{gqs.cu} (\texttt{float2/3/4}) for the
+\textsf{s}-family; the \textsf{gdd}/\textsf{gds} objects already carry their
+operators inline, while \textsf{gtd}/\textsf{gqd}/\textsf{gts}/\textsf{gqs} are
+device-linked against the corresponding aggregator object.  The arbitrary
+precision modules need the \textsf{mpc\_cuda} headers under
+\texttt{/usr/local/include/mpc\_cuda} and the definitions in
+\texttt{/usr/local/share/mpc\_cuda/mpfr\_cuda\_defs.txt}.}{は，上記でリストした
+すべてのモジュールを\texttt{libbncmatmul-0.24\_cuda.a}にコンパイルし，完全な検証を
+実行します。デバイス算術演算子は\textsf{gdtq}の集約モジュールによって供給されます。
+すなわち\textsf{d}系列には\texttt{gqd.cu}（\texttt{double2/3/4}），\textsf{s}系列には
+\texttt{gqs.cu}（\texttt{float2/3/4}）です。\textsf{gdd}/\textsf{gds}オブジェクトは
+すでに演算子をインラインで保持していますが，\textsf{gtd}/\textsf{gqd}/\textsf{gts}/\textsf{gqs}は
+対応する集約オブジェクトに対してデバイスリンクされます。任意精度モジュールは，
+\texttt{/usr/local/include/mpc\_cuda}以下の\textsf{mpc\_cuda}ヘッダと，
+\texttt{/usr/local/share/mpc\_cuda/mpfr\_cuda\_defs.txt}内の定義を必要とします。}

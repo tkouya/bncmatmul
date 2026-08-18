@@ -1,0 +1,20 @@
+# backend=serial variant=FMA
+# degree=1000  evaluation points=2000  POLYMUL: deg 1000 x deg 500, 20 reps
+# accuracy reference: MPFR 600 bits
+#
+type op           maxrelerr   meanrelerr     t[s/call]      calls
+dd   HORNER      1.3349e-32   2.0458e-33    4.5743e-06       2000
+dd   ESTRIN      5.3259e-32   7.5763e-33    1.3134e-06       2000
+dd   ESTRIN-V    5.3259e-32   7.5763e-33    1.2905e-06       2000
+dd   EVALDIFF    8.5993e-30   1.9912e-32    4.6304e-06       2000
+dd   POLYMUL     1.8227e-28   3.1484e-31    7.1376e-04         20
+td   HORNER      3.2969e-48   1.7075e-49    9.8952e-06       2000
+td   ESTRIN      3.3900e-48   4.3498e-49    4.8930e-06       2000
+td   ESTRIN-V    3.3900e-48   4.3498e-49    4.8555e-06       2000
+td   EVALDIFF    1.6407e-48   2.3276e-49    1.2029e-05       2000
+td   POLYMUL     8.6217e-46   1.1331e-47    2.1896e-03         20
+qd   HORNER      1.1896e-64   8.2723e-66    1.3935e-05       2000
+qd   ESTRIN      1.5706e-64   2.2779e-65    6.8827e-06       2000
+qd   ESTRIN-V    1.5706e-64   2.2779e-65    6.8783e-06       2000
+qd   EVALDIFF    1.4240e-64   1.4234e-65    1.8720e-05       2000
+qd   POLYMUL     4.4055e-62   4.4279e-64    4.3765e-03         20

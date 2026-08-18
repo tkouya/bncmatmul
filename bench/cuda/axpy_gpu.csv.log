@@ -1,0 +1,6 @@
+# GPU AXPY: NVIDIA H100 NVL sm_90  reps=7
+  N=4096 done (last relerr=0.00e+00)
+  N=16384 done (last relerr=0.00e+00)
+  N=65536 done (last relerr=0.00e+00)
+  N=262144 done (last relerr=-1.00e+00)
+  N=1048576 done (last relerr=-1.00e+00)

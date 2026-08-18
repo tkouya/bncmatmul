@@ -1,0 +1,231 @@
+#---------------------------------------
+# Makefile for BNCmatmul
+# Copyright (c) 2014-2026 Tomonori Kouya
+#---------------------------------------
+
+# include bncmatmul.inc
+include ./bncmatmul.inc
+
+all:
+	(cd $(SRCPATH);$(MAKE);cd ../;)
+
+generic:
+	(cd $(SRCPATH);$(MAKE) generic;cd ../;)
+
+avx2:
+	(cd $(SRCPATH);$(MAKE) avx2;cd ../;)
+
+avx512:
+	(cd $(SRCPATH);$(MAKE) avx512;cd ../;)
+
+neon:
+	(cd $(SRCPATH);$(MAKE) neon;cd ../;)
+
+clean:
+	( \
+		cd $(SRCPATH);\
+		$(MAKE) clean;\
+		cd ../;\
+		rm *.a;\
+		rm *.so;\
+		rm *.txt;\
+	)
+
+
+#---------------------------------------%
+# Autotools-style distribution tarball
+#  make dist        -> $(BNCMATMUL_PREFIX).tar.gz
+#  make dist-xz     -> $(BNCMATMUL_PREFIX).tar.xz
+#  make dist-bzip2  -> $(BNCMATMUL_PREFIX).tar.bz2
+#  make distcheck   -> build the tarball, untar, configure+make in a clean tree
+#---------------------------------------%
+DIST_FILES = \
+	README.md \
+	LICENSE \
+	configure.ac \
+	configure \
+	autogen.sh \
+	bncmatmul.inc.in \
+	Makefile \
+	$(wildcard *.sh) \
+	$(INCPATH) \
+	$(SRCPATH) \
+	$(TEST) \
+	$(BENCH) \
+	$(PYTHON) \
+	$(DOC)
+
+DIST_EXCLUDE = \
+	--exclude='*.o' \
+	--exclude='*.a' \
+	--exclude='*.so' \
+	--exclude='*.lo' \
+	--exclude='*.la' \
+	--exclude='*.tar' \
+	--exclude='*.tar.gz' \
+	--exclude='*.tar.xz' \
+	--exclude='*.tar.bz2' \
+	--exclude='autom4te.cache' \
+	--exclude='config.status' \
+	--exclude='config.log' \
+	--exclude='bncmatmul.inc' \
+	--exclude='.git' \
+	--exclude='.svn'
+
+dist: dist-gzip
+
+dist-gzip: distdir
+	tar $(DIST_EXCLUDE) -czf $(BNCMATMUL_PREFIX).tar.gz -C .. \
+	    `basename $(CURDIR)`/=$(BNCMATMUL_PREFIX) 2>/dev/null || \
+	    ( cd ..; rm -rf $(BNCMATMUL_PREFIX); cp -R `basename $(CURDIR)` $(BNCMATMUL_PREFIX); \
+	      tar $(DIST_EXCLUDE) -czf $(BNCMATMUL_PREFIX).tar.gz $(BNCMATMUL_PREFIX); \
+	      rm -rf $(BNCMATMUL_PREFIX); )
+	@echo "Created ../$(BNCMATMUL_PREFIX).tar.gz"
+
+dist-xz: distdir
+	( cd ..; rm -rf $(BNCMATMUL_PREFIX); cp -R `basename $(CURDIR)` $(BNCMATMUL_PREFIX); \
+	  tar $(DIST_EXCLUDE) -cJf $(BNCMATMUL_PREFIX).tar.xz $(BNCMATMUL_PREFIX); \
+	  rm -rf $(BNCMATMUL_PREFIX); )
+	@echo "Created ../$(BNCMATMUL_PREFIX).tar.xz"
+
+dist-bzip2: distdir
+	( cd ..; rm -rf $(BNCMATMUL_PREFIX); cp -R `basename $(CURDIR)` $(BNCMATMUL_PREFIX); \
+	  tar $(DIST_EXCLUDE) -cjf $(BNCMATMUL_PREFIX).tar.bz2 $(BNCMATMUL_PREFIX); \
+	  rm -rf $(BNCMATMUL_PREFIX); )
+	@echo "Created ../$(BNCMATMUL_PREFIX).tar.bz2"
+
+# Sanity-check the distribution: unpack it in a temp dir and try to configure+build
+distcheck: dist-gzip
+	@set -e; \
+	tmp=`mktemp -d` && cd $$tmp && \
+	tar xzf $(CURDIR)/../$(BNCMATMUL_PREFIX).tar.gz && \
+	cd $(BNCMATMUL_PREFIX) && \
+	( test -x ./configure || ./autogen.sh ) && \
+	./configure && \
+	$(MAKE) && \
+	echo "===== distcheck PASSED =====" ; \
+	cd / && rm -rf $$tmp
+
+# Phony "stage" target — kept for parallelism with Automake; today it just
+# verifies the tree before tar'ing.
+distdir:
+	@test -f configure.ac || (echo "configure.ac not found"; exit 1)
+	@test -f bncmatmul.inc.in || (echo "bncmatmul.inc.in not found"; exit 1)
+
+.PHONY: dist dist-gzip dist-xz dist-bzip2 distcheck distdir
+
+#---------------------------------------%
+# Legacy archive targets (kept for backward compatibility)
+#---------------------------------------%
+distzip:
+	-rm ../$(BNCMATMUL_PREFIX).tar
+	-rm ../$(BNCMATMUL_PREFIX).tar.$(ZIP_EXT)
+	( cd ../; \
+		tar cvf $(BNCMATMUL_PREFIX).tar \
+		$(BNCMATMUL_PREFIX)/README.md \
+		$(BNCMATMUL_PREFIX)/LICENSE \
+		$(BNCMATMUL_PREFIX)/$(INCPATH)/*.h \
+		$(BNCMATMUL_PREFIX)/$(INCPATH)/avx2/*.h \
+		$(BNCMATMUL_PREFIX)/$(INCPATH)/neon/*.h \
+		$(BNCMATMUL_PREFIX)/$(SRCPATH)/*.c \
+		$(BNCMATMUL_PREFIX)/$(SRCPATH)/*.cc \
+		$(BNCMATMUL_PREFIX)/$(SRCPATH)/*.txt \
+		$(BNCMATMUL_PREFIX)/$(SRCPATH)/Makefile \
+		$(BNCMATMUL_PREFIX)/$(MMPATH)/*.c \
+		$(BNCMATMUL_PREFIX)/$(MMPATH)/Makefile \
+		$(BNCMATMUL_PREFIX)/$(TEST)/*.c \
+		$(BNCMATMUL_PREFIX)/$(TEST)/*.cc \
+		$(BNCMATMUL_PREFIX)/$(TEST)/*.cpp \
+		$(BNCMATMUL_PREFIX)/$(TEST)/Makefile \
+		$(BNCMATMUL_PREFIX)/$(BENCH)/*.c \
+		$(BNCMATMUL_PREFIX)/$(BENCH)/*.cc \
+		$(BNCMATMUL_PREFIX)/$(BENCH)/*.cpp \
+		$(BNCMATMUL_PREFIX)/$(BENCH)/Makefile \
+		$(BNCMATMUL_PREFIX)/*.txt \
+		$(BNCMATMUL_PREFIX)/*.sh \
+		$(BNCMATMUL_PREFIX)/Makefile \
+		$(BNCMATMUL_PREFIX)/*.inc \
+		$(BNCMATMUL_PREFIX)/$(DOC)/*.tex \
+		$(BNCMATMUL_PREFIX)/$(DOC)/fig/*.pdf \
+		$(BNCMATMUL_PREFIX)/$(PYTHON)/*.c \
+		$(BNCMATMUL_PREFIX)/$(PYTHON)/*.h \
+		$(BNCMATMUL_PREFIX)/$(PYTHON)/*.py; \
+		$(ZIP) $(BNCMATMUL_PREFIX).tar; \
+		cd ./$(BNCMATMUL_PREFIX);)
+
+zip:
+	-rm ../$(BNCMATMUL_PREFIX).tar
+	-rm ../$(BNCMATMUL_PREFIX).tar.$(ZIP_EXT)
+	( cd ../; \
+		tar cvf $(BNCMATMUL_PREFIX).tar \
+		$(BNCMATMUL_PREFIX)/README.md \
+		$(BNCMATMUL_PREFIX)/LICENSE \
+		$(BNCMATMUL_PREFIX)/$(INCPATH)/*.h \
+		$(BNCMATMUL_PREFIX)/$(INCPATH)/avx2/*.h \
+		$(BNCMATMUL_PREFIX)/$(INCPATH)/neon/*.h \
+		$(BNCMATMUL_PREFIX)/$(SRCPATH)/*.c \
+		$(BNCMATMUL_PREFIX)/$(SRCPATH)/*.cc \
+		$(BNCMATMUL_PREFIX)/$(SRCPATH)/*.cu \
+		$(BNCMATMUL_PREFIX)/$(SRCPATH)/*.txt \
+		$(BNCMATMUL_PREFIX)/$(SRCPATH)/Makefile \
+		$(BNCMATMUL_PREFIX)/$(MMPATH)/*.c \
+		$(BNCMATMUL_PREFIX)/$(MMPATH)/Makefile \
+		$(BNCMATMUL_PREFIX)/$(TEST)/*.c \
+		$(BNCMATMUL_PREFIX)/$(TEST)/*.cc \
+		$(BNCMATMUL_PREFIX)/$(TEST)/*.cpp \
+		$(BNCMATMUL_PREFIX)/$(TEST)/Makefile \
+		$(BNCMATMUL_PREFIX)/$(BENCH)/*.c \
+		$(BNCMATMUL_PREFIX)/$(BENCH)/*.cc \
+		$(BNCMATMUL_PREFIX)/$(BENCH)/*.cpp \
+		$(BNCMATMUL_PREFIX)/$(BENCH)/Makefile \
+		$(BNCMATMUL_PREFIX)/*.sh \
+		$(BNCMATMUL_PREFIX)/Makefile \
+		$(BNCMATMUL_PREFIX)/*.inc \
+		$(BNCMATMUL_PREFIX)/gqd_1_3/README \
+		$(BNCMATMUL_PREFIX)/gqd_1_3/inc/*.cu \
+		$(BNCMATMUL_PREFIX)/gqd_1_3/inc/*.h \
+		$(BNCMATMUL_PREFIX)/gqd_1_3/inc/*.cuh \
+		$(BNCMATMUL_PREFIX)/gqd_1_3/test/*.sh \
+		$(BNCMATMUL_PREFIX)/gqd_1_3/test/*.cu \
+		$(BNCMATMUL_PREFIX)/gqd_1_3/test/*.cpp \
+		$(BNCMATMUL_PREFIX)/gqd_1_3/test/*.h \
+		$(BNCMATMUL_PREFIX)/$(DOC)/*.tex \
+		$(BNCMATMUL_PREFIX)/$(DOC)/fig/*.pdf \
+		$(BNCMATMUL_PREFIX)/$(PYTHON)/*.c \
+		$(BNCMATMUL_PREFIX)/$(PYTHON)/*.py \
+		$(BNCMATMUL_PREFIX)/$(BNCPACKPATH)/*.c \
+		$(BNCMATMUL_PREFIX)/$(MPIPATH)/*.c; \
+		$(ZIP) $(BNCMATMUL_PREFIX).tar; \
+		cd ./$(BNCMATMUL_PREFIX);)
+
+#---------------------------------------%
+# Installing
+#---------------------------------------%
+install:
+	(cp $(INCPATH)/*.h $(PREFIX)/include; chmod ugo+rx $(PREFIX)/include/*.h;)
+	(mkdir $(PREFIX)/include/avx2; cp $(INCPATH)/avx2/*.h $(PREFIX)/include/avx2; chmod ugo+rx $(PREFIX)/include/avx2/*.h;)
+	(mkdir $(PREFIX)/include/neon; cp $(INCPATH)/neon/*.h $(PREFIX)/include/neon; chmod ugo+rx $(PREFIX)/include/neon/*.h;)
+	(cp $(BNCMATMUL_LIBNAME) $(PREFIX)/lib; chmod ugo+rx $(PREFIX)/lib/$(BNCMATMUL_LIBNAME);)
+	(cp $(BNCMATMUL_LIBNAME_OMP) $(PREFIX)/lib; chmod ugo+rx $(PREFIX)/lib/$(BNCMATMUL_LIBNAME_OMP);)
+	(cp $(PYTHON)/librdd.so $(PREFIX)/lib; chmod ugo+rx $(PREFIX)/lib/librdd.so;)
+	(cp $(PYTHON)/librcdd.so $(PREFIX)/lib; chmod ugo+rx $(PREFIX)/lib/librcdd.so;)
+	(cp $(PYTHON)/$(BNCMATMUL_DLLNAME) $(PREFIX)/lib; chmod ugo+rx $(PREFIX)/lib/$(BNCMATMUL_DLLNAME);)
+	(cp $(PYTHON)/$(BNCMATMUL_DLLNAME_OMP) $(PREFIX)/lib; chmod ugo+rx $(PREFIX)/lib/$(BNCMATMUL_DLLNAME_OMP);)
+
+install_avx2:
+	(cp $(BNCMATMUL_LIBNAME_AVX2) $(PREFIX)/lib; chmod ugo+rx $(PREFIX)/lib/$(BNCMATMUL_LIBNAME_AVX2);)
+	(cp $(BNCMATMUL_LIBNAME_OMP_AVX2) $(PREFIX)/lib; chmod ugo+rx $(PREFIX)/lib/$(BNCMATMUL_LIBNAME_OMP_AVX2);)
+	(cp $(PYTHON)/$(BNCMATMUL_DLLNAME_AVX2) $(PREFIX)/lib; chmod ugo+rx $(PREFIX)/lib/$(BNCMATMUL_DLLNAME_AVX2);)
+	(cp $(PYTHON)/$(BNCMATMUL_DLLNAME_OMP_AVX2) $(PREFIX)/lib; chmod ugo+rx $(PREFIX)/lib/$(BNCMATMUL_DLLNAME_OMP_AVX2);)
+
+install_avx512:
+	(cp $(BNCMATMUL_LIBNAME_AVX512) $(PREFIX)/lib; chmod ugo+rx $(PREFIX)/lib/$(BNCMATMUL_LIBNAME_AVX512);)
+	(cp $(BNCMATMUL_LIBNAME_OMP_AVX512) $(PREFIX)/lib; chmod ugo+rx $(PREFIX)/lib/$(BNCMATMUL_LIBNAME_OMP_AVX512);)
+	(cp $(PYTHON)/$(BNCMATMUL_DLLNAME_AVX512) $(PREFIX)/lib; chmod ugo+rx $(PREFIX)/lib/$(BNCMATMUL_DLLNAME_AVX512);)
+	(cp $(PYTHON)/$(BNCMATMUL_DLLNAME_OMP_AVX512) $(PREFIX)/lib; chmod ugo+rx $(PREFIX)/lib/$(BNCMATMUL_DLLNAME_OMP_AVX512);)
+
+install_neon:
+	(cp $(BNCMATMUL_LIBNAME_NEON) $(PREFIX)/lib; chmod ugo+rx $(PREFIX)/lib/$(BNCMATMUL_LIBNAME_NEON);)
+	(cp $(BNCMATMUL_LIBNAME_OMP_NEON) $(PREFIX)/lib; chmod ugo+rx $(PREFIX)/lib/$(BNCMATMUL_LIBNAME_OMP_NEON);)
+	(cp $(PYTHON)/$(BNCMATMUL_DLLNAME_NEON) $(PREFIX)/lib; chmod ugo+rx $(PREFIX)/lib/$(BNCMATMUL_DLLNAME_NEON);)
+	(cp $(PYTHON)/$(BNCMATMUL_DLLNAME_OMP_NEON) $(PREFIX)/lib; chmod ugo+rx $(PREFIX)/lib/$(BNCMATMUL_DLLNAME_OMP_NEON);)

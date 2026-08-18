@@ -1,0 +1,623 @@
+%------------------------------------------------%
+% Chap. 5
+%------------------------------------------------%
+\chapter{\bi{Array, polynomial and solvers of algebraic equations}{配列・多項式と代数方程式のソルバ}}
+
+\bi{As application of multiple-precision arithmetic and linear computing described previously, we have introduced accelerated solvers of algebraic equations as presenting in this chapter.}{前章までに述べた多倍長演算と線形計算の応用として、本章では高速化した代数方程式のソルバを紹介します。}
+
+%------------------------------------------------%
+% Expression of polynomial
+%------------------------------------------------%
+\section{\bi{Data types of Array and polynomial}{配列と多項式のデータ型}}
+
+\bi{Polynomials are represented as in equation~(\ref{eqn:express_polynomial}):}{多項式は式~(\ref{eqn:express_polynomial})のように表現されます。}
+
+\begin{equation}
+    p_n(x) = \sum^n_{k = 0} a_k x^k \label{eqn:express_polynomial}
+\end{equation}
+
+\bi{The library provides the following polynomial and array types, all declared in \texttt{poly.h}}{本ライブラリは以下の多項式型と配列型を提供します。これらはすべて \texttt{poly.h} で宣言されています}\bi{(copyright \copyright\ 2002--2025 Tomonori Kouya; distributed under the GNU LGPL v3 or later).}{（copyright \copyright\ 2002--2025 Tomonori Kouya、GNU LGPL v3 以降のもとで配布）。}
+
+%------------------------------------------------%
+% Polynomial types
+%------------------------------------------------%
+\subsection{\bi{Polynomial types}{多項式型}}
+
+\subsubsection{\bi{Float (\texttt{FPoly}) and float complex (\texttt{CFPoly})}{単精度（\texttt{FPoly}）と単精度複素数（\texttt{CFPoly}）}}
+
+\begin{itemize}
+    \item \texttt{fpoly} --- single-precision polynomial; pointer type \texttt{FPoly}.
+        Members: \texttt{float *coef}, \texttt{long int deg}, \texttt{long int max\_len}.
+    \item \texttt{cfpoly} --- single-precision complex polynomial; pointer type \texttt{CFPoly}.
+        Members: \texttt{fcmplx *coef}, \texttt{long int deg}, \texttt{long int max\_len}.
+\end{itemize}
+
+\subsubsection{\bi{Double (\texttt{DPoly}) and double complex (\texttt{CDPoly})}{倍精度（\texttt{DPoly}）と倍精度複素数（\texttt{CDPoly}）}}
+
+\begin{itemize}
+    \item \texttt{dpoly} --- double-precision polynomial; pointer type \texttt{DPoly}.
+        Members: \texttt{double *coef}, \texttt{long int deg}, \texttt{long int max\_len}.
+    \item \texttt{cdpoly} --- double-precision complex polynomial; pointer type \texttt{CDPoly}.
+        Members: \texttt{double \_Complex *coef}, \texttt{long int deg}, \texttt{long int max\_len}.
+\end{itemize}
+
+\subsubsection{\bi{Double-double (\texttt{DDPoly}) and complex double-double (\texttt{CDDPoly})}{double-double（\texttt{DDPoly}）と複素 double-double（\texttt{CDDPoly}）}}
+\bi{Available when \texttt{USE\_DDLINEAR} is defined.}{\texttt{USE\_DDLINEAR} が定義されているときに利用できます。}
+
+\begin{itemize}
+    \item \texttt{ddpoly} --- double-double polynomial; pointer type \texttt{DDPoly}.
+        Members: \texttt{ddfloat *coef}, \texttt{ddfloat zero}, \texttt{long int deg}, \texttt{long int max\_len}.
+    \item \texttt{cddpoly} --- complex double-double polynomial; pointer type \texttt{CDDPoly}.
+        Members: \texttt{cddfloat *coef}, \texttt{cddfloat zero}, \texttt{long int deg}, \texttt{long int max\_len}.
+\end{itemize}
+
+\subsubsection{\bi{Triple-double (\texttt{TDPoly}) and complex triple-double (\texttt{CTDPoly})}{triple-double（\texttt{TDPoly}）と複素 triple-double（\texttt{CTDPoly}）}}
+\bi{Available when \texttt{USE\_TDLINEAR} is defined.}{\texttt{USE\_TDLINEAR} が定義されているときに利用できます。}
+
+\begin{itemize}
+    \item \texttt{tdpoly} --- triple-double polynomial; pointer type \texttt{TDPoly}.
+        Members: \texttt{tdfloat *coef}, \texttt{tdfloat zero}, \texttt{long int deg}, \texttt{long int max\_len}.
+    \item \texttt{ctdpoly} --- complex triple-double polynomial; pointer type \texttt{CTDPoly}.
+        Members: \texttt{ctdfloat *coef}, \texttt{ctdfloat zero}, \texttt{long int deg}, \texttt{long int max\_len}.
+\end{itemize}
+
+\subsubsection{\bi{Quadruple-double (\texttt{QDPoly}) and complex quadruple-double (\texttt{CQDPoly})}{quadruple-double（\texttt{QDPoly}）と複素 quadruple-double（\texttt{CQDPoly}）}}
+\bi{Available when \texttt{USE\_QDLINEAR} is defined.}{\texttt{USE\_QDLINEAR} が定義されているときに利用できます。}
+
+\begin{itemize}
+    \item \texttt{qdpoly} --- quadruple-double polynomial; pointer type \texttt{QDPoly}.
+        Members: \texttt{qdfloat *coef}, \texttt{qdfloat zero}, \texttt{long int deg}, \texttt{long int max\_len}.
+    \item \texttt{cqdpoly} --- complex quadruple-double polynomial; pointer type \texttt{CQDPoly}.
+        Members: \texttt{cqdfloat *coef}, \texttt{cqdfloat zero}, \texttt{long int deg}, \texttt{long int max\_len}.
+\end{itemize}
+
+\subsubsection{\bi{Multiple-precision (\texttt{MPFPoly}) and complex multiple-precision (\texttt{CMPFPoly})}{多倍長精度（\texttt{MPFPoly}）と複素多倍長精度（\texttt{CMPFPoly}）}}
+\bi{Available when \texttt{USE\_GMP} is defined.}{\texttt{USE\_GMP} が定義されているときに利用できます。}
+
+\begin{itemize}
+    \item \texttt{mpfpoly} --- GMP multiple-precision polynomial; pointer type \texttt{MPFPoly}.
+        Members: \texttt{unsigned long int prec}, \texttt{mpf\_t *coef}, \texttt{mpf\_t zero},
+        \texttt{long int deg}, \texttt{long int max\_len}.
+    \item \texttt{cmpfpoly} --- MPC complex multiple-precision polynomial; pointer type \texttt{CMPFPoly}.
+        Members: \texttt{unsigned long int prec}, \texttt{mpc\_t *coef}, \texttt{mpc\_t zero},
+        \texttt{long int deg}, \texttt{long int max\_len}.
+    \item \texttt{\_bncold\_cmpfpoly} --- legacy complex multiple-precision polynomial (old implementation);
+        pointer type \texttt{\_bncold\_CMPFPoly}.
+        Members: \texttt{unsigned long int prec}, \texttt{mpfcmplx *coef},
+        \texttt{long int deg}, \texttt{long int max\_len}.
+\end{itemize}
+
+%------------------------------------------------%
+% Array types
+%------------------------------------------------%
+\subsection{\bi{Array types}{配列型}}
+
+\begin{itemize}
+    \item \texttt{farray} --- float array; pointer type \texttt{FArray}.
+        Members: \texttt{float *array}, \texttt{long int size}.
+    \item \texttt{cfarray} --- float complex array; pointer type \texttt{CFArray}.
+        Members: \texttt{fcmplx *array}, \texttt{long int size}.
+    \item \texttt{darray} --- double array; pointer type \texttt{DArray}.
+        Members: \texttt{double *array}, \texttt{long int size}.
+    \item \texttt{cdarray} --- double complex array; pointer type \texttt{CDArray}.
+        Members: \texttt{dcmplx *array}, \texttt{long int size}.
+    \item \texttt{mpfarray} --- GMP multiple-precision array (requires \texttt{USE\_GMP}); pointer type \texttt{MPFArray}.
+        Members: \texttt{unsigned long prec}, \texttt{mpf\_t *array}, \texttt{long int size}.
+    \item \texttt{cmpfarray} --- MPC complex multiple-precision array (requires \texttt{USE\_GMP}); pointer type \texttt{CMPFArray}.
+        Members: \texttt{unsigned long prec}, \texttt{mpc\_t *array}, \texttt{long int size}.
+    \item \texttt{\_bncold\_cmpfarray} --- legacy complex multiple-precision array (requires \texttt{USE\_GMP});
+        pointer type \texttt{\_bncold\_CMPFArray}.
+        Members: \texttt{unsigned long prec}, \texttt{mpfcmplx *array}, \texttt{long int size}.
+\end{itemize}
+
+%------------------------------------------------%
+% Functions: poly.c (Float)
+%------------------------------------------------%
+\section{\bi{List of functions}{関数一覧}}
+
+\subsection{\bi{Float polynomial functions (\texttt{poly.c} --- \texttt{FPoly})}{単精度多項式関数（\texttt{poly.c} --- \texttt{FPoly}）}}
+
+\begin{itemize}
+    \funcitem{FPoly}{init\_fpoly}{\varname{long int}{max\_len}}
+    \funcitem{void}{free\_fpoly}{\varname{FPoly}{pol}}
+    \funcitem{float}{get\_fpoly\_i}{\varname{FPoly}{pol}, \varname{long int}{i}}\ (alias: \verb|gfpi|)
+    \funcitem{void}{set\_fpoly\_i}{\varname{FPoly}{pol}, \varname{long int}{i}, \varname{float}{val}}\ (alias: \verb|sfpi|)
+    \funcitem{long int}{setdegree\_fpoly}{\varname{FPoly}{pol}}
+    \funcitem{void}{print\_fpoly}{\varname{FPoly}{pol}}
+    \funcitem{void}{add\_fpoly}{\varname{FPoly}{ret}, \varname{FPoly}{a}, \varname{FPoly}{b}}
+    \funcitem{void}{sub\_fpoly}{\varname{FPoly}{ret}, \varname{FPoly}{a}, \varname{FPoly}{b}}
+    \funcitem{void}{cmul\_fpoly}{\varname{FPoly}{ret}, \varname{float}{c}, \varname{FPoly}{a}}
+    \funcitem{void}{subst\_fpoly}{\varname{FPoly}{ret}, \varname{FPoly}{a}}
+    \funcitem{void}{set0\_fpoly}{\varname{FPoly}{pol}}
+    \funcitem{long int}{max\_abscoef\_fpoly}{\varname{FPoly}{pol}}
+    \funcitem{long int}{num\_nonzero\_fpoly}{\varname{FPoly}{pol}}
+    \funcitem{void}{diff\_fpoly}{\varname{FPoly}{pol}}
+    \funcitem{float}{eval\_fpoly}{\varname{FPoly}{pol}, \varname{float}{x}}
+    \funcitem{float}{eval\_diff\_fpoly}{\varname{FPoly}{pol}, \varname{float}{x}}
+    \funcitem{void}{ceval\_fpoly}{\varname{FCmplx}{ret}, \varname{FPoly}{pol}, \varname{FCmplx}{x}}
+    \funcitem{void}{ceval\_diff\_fpoly}{\varname{FCmplx}{ret}, \varname{FPoly}{pol}, \varname{FCmplx}{x}}
+\end{itemize}
+
+\subsection{\bi{Double polynomial functions (\texttt{poly.c} --- \texttt{DPoly})}{倍精度多項式関数（\texttt{poly.c} --- \texttt{DPoly}）}}
+
+\begin{itemize}
+    \funcitem{DPoly}{init\_dpoly}{\varname{long int}{max\_len}}
+    \funcitem{void}{free\_dpoly}{\varname{DPoly}{pol}}
+    \funcitem{DPoly}{init\_set\_dpoly}{\varname{DPoly}{org}}
+    \funcitem{double}{get\_dpoly\_i}{\varname{DPoly}{pol}, \varname{long int}{i}}\ (alias: \verb|gdpi|)
+    \funcitem{void}{set\_dpoly\_i}{\varname{DPoly}{pol}, \varname{long int}{i}, \varname{double}{val}}\ (alias: \verb|sdpi|)
+    \funcitem{long int}{setdegree\_dpoly}{\varname{DPoly}{pol}}
+    \funcitem{void}{print\_dpoly}{\varname{DPoly}{pol}}
+    \funcitem{void}{add\_dpoly}{\varname{DPoly}{ret}, \varname{DPoly}{a}, \varname{DPoly}{b}}
+    \funcitem{void}{sub\_dpoly}{\varname{DPoly}{ret}, \varname{DPoly}{a}, \varname{DPoly}{b}}
+    \funcitem{void}{add2\_dpoly}{\varname{DPoly}{ret}, \varname{DPoly}{a}}
+    \funcitem{void}{sub2\_dpoly}{\varname{DPoly}{ret}, \varname{DPoly}{a}}
+    \funcitem{void}{mul\_dpoly}{\varname{DPoly}{ret}, \varname{DPoly}{a}, \varname{DPoly}{b}}
+    \funcitem{void}{cmul\_dpoly}{\varname{DPoly}{ret}, \varname{double}{c}, \varname{DPoly}{a}}
+    \funcitem{void}{subst\_dpoly}{\varname{DPoly}{ret}, \varname{DPoly}{a}}
+    \funcitem{void}{set0\_dpoly}{\varname{DPoly}{pol}}
+    \funcitem{long int}{max\_abscoef\_dpoly}{\varname{DPoly}{pol}}
+    \funcitem{long int}{num\_nonzero\_dpoly}{\varname{DPoly}{pol}}
+    \funcitem{void}{diff\_dpoly}{\varname{DPoly}{pol}}
+    \funcitem{double}{eval\_dpoly\_horner}{\varname{DPoly}{pol}, \varname{double}{x}}\ (also aliased as \verb|eval_dpoly|)
+    \funcitem{double}{eval\_dpoly\_estrin}{\varname{DPoly}{pol}, \varname{double}{x}}
+    \funcitem{double}{eval\_diff\_dpoly}{\varname{DPoly}{pol}, \varname{double}{x}}
+    \funcitem{void}{div\_dpoly}{\varname{DPoly}{quo}, \varname{DPoly}{rem}, \varname{DPoly}{a}, \varname{DPoly}{b}}
+    \funcitem{void}{xpow\_mul\_dpoly}{\varname{DPoly}{ret}, \varname{long int}{n}, \varname{DPoly}{a}}
+    \funcitem{void}{ceval\_dpoly\_horner}{\varname{DCmplx}{ret}, \varname{DPoly}{pol}, \varname{DCmplx}{x}}\ (also aliased as \verb|ceval_dpoly|)
+    \funcitem{void}{ceval\_dpoly\_estrin}{\varname{DCmplx}{ret}, \varname{DPoly}{pol}, \varname{DCmplx}{x}}
+    \funcitem{void}{ceval\_diff\_dpoly}{\varname{DCmplx}{ret}, \varname{DPoly}{pol}, \varname{DCmplx}{x}}
+    \funcitem{double}{\_bncavx2\_eval\_dpoly\_estrin}{\varname{DPoly}{a}, \varname{double}{x}}\ (AVX2)
+    \funcitem{void}{\_bncavx2\_ceval\_dpoly\_estrin}{\varname{DCmplx}{ret}, \varname{DPoly}{a}, \varname{DCmplx}{x}}\ (AVX2)
+\end{itemize}
+
+\subsection{\bi{Double complex polynomial functions (\texttt{poly.c} --- \texttt{CDPoly})}{倍精度複素多項式関数（\texttt{poly.c} --- \texttt{CDPoly}）}}
+
+\begin{itemize}
+    \funcitem{CDPoly}{init\_cdpoly}{\varname{long int}{max\_len}}
+    \funcitem{void}{free\_cdpoly}{\varname{CDPoly}{pol}}
+    \funcitem{CDPoly}{init\_set\_cdpoly}{\varname{CDPoly}{org}}
+    \funcitem{CDPoly}{init\_set\_cdpoly\_dpoly}{\varname{DPoly}{org}}
+    \funcitem{void}{set\_cdpoly\_dpoly}{\varname{CDPoly}{ret}, \varname{DPoly}{src}}
+    \funcitem{double \_Complex}{get\_cdpoly\_i}{\varname{CDPoly}{pol}, \varname{long int}{i}}\ (alias: \verb|gcdpi|)
+    \funcitem{void}{set\_cdpoly\_i}{\varname{CDPoly}{pol}, \varname{long int}{i}, \varname{double \_Complex}{val}}\ (alias: \verb|scdpi|)
+    \funcitem{void}{set\_cdpoly\_i\_d}{\varname{CDPoly}{pol}, \varname{long int}{i}, \varname{double}{val}}
+    \funcitem{long int}{setdegree\_cdpoly}{\varname{CDPoly}{pol}}
+    \funcitem{void}{print\_cdpoly}{\varname{CDPoly}{pol}}
+    \funcitem{void}{add\_cdpoly}{\varname{CDPoly}{ret}, \varname{CDPoly}{a}, \varname{CDPoly}{b}}
+    \funcitem{void}{sub\_cdpoly}{\varname{CDPoly}{ret}, \varname{CDPoly}{a}, \varname{CDPoly}{b}}
+    \funcitem{void}{add2\_cdpoly}{\varname{CDPoly}{ret}, \varname{CDPoly}{a}}
+    \funcitem{void}{sub2\_cdpoly}{\varname{CDPoly}{ret}, \varname{CDPoly}{a}}
+    \funcitem{void}{mul\_cdpoly}{\varname{CDPoly}{ret}, \varname{CDPoly}{a}, \varname{CDPoly}{b}}
+    \funcitem{void}{mul2\_cdpoly}{\varname{CDPoly}{ret}, \varname{CDPoly}{a}}
+    \funcitem{void}{cmul\_cdpoly}{\varname{CDPoly}{ret}, \varname{double \_Complex}{c}, \varname{CDPoly}{a}}
+    \funcitem{void}{subst\_cdpoly}{\varname{CDPoly}{ret}, \varname{CDPoly}{a}}
+    \funcitem{void}{set0\_cdpoly}{\varname{CDPoly}{pol}}
+    \funcitem{long int}{max\_abscoef\_cdpoly}{\varname{CDPoly}{pol}}
+    \funcitem{long int}{num\_nonzero\_cdpoly}{\varname{CDPoly}{pol}}
+    \funcitem{void}{diff\_cdpoly}{\varname{CDPoly}{pol}}
+    \funcitem{double \_Complex}{eval\_cdpoly\_horner}{\varname{CDPoly}{a}, \varname{double \_Complex}{x}}\ (also aliased as \verb|eval_cdpoly|)
+    \funcitem{double \_Complex}{eval\_cdpoly\_estrin}{\varname{CDPoly}{a}, \varname{double \_Complex}{x}}
+    \funcitem{double \_Complex}{eval\_diff\_cdpoly}{\varname{CDPoly}{a}, \varname{double \_Complex}{x}}
+    \funcitem{void}{div\_cdpoly}{\varname{CDPoly}{quo}, \varname{CDPoly}{rem}, \varname{CDPoly}{a}, \varname{CDPoly}{b}}
+    \funcitem{void}{xpow\_mul\_cdpoly}{\varname{CDPoly}{ret}, \varname{long int}{n}, \varname{CDPoly}{a}}
+\end{itemize}
+
+\subsection{\bi{Double-double polynomial functions (\texttt{poly.c} --- \texttt{DDPoly}, \texttt{CDDPoly}; requires \texttt{USE\_DDLINEAR})}{double-double 多項式関数（\texttt{poly.c} --- \texttt{DDPoly}, \texttt{CDDPoly}、\texttt{USE\_DDLINEAR} が必要）}}
+
+\begin{itemize}
+    \funcitem{DDPoly}{init\_ddpoly}{\varname{long int}{max\_len}}
+    \funcitem{void}{free\_ddpoly}{\varname{DDPoly}{pol}}
+    \funcitem{double *}{get\_ddpoly\_i}{\varname{DDPoly}{pol}, \varname{long int}{i}}\ (alias: \verb|gddpi|)
+    \funcitem{void}{set\_ddpoly\_i}{\varname{DDPoly}{pol}, \varname{long int}{i}, \varname{double *}{val}}\ (alias: \verb|sddpi|)
+    \funcitem{void}{set\_ddpoly\_i\_si}{\varname{DDPoly}{pol}, \varname{long int}{i}, \varname{long}{val}}
+    \funcitem{void}{set\_ddpoly\_i\_ui}{\varname{DDPoly}{pol}, \varname{long int}{i}, \varname{unsigned long}{val}}
+    \funcitem{void}{set\_ddpoly\_i\_d}{\varname{DDPoly}{pol}, \varname{long int}{i}, \varname{double}{val}}
+    \funcitem{void}{set\_ddpoly\_i\_str}{\varname{DDPoly}{pol}, \varname{long int}{i}, \varname{const char *}{str}, \varname{int}{base}}
+    \funcitem{long int}{setdegree\_ddpoly}{\varname{DDPoly}{pol}}
+    \funcitem{void}{print\_ddpoly}{\varname{DDPoly}{pol}}
+    \funcitem{void}{add\_ddpoly}{\varname{DDPoly}{ret}, \varname{DDPoly}{a}, \varname{DDPoly}{b}}
+    \funcitem{void}{sub\_ddpoly}{\varname{DDPoly}{ret}, \varname{DDPoly}{a}, \varname{DDPoly}{b}}
+    \funcitem{void}{mul\_ddpoly}{\varname{DDPoly}{ret}, \varname{DDPoly}{a}, \varname{DDPoly}{b}}
+    \funcitem{void}{cmul\_ddpoly}{\varname{DDPoly}{ret}, \varname{double *}{c}, \varname{DDPoly}{a}}
+    \funcitem{void}{subst\_ddpoly}{\varname{DDPoly}{ret}, \varname{DDPoly}{a}}
+    \funcitem{void}{set0\_ddpoly}{\varname{DDPoly}{pol}}
+    \funcitem{long int}{max\_abscoef\_ddpoly}{\varname{DDPoly}{pol}}
+    \funcitem{long int}{num\_nonzero\_ddpoly}{\varname{DDPoly}{pol}}
+    \funcitem{void}{diff\_ddpoly}{\varname{DDPoly}{pol}}
+    \funcitem{void}{eval\_ddpoly\_horner}{\varname{double *}{ret}, \varname{DDPoly}{a}, \varname{double *}{x}}\ (also aliased as \verb|eval_ddpoly|)
+    \funcitem{void}{eval\_ddpoly\_estrin}{\varname{double *}{ret}, \varname{DDPoly}{a}, \varname{double *}{x}}
+    \funcitem{void}{eval\_diff\_ddpoly}{\varname{double *}{ret}, \varname{DDPoly}{a}, \varname{double *}{x}}
+    \funcitem{void}{ceval\_ddpoly\_horner}{\varname{cddfloat *}{ret}, \varname{DDPoly}{a}, \varname{cddfloat *}{x}}\ (also aliased as \verb|ceval_ddpoly|)
+    \funcitem{void}{ceval\_ddpoly\_estrin}{\varname{cddfloat *}{ret}, \varname{DDPoly}{a}, \varname{cddfloat *}{x}}
+    \funcitem{void}{ceval\_diff\_ddpoly}{\varname{cddfloat *}{ret}, \varname{DDPoly}{a}, \varname{cddfloat *}{x}}
+    \funcitem{void}{\_bncavx2\_eval\_ddpoly\_estrin}{\varname{double}{ret[DDSIZE]}, \varname{DDPoly}{a}, \varname{double}{x[DDSIZE]}}\ (AVX2)
+    \funcitem{void}{\_bncavx2\_ceval\_ddpoly\_estrin}{\varname{cddfloat *}{ret}, \varname{DDPoly}{a}, \varname{cddfloat *}{x}}\ (AVX2)
+\end{itemize}
+
+\noindent \bi{Complex double-double polynomial (\texttt{CDDPoly}):}{複素 double-double 多項式（\texttt{CDDPoly}）：}
+
+\begin{itemize}
+    \funcitem{CDDPoly}{init\_cddpoly}{\varname{long int}{max\_len}}
+    \funcitem{void}{free\_cddpoly}{\varname{CDDPoly}{pol}}
+    \funcitem{CDDPoly}{init\_set\_cddpoly}{\varname{CDDPoly}{org}}
+    \funcitem{CDDPoly}{init\_set\_cddpoly\_ddpoly}{\varname{DDPoly}{org}}
+    \funcitem{cddfloat *}{get\_cddpoly\_i}{\varname{CDDPoly}{pol}, \varname{long int}{i}}\ (alias: \verb|gcddpi|)
+    \funcitem{void}{set\_cddpoly\_i}{\varname{CDDPoly}{pol}, \varname{long int}{i}, \varname{cddfloat *}{val}}\ (alias: \verb|scddpi|)
+    \funcitem{long int}{setdegree\_cddpoly}{\varname{CDDPoly}{pol}}
+    \funcitem{void}{print\_cddpoly}{\varname{CDDPoly}{pol}}
+    \funcitem{void}{add\_cddpoly}{\varname{CDDPoly}{ret}, \varname{CDDPoly}{a}, \varname{CDDPoly}{b}}
+    \funcitem{void}{sub\_cddpoly}{\varname{CDDPoly}{ret}, \varname{CDDPoly}{a}, \varname{CDDPoly}{b}}
+    \funcitem{void}{mul\_cddpoly}{\varname{CDDPoly}{ret}, \varname{CDDPoly}{a}, \varname{CDDPoly}{b}}
+    \funcitem{void}{subst\_cddpoly}{\varname{CDDPoly}{ret}, \varname{CDDPoly}{a}}
+    \funcitem{void}{set0\_cddpoly}{\varname{CDDPoly}{pol}}
+    \funcitem{long int}{max\_abscoef\_cddpoly}{\varname{CDDPoly}{pol}}
+    \funcitem{long int}{num\_nonzero\_cddpoly}{\varname{CDDPoly}{pol}}
+    \funcitem{void}{diff\_cddpoly}{\varname{CDDPoly}{pol}}
+    \funcitem{void}{eval\_cddpoly\_horner}{\varname{cddfloat *}{ret}, \varname{CDDPoly}{a}, \varname{cddfloat *}{x}}\ (also aliased as \verb|eval_cddpoly|)
+    \funcitem{void}{eval\_cddpoly\_estrin}{\varname{cddfloat *}{ret}, \varname{CDDPoly}{a}, \varname{cddfloat *}{x}}
+    \funcitem{void}{eval\_diff\_cddpoly}{\varname{cddfloat *}{ret}, \varname{CDDPoly}{a}, \varname{cddfloat *}{x}}
+    \funcitem{void}{\_bncavx2\_eval\_cddpoly\_estrin}{\varname{cddfloat *}{ret}, \varname{CDDPoly}{a}, \varname{cddfloat *}{x}}\ (AVX2)
+\end{itemize}
+
+\subsection{\bi{Triple-double polynomial functions (\texttt{poly.c} --- \texttt{TDPoly}; requires \texttt{USE\_TDLINEAR})}{triple-double 多項式関数（\texttt{poly.c} --- \texttt{TDPoly}、\texttt{USE\_TDLINEAR} が必要）}}
+
+\begin{itemize}
+    \funcitem{TDPoly}{init\_tdpoly}{\varname{long int}{max\_len}}
+    \funcitem{void}{free\_tdpoly}{\varname{TDPoly}{pol}}
+    \funcitem{tdfloat}{get\_tdpoly\_i\_float}{\varname{TDPoly}{pol}, \varname{long int}{i}}
+    \funcitem{double *}{get\_tdpoly\_i}{\varname{TDPoly}{pol}, \varname{long int}{i}}\ (alias: \verb|gtdpi|)
+    \funcitem{void}{set\_tdpoly\_i}{\varname{TDPoly}{pol}, \varname{long int}{i}, \varname{double}{val[TDSIZE]}}\ (alias: \verb|stdpi|)
+    \funcitem{void}{set\_tdpoly\_i\_si}{\varname{TDPoly}{pol}, \varname{long int}{i}, \varname{long}{val}}
+    \funcitem{void}{set\_tdpoly\_i\_ui}{\varname{TDPoly}{pol}, \varname{long int}{i}, \varname{unsigned long}{val}}
+    \funcitem{void}{set\_tdpoly\_i\_d}{\varname{TDPoly}{pol}, \varname{long int}{i}, \varname{double}{val}}
+    \funcitem{void}{set\_tdpoly\_i\_str}{\varname{TDPoly}{pol}, \varname{long int}{i}, \varname{const char *}{str}, \varname{int}{base}}
+    \funcitem{long int}{setdegree\_tdpoly}{\varname{TDPoly}{pol}}
+    \funcitem{void}{print\_tdpoly}{\varname{TDPoly}{pol}}
+    \funcitem{void}{add\_tdpoly}{\varname{TDPoly}{c}, \varname{TDPoly}{a}, \varname{TDPoly}{b}}\ $\cdots$ $c = a + b$
+    \funcitem{void}{add2\_tdpoly}{\varname{TDPoly}{c}, \varname{TDPoly}{a}}\ $\cdots$ $c \mathrel{+}= a$
+    \funcitem{void}{sub\_tdpoly}{\varname{TDPoly}{c}, \varname{TDPoly}{a}, \varname{TDPoly}{b}}\ $\cdots$ $c = a - b$
+    \funcitem{void}{sub2\_tdpoly}{\varname{TDPoly}{c}, \varname{TDPoly}{a}}\ $\cdots$ $c \mathrel{-}= a$
+    \funcitem{void}{mul\_tdpoly}{\varname{TDPoly}{c}, \varname{TDPoly}{a}, \varname{TDPoly}{b}}\ $\cdots$ $c = a \times b$
+    \funcitem{void}{cmul\_tdpoly}{\varname{TDPoly}{c}, \varname{double}{val[TDSIZE]}, \varname{TDPoly}{a}}\ $\cdots$ $c = \mathit{val} \times a$
+    \funcitem{void}{cmul2\_tdpoly}{\varname{TDPoly}{c}, \varname{double}{val[TDSIZE]}}\ $\cdots$ $c \mathrel{*}= \mathit{val}$
+    \funcitem{void}{subst\_tdpoly}{\varname{TDPoly}{c}, \varname{TDPoly}{a}}\ $\cdots$ $c := a$
+    \funcitem{void}{set0\_tdpoly}{\varname{TDPoly}{c}}\ $\cdots$ $c := 0$
+    \funcitem{long int}{num\_nonzero\_tdpoly}{\varname{TDPoly}{c}}
+    \funcitem{long int}{max\_abscoef\_tdpoly}{\varname{TDPoly}{c}}
+    \funcitem{void}{diff\_tdpoly}{\varname{TDPoly}{a}}\ $\cdots$ $a := a'(x)$
+    \funcitem{void}{eval\_tdpoly\_horner}{\varname{double}{ret[TDSIZE]}, \varname{TDPoly}{a}, \varname{double}{x[TDSIZE]}}\ (also aliased as \verb|eval_tdpoly|)
+    \funcitem{void}{eval\_tdpoly\_estrin}{\varname{double}{ret[TDSIZE]}, \varname{TDPoly}{a}, \varname{double}{x[TDSIZE]}}
+    \funcitem{void}{eval\_diff\_tdpoly}{\varname{double}{ret[TDSIZE]}, \varname{TDPoly}{a}, \varname{double}{x[TDSIZE]}}
+    \funcitem{void}{ceval\_tdpoly\_horner}{\varname{ctdfloat *}{ret}, \varname{TDPoly}{a}, \varname{ctdfloat *}{x}}\ (also aliased as \verb|ceval_tdpoly|)
+    \funcitem{void}{ceval\_tdpoly\_estrin}{\varname{ctdfloat *}{ret}, \varname{TDPoly}{a}, \varname{ctdfloat *}{x}}
+    \funcitem{void}{ceval\_diff\_tdpoly}{\varname{ctdfloat *}{ret}, \varname{TDPoly}{a}, \varname{ctdfloat *}{x}}
+    \funcitem{void}{\_bncavx2\_eval\_tdpoly\_estrin}{\varname{double}{ret[TDSIZE]}, \varname{TDPoly}{a}, \varname{double}{x[TDSIZE]}}\ (AVX2)
+    \funcitem{void}{\_bncavx2\_ceval\_tdpoly\_estrin}{\varname{ctdfloat *}{ret}, \varname{TDPoly}{a}, \varname{ctdfloat *}{x}}\ (AVX2)
+\end{itemize}
+
+\subsection{\bi{Quadruple-double polynomial functions (\texttt{poly.c} --- \texttt{QDPoly}; requires \texttt{USE\_QDLINEAR})}{quadruple-double 多項式関数（\texttt{poly.c} --- \texttt{QDPoly}、\texttt{USE\_QDLINEAR} が必要）}}
+
+\begin{itemize}
+    \funcitem{QDPoly}{init\_qdpoly}{\varname{long int}{max\_len}}
+    \funcitem{void}{free\_qdpoly}{\varname{QDPoly}{pol}}
+    \funcitem{qdfloat}{get\_qdpoly\_i\_float}{\varname{QDPoly}{pol}, \varname{long int}{i}}
+    \funcitem{double *}{get\_qdpoly\_i}{\varname{QDPoly}{pol}, \varname{long int}{i}}\ (alias: \verb|gqdpi|)
+    \funcitem{void}{set\_qdpoly\_i}{\varname{QDPoly}{pol}, \varname{long int}{i}, \varname{double}{val[QDSIZE]}}\ (alias: \verb|sqdpi|)
+    \funcitem{void}{set\_qdpoly\_i\_si}{\varname{QDPoly}{pol}, \varname{long int}{i}, \varname{long}{val}}
+    \funcitem{void}{set\_qdpoly\_i\_ui}{\varname{QDPoly}{pol}, \varname{long int}{i}, \varname{unsigned long}{val}}
+    \funcitem{void}{set\_qdpoly\_i\_d}{\varname{QDPoly}{pol}, \varname{long int}{i}, \varname{double}{val}}
+    \funcitem{void}{set\_qdpoly\_i\_str}{\varname{QDPoly}{pol}, \varname{long int}{i}, \varname{const char *}{str}, \varname{int}{base}}
+    \funcitem{long int}{setdegree\_qdpoly}{\varname{QDPoly}{pol}}
+    \funcitem{void}{print\_qdpoly}{\varname{QDPoly}{pol}}
+    \funcitem{void}{add\_qdpoly}{\varname{QDPoly}{c}, \varname{QDPoly}{a}, \varname{QDPoly}{b}}\ $\cdots$ $c = a + b$
+    \funcitem{void}{add2\_qdpoly}{\varname{QDPoly}{c}, \varname{QDPoly}{a}}\ $\cdots$ $c \mathrel{+}= a$
+    \funcitem{void}{sub\_qdpoly}{\varname{QDPoly}{c}, \varname{QDPoly}{a}, \varname{QDPoly}{b}}\ $\cdots$ $c = a - b$
+    \funcitem{void}{sub2\_qdpoly}{\varname{QDPoly}{c}, \varname{QDPoly}{a}}\ $\cdots$ $c \mathrel{-}= a$
+    \funcitem{void}{mul\_qdpoly}{\varname{QDPoly}{c}, \varname{QDPoly}{a}, \varname{QDPoly}{b}}\ $\cdots$ $c = a \times b$
+    \funcitem{void}{cmul\_qdpoly}{\varname{QDPoly}{c}, \varname{double}{val[QDSIZE]}, \varname{QDPoly}{a}}\ $\cdots$ $c = \mathit{val} \times a$
+    \funcitem{void}{cmul2\_qdpoly}{\varname{QDPoly}{c}, \varname{double}{val[QDSIZE]}}\ $\cdots$ $c \mathrel{*}= \mathit{val}$
+    \funcitem{void}{subst\_qdpoly}{\varname{QDPoly}{c}, \varname{QDPoly}{a}}\ $\cdots$ $c := a$
+    \funcitem{void}{set0\_qdpoly}{\varname{QDPoly}{c}}\ $\cdots$ $c := 0$
+    \funcitem{long int}{num\_nonzero\_qdpoly}{\varname{QDPoly}{c}}
+    \funcitem{long int}{max\_abscoef\_qdpoly}{\varname{QDPoly}{c}}
+    \funcitem{void}{diff\_qdpoly}{\varname{QDPoly}{a}}\ $\cdots$ $a := a'(x)$
+    \funcitem{void}{eval\_qdpoly\_horner}{\varname{double}{ret[QDSIZE]}, \varname{QDPoly}{a}, \varname{double}{x[QDSIZE]}}\ (also aliased as \verb|eval_qdpoly|)
+    \funcitem{void}{eval\_qdpoly\_estrin}{\varname{double}{ret[QDSIZE]}, \varname{QDPoly}{a}, \varname{double}{x[QDSIZE]}}
+    \funcitem{void}{eval\_diff\_qdpoly}{\varname{double}{ret[QDSIZE]}, \varname{QDPoly}{a}, \varname{double}{x[QDSIZE]}}
+    \funcitem{void}{ceval\_qdpoly\_horner}{\varname{cqdfloat *}{ret}, \varname{QDPoly}{a}, \varname{cqdfloat *}{x}}\ (also aliased as \verb|ceval_qdpoly|)
+    \funcitem{void}{ceval\_qdpoly\_estrin}{\varname{cqdfloat *}{ret}, \varname{QDPoly}{a}, \varname{cqdfloat *}{x}}
+    \funcitem{void}{ceval\_diff\_qdpoly}{\varname{cqdfloat *}{ret}, \varname{QDPoly}{a}, \varname{cqdfloat *}{x}}
+    \funcitem{void}{ceval\_hes\_qdmatrix}{\varname{cqdfloat *}{ret}, \varname{QDMatrix}{hes}, \varname{cqdfloat *}{x}}
+    \funcitem{void}{\_bncavx2\_eval\_qdpoly\_estrin}{\varname{double}{ret[QDSIZE]}, \varname{QDPoly}{a}, \varname{double}{x[QDSIZE]}}\ (AVX2)
+    \funcitem{void}{\_bncavx2\_ceval\_qdpoly\_estrin}{\varname{cqdfloat *}{ret}, \varname{QDPoly}{a}, \varname{cqdfloat *}{x}}\ (AVX2)
+\end{itemize}
+
+\noindent \bi{Conversion functions between polynomial types (requires \texttt{USE\_GMP}):}{多項式型の間の変換関数（\texttt{USE\_GMP} が必要）：}
+
+\begin{itemize}
+    \funcitem{void}{set\_ddpoly\_i\_mpf}{\varname{DDPoly}{pol}, \varname{long int}{i}, \varname{mpf\_t}{val}}
+    \funcitem{void}{set\_tdpoly\_i\_mpf}{\varname{TDPoly}{pol}, \varname{long int}{i}, \varname{mpf\_t}{val}}
+    \funcitem{void}{set\_qdpoly\_i\_mpf}{\varname{QDPoly}{pol}, \varname{long int}{i}, \varname{mpf\_t}{val}}
+    \funcitem{void}{set\_cddpoly\_i\_mpf}{\varname{CDDPoly}{pol}, \varname{long int}{i}, \varname{mpc\_t}{val}}
+    \funcitem{DDPoly}{init\_set\_ddpoly\_mpfpoly}{\varname{MPFPoly}{org\_pol}}
+    \funcitem{TDPoly}{init\_set\_tdpoly\_mpfpoly}{\varname{MPFPoly}{org\_pol}}
+    \funcitem{QDPoly}{init\_set\_qdpoly\_mpfpoly}{\varname{MPFPoly}{org\_pol}}
+    \funcitem{CDDPoly}{init\_set\_cddpoly\_cmpfpoly}{\varname{CMPFPoly}{org\_pol}}
+\end{itemize}
+
+\subsection{\bi{Multiple-precision polynomial functions (\texttt{poly.c} --- \texttt{MPFPoly}; requires \texttt{USE\_GMP})}{多倍長精度多項式関数（\texttt{poly.c} --- \texttt{MPFPoly}、\texttt{USE\_GMP} が必要）}}
+
+\begin{itemize}
+    \funcitem{MPFPoly}{init\_mpfpoly}{\varname{long int}{max\_len}}
+    \funcitem{MPFPoly}{init2\_mpfpoly}{\varname{long int}{max\_len}, \varname{unsigned long}{prec}}
+    \funcitem{void}{free\_mpfpoly}{\varname{MPFPoly}{pol}}
+    \funcitem{mpf\_ptr}{get\_mpfpoly\_i}{\varname{MPFPoly}{pol}, \varname{long int}{i}}\ (alias: \verb|gmpfpi|)
+    \funcitem{void}{set\_mpfpoly\_i}{\varname{MPFPoly}{pol}, \varname{long int}{i}, \varname{mpf\_t}{val}}\ (alias: \verb|smpfpi|)
+    \funcitem{void}{set\_mpfpoly\_i\_d}{\varname{MPFPoly}{pol}, \varname{long int}{i}, \varname{double}{val}}
+    \funcitem{void}{set\_mpfpoly\_i\_si}{\varname{MPFPoly}{pol}, \varname{long int}{i}, \varname{long}{val}}
+    \funcitem{void}{set\_mpfpoly\_i\_ui}{\varname{MPFPoly}{pol}, \varname{long int}{i}, \varname{unsigned long}{val}}
+    \funcitem{void}{set\_mpfpoly\_i\_str}{\varname{MPFPoly}{pol}, \varname{long int}{i}, \varname{const char *}{str}, \varname{int}{base}}
+    \funcitem{void}{print\_mpfpoly}{\varname{MPFPoly}{pol}}
+    \funcitem{void}{print\_fdmpfpoly}{\varname{FPoly}{fp}, \varname{DPoly}{dp}, \varname{MPFPoly}{mp}}
+    \funcitem{void}{add\_mpfpoly}{\varname{MPFPoly}{ret}, \varname{MPFPoly}{a}, \varname{MPFPoly}{b}}
+    \funcitem{void}{sub\_mpfpoly}{\varname{MPFPoly}{ret}, \varname{MPFPoly}{a}, \varname{MPFPoly}{b}}
+    \funcitem{void}{add2\_mpfpoly}{\varname{MPFPoly}{ret}, \varname{MPFPoly}{a}}
+    \funcitem{void}{sub2\_mpfpoly}{\varname{MPFPoly}{ret}, \varname{MPFPoly}{a}}
+    \funcitem{void}{mul\_mpfpoly}{\varname{MPFPoly}{ret}, \varname{MPFPoly}{a}, \varname{MPFPoly}{b}}
+    \funcitem{void}{cmul\_mpfpoly}{\varname{MPFPoly}{ret}, \varname{mpf\_t}{c}, \varname{MPFPoly}{a}}
+    \funcitem{void}{subst\_mpfpoly}{\varname{MPFPoly}{ret}, \varname{MPFPoly}{a}}
+    \funcitem{void}{set0\_mpfpoly}{\varname{MPFPoly}{pol}}
+    \funcitem{long int}{max\_abscoef\_mpfpoly}{\varname{MPFPoly}{pol}}
+    \funcitem{long int}{num\_nonzero\_mpfpoly}{\varname{MPFPoly}{pol}}
+    \funcitem{long int}{setdegree\_mpfpoly}{\varname{MPFPoly}{pol}}
+    \funcitem{void}{diff\_mpfpoly}{\varname{MPFPoly}{pol}}
+    \funcitem{void}{eval\_mpfpoly\_horner}{\varname{mpf\_t}{ret}, \varname{MPFPoly}{pol}, \varname{mpf\_t}{x}}\ (also aliased as \verb|eval_mpfpoly|)
+    \funcitem{void}{eval\_mpfpoly\_estrin}{\varname{mpf\_t}{ret}, \varname{MPFPoly}{pol}, \varname{mpf\_t}{x}}
+    \funcitem{void}{eval\_diff\_mpfpoly}{\varname{mpf\_t}{ret}, \varname{MPFPoly}{pol}, \varname{mpf\_t}{x}}
+    \funcitem{void}{ceval\_mpfpoly\_horner}{\varname{mpc\_t}{ret}, \varname{MPFPoly}{pol}, \varname{mpc\_t}{x}}\ (also aliased as \verb|ceval_mpfpoly|)
+    \funcitem{void}{ceval\_mpfpoly\_estrin}{\varname{mpc\_t}{ret}, \varname{MPFPoly}{pol}, \varname{mpc\_t}{x}}
+    \funcitem{void}{ceval\_diff\_mpfpoly}{\varname{mpc\_t}{ret}, \varname{MPFPoly}{pol}, \varname{mpc\_t}{x}}
+    \funcitem{void}{ceval\_hes\_mpfmatrix}{\varname{mpc\_t}{ret}, \varname{MPFMatrix}{hes}, \varname{mpc\_t}{x}}
+\end{itemize}
+
+\noindent \bi{Complex multiple-precision polynomial (\texttt{CMPFPoly}; requires \texttt{USE\_GMP}):}{複素多倍長精度多項式（\texttt{CMPFPoly}、\texttt{USE\_GMP} が必要）：}
+
+\begin{itemize}
+    \funcitem{CMPFPoly}{init\_cmpfpoly}{\varname{long int}{max\_len}}
+    \funcitem{CMPFPoly}{init2\_cmpfpoly}{\varname{long int}{max\_len}, \varname{unsigned long}{prec}}
+    \funcitem{void}{free\_cmpfpoly}{\varname{CMPFPoly}{pol}}
+    \funcitem{mpc\_ptr}{get\_cmpfpoly\_i}{\varname{CMPFPoly}{pol}, \varname{long int}{i}}\ (alias: \verb|gcmpfpi|)
+    \funcitem{void}{set\_cmpfpoly\_i}{\varname{CMPFPoly}{pol}, \varname{long int}{i}, \varname{mpc\_t}{val}}\ (alias: \verb|scmpfpi|)
+    \funcitem{void}{set\_cmpfpoly\_i\_cd}{\varname{CMPFPoly}{pol}, \varname{long int}{i}, \varname{double \_Complex}{val}}
+    \funcitem{void}{set\_cmpfpoly\_i\_d}{\varname{CMPFPoly}{pol}, \varname{long int}{i}, \varname{double}{val}}
+    \funcitem{void}{set\_cmpfpoly\_i\_si\_si}{\varname{CMPFPoly}{pol}, \varname{long int}{i}, \varname{long}{re}, \varname{long}{im}}
+    \funcitem{void}{set\_cmpfpoly\_i\_si}{\varname{CMPFPoly}{pol}, \varname{long int}{i}, \varname{long}{val}}
+    \funcitem{void}{set\_cmpfpoly\_i\_ui}{\varname{CMPFPoly}{pol}, \varname{long int}{i}, \varname{unsigned long}{val}}
+    \funcitem{void}{set\_cmpfpoly\_i\_str}{\varname{CMPFPoly}{pol}, \varname{long int}{i}, \varname{const char *}{str}, \varname{int}{base}}
+    \funcitem{long int}{setdegree\_cmpfpoly}{\varname{CMPFPoly}{pol}}
+    \funcitem{void}{print\_cmpfpoly}{\varname{CMPFPoly}{pol}}
+    \funcitem{void}{subst\_cmpfpoly\_mpfpoly}{\varname{CMPFPoly}{ret}, \varname{MPFPoly}{pol}}
+    \funcitem{CMPFPoly}{init\_set\_cmpfpoly\_mpfpoly}{\varname{MPFPoly}{org}}
+    \funcitem{CMPFPoly}{init\_set\_cmpfpoly}{\varname{CMPFPoly}{org}}
+    \funcitem{void}{add\_cmpfpoly}{\varname{CMPFPoly}{ret}, \varname{CMPFPoly}{a}, \varname{CMPFPoly}{b}}
+    \funcitem{void}{sub\_cmpfpoly}{\varname{CMPFPoly}{ret}, \varname{CMPFPoly}{a}, \varname{CMPFPoly}{b}}
+    \funcitem{void}{add2\_cmpfpoly}{\varname{CMPFPoly}{ret}, \varname{CMPFPoly}{a}}
+    \funcitem{void}{sub2\_cmpfpoly}{\varname{CMPFPoly}{ret}, \varname{CMPFPoly}{a}}
+    \funcitem{void}{mul\_cmpfpoly}{\varname{CMPFPoly}{ret}, \varname{CMPFPoly}{a}, \varname{CMPFPoly}{b}}
+    \funcitem{void}{cmul\_cmpfpoly}{\varname{CMPFPoly}{ret}, \varname{mpc\_t}{c}, \varname{CMPFPoly}{a}}
+    \funcitem{void}{subst\_cmpfpoly}{\varname{CMPFPoly}{ret}, \varname{CMPFPoly}{a}}
+    \funcitem{void}{set0\_cmpfpoly}{\varname{CMPFPoly}{pol}}
+    \funcitem{long int}{max\_abscoef\_cmpfpoly}{\varname{CMPFPoly}{pol}}
+    \funcitem{long int}{num\_nonzero\_cmpfpoly}{\varname{CMPFPoly}{pol}}
+    \funcitem{void}{diff\_cmpfpoly}{\varname{CMPFPoly}{pol}}
+    \funcitem{void}{eval\_cmpfpoly\_horner}{\varname{mpc\_t}{ret}, \varname{CMPFPoly}{pol}, \varname{mpc\_t}{x}}\ (also aliased as \verb|eval_cmpfpoly|)
+    \funcitem{void}{eval\_cmpfpoly\_estrin}{\varname{mpc\_t}{ret}, \varname{CMPFPoly}{pol}, \varname{mpc\_t}{x}}
+    \funcitem{void}{eval\_diff\_cmpfpoly}{\varname{mpc\_t}{ret}, \varname{CMPFPoly}{pol}, \varname{mpc\_t}{x}}
+    \funcitem{void}{ceval\_cmpfpoly\_horner}{\varname{mpc\_t}{ret}, \varname{CMPFPoly}{pol}, \varname{mpc\_t}{x}}
+    \funcitem{void}{ceval\_cmpfpoly\_estrin}{\varname{mpc\_t}{ret}, \varname{CMPFPoly}{pol}, \varname{mpc\_t}{x}}
+    \funcitem{void}{ceval\_diff\_cmpfpoly}{\varname{mpc\_t}{ret}, \varname{CMPFPoly}{pol}, \varname{mpc\_t}{x}}
+    \funcitem{void}{ceval\_hes\_cmpfmatrix}{\varname{mpc\_t}{ret}, \varname{CMPFMatrix}{hes}, \varname{mpc\_t}{x}}
+\end{itemize}
+
+\subsection{\bi{Array functions (\texttt{array.c})}{配列関数（\texttt{array.c}）}}
+
+\begin{itemize}
+    \funcitem{FArray}{init\_farray}{\varname{long int}{size}}
+    \funcitem{void}{free\_farray}{\varname{FArray}{a}}
+    \funcitem{float}{get\_farray\_i}{\varname{FArray}{a}, \varname{long int}{i}}\ (alias: \verb|gfai|)
+    \funcitem{void}{set\_farray\_i}{\varname{FArray}{a}, \varname{long int}{i}, \varname{float}{val}}\ (alias: \verb|sfai|)
+    \funcitem{void}{subst\_farray}{\varname{FArray}{ret}, \varname{FArray}{src}}
+    \funcitem{void}{print\_farray}{\varname{FArray}{a}}
+
+    \funcitem{CFArray}{init\_cfarray}{\varname{long int}{size}}
+    \funcitem{void}{free\_cfarray}{\varname{CFArray}{a}}
+    \funcitem{FCmplx}{get\_cfarray\_i}{\varname{CFArray}{a}, \varname{long int}{i}}\ (alias: \verb|gcfai|)
+    \funcitem{void}{set\_cfarray\_i}{\varname{CFArray}{a}, \varname{long int}{i}, \varname{FCmplx}{val}}\ (alias: \verb|scfai|)
+    \funcitem{void}{subst\_cfarray}{\varname{CFArray}{ret}, \varname{CFArray}{src}}
+    \funcitem{void}{print\_cfarray}{\varname{CFArray}{a}}
+
+    \funcitem{DArray}{init\_darray}{\varname{long int}{size}}
+    \funcitem{void}{free\_darray}{\varname{DArray}{a}}
+    \funcitem{double}{get\_darray\_i}{\varname{DArray}{a}, \varname{long int}{i}}\ (alias: \verb|gdai|)
+    \funcitem{void}{set\_darray\_i}{\varname{DArray}{a}, \varname{long int}{i}, \varname{double}{val}}\ (alias: \verb|sdai|)
+    \funcitem{void}{subst\_darray}{\varname{DArray}{ret}, \varname{DArray}{src}}
+    \funcitem{void}{print\_darray}{\varname{DArray}{a}}
+
+    \funcitem{CDArray}{init\_cdarray}{\varname{long int}{size}}
+    \funcitem{void}{free\_cdarray}{\varname{CDArray}{a}}
+    \funcitem{DCmplx}{get\_cdarray\_i}{\varname{CDArray}{a}, \varname{long int}{i}}\ (alias: \verb|gcdai|)
+    \funcitem{void}{set\_cdarray\_i}{\varname{CDArray}{a}, \varname{long int}{i}, \varname{DCmplx}{val}}\ (alias: \verb|scdai|)
+    \funcitem{void}{subst\_cdarray}{\varname{CDArray}{ret}, \varname{CDArray}{src}}
+    \funcitem{void}{print\_cdarray}{\varname{CDArray}{a}}
+\end{itemize}
+
+\noindent \bi{Multiple-precision array functions (requires \texttt{USE\_GMP}):}{多倍長精度配列関数（\texttt{USE\_GMP} が必要）：}
+
+\begin{itemize}
+    \funcitem{MPFArray}{init\_mpfarray}{\varname{long int}{size}}
+    \funcitem{MPFArray}{init2\_mpfarray}{\varname{long int}{size}, \varname{unsigned long}{prec}}
+    \funcitem{void}{free\_mpfarray}{\varname{MPFArray}{a}}
+    \funcitem{mpf\_ptr}{get\_mpfarray\_i}{\varname{MPFArray}{a}, \varname{long int}{i}}\ (alias: \verb|gmpfai|)
+    \funcitem{void}{set\_mpfarray\_i}{\varname{MPFArray}{a}, \varname{long int}{i}, \varname{mpf\_t}{val}}\ (alias: \verb|smpfai|)
+    \funcitem{void}{set\_mpfarray\_i\_d}{\varname{MPFArray}{a}, \varname{long int}{i}, \varname{double}{val}}
+    \funcitem{void}{set\_mpfarray\_i\_ui}{\varname{MPFArray}{a}, \varname{long int}{i}, \varname{unsigned long}{val}}
+    \funcitem{void}{subst\_mpfarray}{\varname{MPFArray}{ret}, \varname{MPFArray}{src}}
+    \funcitem{void}{print\_mpfarray}{\varname{MPFArray}{a}}
+
+    \funcitem{CMPFArray}{init\_cmpfarray}{\varname{long int}{size}}
+    \funcitem{CMPFArray}{init2\_cmpfarray}{\varname{long int}{size}, \varname{unsigned long}{prec}}
+    \funcitem{void}{free\_cmpfarray}{\varname{CMPFArray}{a}}
+    \funcitem{mpc\_ptr}{get\_cmpfarray\_i}{\varname{CMPFArray}{a}, \varname{long int}{i}}\ (alias: \verb|gcmpfai|)
+    \funcitem{void}{set\_cmpfarray\_i}{\varname{CMPFArray}{a}, \varname{long int}{i}, \varname{mpc\_t}{val}}\ (alias: \verb|scmpfai|)
+    \funcitem{void}{set\_cmpfarray\_i\_d}{\varname{CMPFArray}{a}, \varname{long int}{i}, \varname{double}{val}}
+    \funcitem{void}{set\_cmpfarray\_i\_ui}{\varname{CMPFArray}{a}, \varname{long int}{i}, \varname{unsigned long}{val}}
+    \funcitem{void}{set\_cmpfarray\_i\_real}{\varname{CMPFArray}{a}, \varname{long int}{i}, \varname{mpf\_t}{val}}
+    \funcitem{void}{subst\_cmpfarray}{\varname{CMPFArray}{ret}, \varname{CMPFArray}{src}}
+    \funcitem{void}{print\_cmpfarray}{\varname{CMPFArray}{a}}
+\end{itemize}
+
+\subsection{\bi{DKA root-finding methods (\texttt{dka.c})}{DKA 求根法（\texttt{dka.c}）}}
+
+\bi{The Durand--Kerner--Aberth (DKA) method simultaneously finds all roots of a polynomial.}{Durand--Kerner--Aberth（DKA）法は、多項式のすべての根を同時に求めます。}
+
+\begin{itemize}
+    \funcitem{float}{fdka\_center}{\varname{FPoly}{pol}}
+    \funcitem{float}{fdka\_radius}{\varname{FPoly}{pol}}
+    \funcitem{void}{fdka\_init}{\varname{CFArray}{x}, \varname{FPoly}{pol}}
+    \funcitem{long int}{fdka}{\varname{CFArray}{ans}, \varname{CFArray}{x\_init}, \varname{FPoly}{pol}, \varname{long int}{maxtimes}, \varname{float}{aeps}, \varname{float}{reps}}
+
+    \funcitem{double}{ddka\_center}{\varname{DPoly}{pol}}
+    \funcitem{double \_Complex}{cddka\_center}{\varname{CDPoly}{pol}}
+    \funcitem{double}{ddka\_radius}{\varname{DPoly}{pol}}
+    \funcitem{double}{cddka\_radius}{\varname{CDPoly}{pol}}
+    \funcitem{void}{ddka\_init}{\varname{CDArray}{x}, \varname{DPoly}{pol}}
+    \funcitem{void}{cddka\_init}{\varname{double \_Complex[]}{x}, \varname{CDPoly}{pol}}
+    \funcitem{void}{cddka\_init\_cdarray}{\varname{CDArray}{x}, \varname{CDPoly}{pol}}
+    \funcitem{long int}{ddka}{\varname{CDArray}{ans}, \varname{CDArray}{x\_init}, \varname{DPoly}{pol}, \varname{long int}{maxtimes}, \varname{double}{aeps}, \varname{double}{reps}}
+    \funcitem{long int}{cddka}{\varname{double \_Complex[]}{ans}, \varname{double \_Complex[]}{x\_init}, \varname{CDPoly}{pol}, \varname{long int}{maxtimes}, \varname{double}{aeps}, \varname{double}{reps}}
+\end{itemize}
+
+\noindent \bi{Double-double DKA (\texttt{dd\_dka.c}):}{double-double DKA（\texttt{dd\_dka.c}）：}
+
+\begin{itemize}
+    \funcitem{void}{dd\_dka\_center}{\varname{double}{ret[DDSIZE]}, \varname{DDPoly}{pol}}
+    \funcitem{void}{dd\_dka\_radius}{\varname{double}{ret[DDSIZE]}, \varname{DDPoly}{pol}}
+    \funcitem{void}{dd\_dka\_init}{\varname{CDDVector}{x}, \varname{DDPoly}{pol}}
+    \funcitem{long int}{dd\_dka}{\varname{CDDVector}{ans}, \varname{CDDVector}{x\_init}, \varname{DDPoly}{pol}, \varname{long int}{maxtimes}, \varname{double *}{aeps}, \varname{double *}{reps}}
+\end{itemize}
+
+\noindent \bi{Triple-double DKA (\texttt{td\_dka.c}):}{triple-double DKA（\texttt{td\_dka.c}）：}
+
+\begin{itemize}
+    \funcitem{void}{td\_dka\_center}{\varname{double}{ret[TDSIZE]}, \varname{TDPoly}{pol}}
+    \funcitem{void}{td\_dka\_radius}{\varname{double}{ret[TDSIZE]}, \varname{TDPoly}{pol}}
+    \funcitem{void}{td\_dka\_init}{\varname{CTDVector}{x}, \varname{TDPoly}{pol}}
+    \funcitem{long int}{td\_dka}{\varname{CTDVector}{ans}, \varname{CTDVector}{x\_init}, \varname{TDPoly}{pol}, \varname{long int}{maxtimes}, \varname{double *}{aeps}, \varname{double *}{reps}}
+\end{itemize}
+
+\noindent \bi{Quadruple-double DKA (\texttt{qd\_dka.c}):}{quadruple-double DKA（\texttt{qd\_dka.c}）：}
+
+\begin{itemize}
+    \funcitem{void}{qd\_dka\_center}{\varname{double}{ret[QDSIZE]}, \varname{QDPoly}{pol}}
+    \funcitem{void}{qd\_dka\_radius}{\varname{double}{ret[QDSIZE]}, \varname{QDPoly}{pol}}
+    \funcitem{void}{qd\_dka\_init}{\varname{CQDVector}{x}, \varname{QDPoly}{pol}}
+    \funcitem{long int}{qd\_dka}{\varname{CQDVector}{ans}, \varname{CQDVector}{x\_init}, \varname{QDPoly}{pol}, \varname{long int}{maxtimes}, \varname{double *}{aeps}, \varname{double *}{reps}}
+    \funcitem{long int}{qd\_dka\_mod}{\varname{CQDVector}{ans}, \varname{CQDVector}{x\_init}, \varname{QDPoly}{pol}, \varname{long int}{maxtimes}, \varname{double}{aeps[QDSIZE]}, \varname{double}{reps[QDSIZE]}}
+    \funcitem{long int}{qd\_petckovic}{\varname{CQDVector}{ans}, \varname{CQDVector}{x\_init}, \varname{QDPoly}{pol}, \varname{long int}{maxtimes}, \varname{double}{aeps[QDSIZE]}, \varname{double}{reps[QDSIZE]}}
+    \funcitem{long int}{qd\_aberth}{\varname{CQDVector}{ans}, \varname{CQDVector}{x\_init}, \varname{QDPoly}{pol}, \varname{long int}{maxtimes}, \varname{double}{aeps[QDSIZE]}, \varname{double}{reps[QDSIZE]}}
+\end{itemize}
+
+\noindent \bi{Multiple-precision DKA (\texttt{mpf\_dka.c}; requires \texttt{USE\_GMP}):}{多倍長精度 DKA（\texttt{mpf\_dka.c}、\texttt{USE\_GMP} が必要）：}
+
+\begin{itemize}
+    \funcitem{void}{mpf\_dka\_center}{\varname{mpf\_t}{ret}, \varname{MPFPoly}{pol}}
+    \funcitem{void}{mpf\_dka\_radius}{\varname{mpf\_t}{ret}, \varname{MPFPoly}{pol}}
+    \funcitem{void}{mpf\_dka\_ozawa\_radius}{\varname{mpf\_t}{ret}, \varname{MPFPoly}{pol}}\ $\cdots$ \bi{Ozawa initial radius:}{Ozawa の初期半径：} $r := (p(\text{center}) / a_n)^{1/n}$
+    \funcitem{void}{mpf\_dka\_init}{\varname{CMPFArray}{x}, \varname{MPFPoly}{pol}}
+    \funcitem{void}{mpf\_dka\_init2}{\varname{CMPFArray}{x\_init}, \varname{MPFPoly}{pol}, \varname{void (*)}{get\_radius}, \varname{void (*)}{get\_center}}
+    \funcitem{long int}{mpf\_dka}{\varname{CMPFArray}{ans}, \varname{CMPFArray}{x\_init}, \varname{MPFPoly}{pol}, \varname{long int}{maxtimes}, \varname{mpf\_t}{aeps}, \varname{mpf\_t}{reps}}
+    \funcitem{long int}{mpf\_dka\_mod}{\varname{CMPFArray}{ans}, \varname{CMPFArray}{x\_init}, \varname{MPFPoly}{pol}, \varname{long int}{maxtimes}, \varname{mpf\_t}{aeps}, \varname{mpf\_t}{reps}}\ $\cdots$ \bi{DKA method, 2nd order}{DKA 法、2 次収束}
+    \funcitem{long int}{mpf\_petckovic}{\varname{CMPFArray}{ans}, \varname{CMPFArray}{x\_init}, \varname{MPFPoly}{pol}, \varname{long int}{maxtimes}, \varname{mpf\_t}{aeps}, \varname{mpf\_t}{reps}}\ $\cdots$ \bi{Petkovic method, 3rd order}{Petkovic 法、3 次収束}
+    \funcitem{long int}{mpf\_aberth}{\varname{CMPFArray}{ans}, \varname{CMPFArray}{x\_init}, \varname{MPFPoly}{pol}, \varname{long int}{maxtimes}, \varname{mpf\_t}{aeps}, \varname{mpf\_t}{reps}}\ $\cdots$ \bi{Aberth method, 3rd order}{Aberth 法、3 次収束}
+\end{itemize}
+
+\noindent \bi{MPC complex multiple-precision DKA (\texttt{mpc\_dka.c}; requires \texttt{USE\_GMP}):}{MPC 複素多倍長精度 DKA（\texttt{mpc\_dka.c}、\texttt{USE\_GMP} が必要）：}
+
+\begin{itemize}
+    \funcitem{void}{mpc\_dka\_center}{\varname{mpc\_t}{ret}, \varname{CMPFPoly}{pol}}
+    \funcitem{void}{mpc\_dka\_radius}{\varname{mpf\_t}{ret}, \varname{CMPFPoly}{pol}}
+    \funcitem{void}{mpc\_dka\_ozawa\_radius}{\varname{mpf\_t}{ret}, \varname{CMPFPoly}{pol}}
+    \funcitem{void}{mpc\_dka\_init}{\varname{CMPFArray}{x}, \varname{CMPFPoly}{pol}}
+    \funcitem{void}{mpc\_dka\_init2}{\varname{CMPFArray}{x\_init}, \varname{CMPFPoly}{pol}, \varname{void (*)}{get\_radius}, \varname{void (*)}{get\_center}}
+    \funcitem{long int}{mpc\_dka}{\varname{CMPFArray}{ans}, \varname{CMPFArray}{x\_init}, \varname{CMPFPoly}{pol}, \varname{long int}{maxtimes}, \varname{mpf\_t}{aeps}, \varname{mpf\_t}{reps}}
+    \funcitem{long int}{mpc\_dka\_mod}{\varname{CMPFArray}{ans}, \varname{CMPFArray}{x\_init}, \varname{CMPFPoly}{pol}, \varname{long int}{maxtimes}, \varname{mpf\_t}{aeps}, \varname{mpf\_t}{reps}}
+    \funcitem{long int}{mpc\_petckovic}{\varname{CMPFArray}{ans}, \varname{CMPFArray}{x\_init}, \varname{CMPFPoly}{pol}, \varname{long int}{maxtimes}, \varname{mpf\_t}{aeps}, \varname{mpf\_t}{reps}}
+    \funcitem{long int}{mpc\_aberth}{\varname{CMPFArray}{ans}, \varname{CMPFArray}{x\_init}, \varname{CMPFPoly}{pol}, \varname{long int}{maxtimes}, \varname{mpf\_t}{aeps}, \varname{mpf\_t}{reps}}
+\end{itemize}
+
+\subsection{\bi{Hirano method (\texttt{hirano.c}, \texttt{dd\_hirano.c})}{平野法（\texttt{hirano.c}, \texttt{dd\_hirano.c}）}}
+
+\bi{The Hirano method finds a root $x$ satisfying $|p(x)| < \max_j |a_j x^j| \cdot r_\varepsilon + a_\varepsilon$.}{平野法は、$|p(x)| < \max_j |a_j x^j| \cdot r_\varepsilon + a_\varepsilon$ を満たす根 $x$ を求めます。}
+
+\begin{itemize}
+    \funcitem{double \_Complex}{dhorner}{\varname{double \_Complex}{x}, \varname{DPoly}{pol}}\ $\cdots$ \bi{Horner evaluation of $p(x)$}{$p(x)$ の Horner 法による評価}
+    \funcitem{double \_Complex}{cdhorner}{\varname{double \_Complex}{x}, \varname{CDPoly}{pol}}
+    \funcitem{void}{dcoef\_horner}{\varname{double \_Complex[]}{ret}, \varname{double \_Complex}{x}, \varname{DPoly}{pol}}\ $\cdots$ \bi{coefficients of $p(x+d)$}{$p(x+d)$ の係数}
+    \funcitem{void}{cdcoef\_horner}{\varname{double \_Complex[]}{ret}, \varname{double \_Complex}{x}, \varname{CDPoly}{pol}}
+    \funcitem{long int}{absmax\_dpoly}{\varname{double *}{absmax}, \varname{double \_Complex}{x}, \varname{DPoly}{pol}}
+    \funcitem{long int}{absmax\_cdpoly}{\varname{double *}{absmax}, \varname{double \_Complex}{x}, \varname{CDPoly}{pol}}
+    \funcitem{double}{dget\_plus\_arg}{\varname{double \_Complex}{x}}\ $\cdots$ $\arg(x) \in [0, 2\pi]$
+    \funcitem{long int}{dget\_nearest\_int}{\varname{double}{x}}
+    \funcitem{double \_Complex}{dget\_min\_branch}{\varname{double \_Complex}{x}, \varname{double}{mu}, \varname{double \_Complex[]}{coef}, \varname{long int}{i\_num}, \varname{long int}{i\_den}}
+    \funcitem{long int}{dhirano}{\varname{double \_Complex *}{ret}, \varname{double \_Complex}{init\_x}, \varname{DPoly}{pol}, \varname{double}{reps}, \varname{double}{aeps}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{cdhirano}{\varname{double \_Complex *}{ret}, \varname{double \_Complex}{init\_x}, \varname{CDPoly}{pol}, \varname{double}{reps}, \varname{double}{aeps}, \varname{long int}{maxtimes}}
+\end{itemize}
+
+\noindent \bi{Multiple-precision Hirano (\texttt{hirano.c}; requires \texttt{USE\_GMP}):}{多倍長精度平野法（\texttt{hirano.c}、\texttt{USE\_GMP} が必要）：}
+
+\begin{itemize}
+    \funcitem{void}{mpf\_coef\_horner}{\varname{CMPFArray}{ret}, \varname{mpc\_t}{x}, \varname{MPFPoly}{pol}}
+    \funcitem{void}{mpc\_coef\_horner}{\varname{CMPFArray}{ret}, \varname{mpc\_t}{x}, \varname{CMPFPoly}{pol}}
+    \funcitem{long int}{absmax\_mpfpoly}{\varname{mpf\_t}{absmax}, \varname{mpc\_t}{x}, \varname{MPFPoly}{pol}}
+    \funcitem{long int}{absmax\_cmpfpoly}{\varname{mpf\_t}{absmax}, \varname{mpc\_t}{x}, \varname{CMPFPoly}{pol}}
+    \funcitem{void}{mpf\_get\_plus\_arg}{\varname{mpf\_t}{ret}, \varname{mpc\_t}{x}}
+    \funcitem{void}{mpf\_get\_nearest\_int}{\varname{mpf\_t}{ret}, \varname{mpf\_t}{x}}
+    \funcitem{void}{mpf\_get\_min\_branch}{\varname{mpc\_t}{ret}, \varname{mpc\_t}{x}, \varname{mpf\_t}{mu}, \varname{CMPFArray}{coef}, \varname{long int}{i\_num}, \varname{long int}{i\_den}}
+    \funcitem{long int}{mpf\_hirano}{\varname{mpc\_t}{ret}, \varname{mpc\_t}{init\_x}, \varname{MPFPoly}{pol}, \varname{mpf\_t}{reps}, \varname{mpf\_t}{aeps}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{mpc\_hirano}{\varname{mpc\_t}{ret}, \varname{mpc\_t}{init\_x}, \varname{CMPFPoly}{pol}, \varname{mpf\_t}{reps}, \varname{mpf\_t}{aeps}, \varname{long int}{maxtimes}}
+    \funcitem{void}{ono\_poly}{\varname{MPFPoly}{pol}, \varname{long int}{deg}}\ $\cdots$ \bi{Ono's problem polynomial}{小野の問題多項式}
+    \funcitem{void}{wilkinson\_poly}{\varname{MPFPoly}{ret}, \varname{long int}{n}}\ $\cdots$ \bi{Wilkinson polynomial $(x-1)(x-2)\cdots(x-n)$}{Wilkinson 多項式 $(x-1)(x-2)\cdots(x-n)$}
+    \funcitem{void}{deflation\_cmpfpoly}{\varname{CMPFPoly}{ret}, \varname{CMPFPoly}{pol}, \varname{mpc\_t}{root}}\ $\cdots$ \bi{deflation $p(x)/(x-r)$}{デフレーション $p(x)/(x-r)$}
+\end{itemize}
+
+\noindent \bi{Double-double Hirano (\texttt{dd\_hirano.c}; requires \texttt{USE\_DDLINEAR}):}{double-double 平野法（\texttt{dd\_hirano.c}、\texttt{USE\_DDLINEAR} が必要）：}
+
+\begin{itemize}
+    \funcitem{void}{dd\_horner}{\varname{cddfloat *}{ret}, \varname{cddfloat *}{x}, \varname{DDPoly}{pol}}
+    \funcitem{void}{dd\_coef\_horner}{\varname{CDDVector}{ret}, \varname{cddfloat *}{x}, \varname{DDPoly}{pol}}
+    \funcitem{void}{cdd\_horner}{\varname{cddfloat *}{ret}, \varname{cddfloat *}{x}, \varname{CDDPoly}{pol}}
+    \funcitem{void}{cdd\_coef\_horner}{\varname{CDDVector}{ret}, \varname{cddfloat *}{x}, \varname{CDDPoly}{pol}}
+    \funcitem{long int}{absmax\_ddpoly}{\varname{double}{absmax[DDSIZE]}, \varname{cddfloat *}{x}, \varname{DDPoly}{pol}}
+    \funcitem{long int}{absmax\_cddpoly}{\varname{double}{absmax[DDSIZE]}, \varname{cddfloat *}{x}, \varname{CDDPoly}{pol}}
+    \funcitem{void}{dd\_get\_plus\_arg}{\varname{double}{ret[DDSIZE]}, \varname{cddfloat *}{x}}
+    \funcitem{void}{dd\_get\_nearest\_int}{\varname{double}{ret[DDSIZE]}, \varname{double}{x[DDSIZE]}}
+    \funcitem{void}{dd\_get\_min\_branch}{\varname{cddfloat *}{ret}, \varname{cddfloat *}{x}, \varname{double}{mu[DDSIZE]}, \varname{CDDVector}{coef}, \varname{long int}{i\_num}, \varname{long int}{i\_den}}
+    \funcitem{long int}{dd\_hirano}{\varname{cddfloat *}{ret}, \varname{cddfloat *}{init\_x}, \varname{DDPoly}{pol}, \varname{double}{reps[DDSIZE]}, \varname{double}{aeps[DDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{long int}{cdd\_hirano}{\varname{cddfloat *}{ret}, \varname{cddfloat *}{init\_x}, \varname{CDDPoly}{pol}, \varname{double}{reps[DDSIZE]}, \varname{double}{aeps[DDSIZE]}, \varname{long int}{maxtimes}}
+    \funcitem{void}{deflation\_cddpoly}{\varname{CDDPoly}{ret}, \varname{CDDPoly}{pol}, \varname{cddfloat *}{root}}
+\end{itemize}
+
+\subsection{\bi{File I/O functions (\texttt{fread\_write\_complex.c}; requires \texttt{USE\_GMP})}{ファイル入出力関数（\texttt{fread\_write\_complex.c}、\texttt{USE\_GMP} が必要）}}
+
+\begin{itemize}
+    \funcitem{void}{fread\_cmpfarray}{\varname{FILE *}{fp}, \varname{CMPFArray}{array}}
+    \funcitem{void}{fread\_cmpfarray\_fname}{\varname{const char *}{fname}, \varname{CMPFArray}{array}}
+    \funcitem{void}{fwrite\_cmpfarray}{\varname{FILE *}{fp}, \varname{CMPFArray}{array}}
+    \funcitem{void}{fwrite\_cmpfarray\_fname}{\varname{const char *}{fname}, \varname{CMPFArray}{array}}
+    \funcitem{void}{fread\_mpfpolycoef}{\varname{FILE *}{fp}, \varname{MPFPoly}{pol}, \varname{long int}{maxdeg}}
+\end{itemize}
+
+%------------------------------------------------%
+% End of Chap.05
+%------------------------------------------------%

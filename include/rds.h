@@ -1,0 +1,607 @@
+/********************************************************************************/
+/* rds.h: Reverse definition                                                    */
+/*            for double-single, triple-single, and quadruple-single arithmetic */
+/* Copyright (C) 2021 Tomonori Kouya                                            */
+/*                                                                              */
+/* This program is free software: you can redistribute it and/or modify it      */
+/* under the terms of the GNU Lesser General Public License as published by the */
+/* Free Software Foundation, either version 3 of the License or any later       */
+/* version.                                                                     */
+/*                                                                              */
+/* This program is distributed in the hope that it will be useful, but WITHOUT  */
+/* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        */
+/* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License */
+/* for more details.                                                            */
+/*                                                                              */
+/* You should have received a copy of the GNU Lesser General Public License     */
+/* along with this program.  If not, see <http://www.gnu.org/licenses/>.        */
+/*                                                                              */
+/********************************************************************************/
+#ifndef __BNC_RDS_H_
+#define __BNC_RDS_H_
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+
+// Common defs
+//#include "bnc_common.h"
+
+#include "c_ds_qs.h"
+
+// Proposed branch-free DW/TW/QW FMA on binary32 (arXiv:2607.11391).
+// Define BNC_USE_NEW_FMA to make rds_fma/rts_fma/rqs_fma use it.
+#include "bncfma_f.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif // __cplusplus
+
+// DD & QD size
+#define DSSIZE 2 // float * 2
+#define TSSIZE 3 // float * 3
+#define QSSIZE 4 // float * 4
+
+// dsfloat, tsfloat, qsfloat
+typedef struct { float val[DSSIZE]; } dsfloat; // 24 * 2 = 48
+typedef struct { float val[TSSIZE]; } tsfloat; // 24 * 3 = 72
+typedef struct { float val[QSSIZE]; } qsfloat; // 24 * 4 = 96
+
+// DD QD Macros
+#define SET0_DS(val) { val[0] = (float)0.0f; val[1] = (float)0.0f; }
+#define SET0_TS(val) { val[0] = (float)0.0f; val[1] = (float)0.0f; val[2] = (float)0.0f; } 
+#define SET0_QS(val) { val[0] = (float)0.0f; val[1] = (float)0.0f; val[2] = (float)0.0f; val[3] = (float)0.0f; }
+
+// DD in C
+//#define RDS_ADD(ret, a, b) c_ds_add(a, b, ret)
+#ifdef USE_ACCURATE_DD_ADD
+	#define RDS_ADD(ret, a, b) c_ds_add(a, b, ret)
+#else // USE_ACCURATE_DD_ADD
+	#define RDS_ADD(ret, a, b) c_ds_add_sloppy(a, b, ret)
+#endif // USE_ACCURATE_DD_ADD
+#define RDS_SUB(ret, a, b) c_ds_sub(a, b, ret)
+#define RDS_MUL(ret, a, b) c_ds_mul(a, b, ret)
+#ifdef USE_ACCURATE_DD_DIV
+	#define RDS_DIV(ret, a, b) c_ds_div(a, b, ret)
+#else // USE_ACCURATE_DD_DIV
+	#define RDS_DIV(ret, a, b) c_ds_sloppy_div(a, b, ret)
+#endif // USE_ACCURATE_DD_DIV
+#define RDS_SQRT(ret, a) c_ds_sqrt(a, ret)
+//#define RDS_OUT_STR(a) c_ds_write(a)
+#define RDS_OUT_STR(a) rds_out_str_base(stdout, 10, 33, a)
+
+//#define RDS_SET_STR(str, a) c_ds_swrite(a, 33, str, 48)
+//#define RDS_GET_STR(a, str) c_ds_read(str, a)
+
+// rds_get_str("str", a) -> "str" := (char *)a
+// rds_set_str(a, "str") -> a := (dd_real)"str"
+//#define RDS_GET_STR(str, a) c_ds_swrite(a, 33, str, 48)
+//#define RDS_SET_STR(a, str) c_ds_read(str, a)
+#define RDS_GET_STR(str, a) 
+#define RDS_SET_STR(a, str) 
+
+#define RDS_GET_F(a) ((a)[0])
+#define RDS_SET_D(ret, d) c_ds_copy_d((double)(d), ret)
+#define RDS_SET_UI(ret, org) c_ds_copy_f((float)(org), ret)
+#define RDS_SET(ret, org) c_ds_copy(org, ret)
+#define RDS_NEG(ret, a) c_ds_neg(a, ret)
+#define RDS_ABS(ret, a) c_ds_abs(a, ret)
+#define RDS_UI_DIV(ret, a, b) c_ds_div_f_ds((float)(a), b, ret)
+#define RDS_UI_SUB(ret, a, b) c_ds_sub_f_ds((float)(a), b, ret)
+#define RDS_DIV_F(ret, a, b) c_ds_div_ds_f(a, b, ret)
+#define RDS_ADD_F(ret, a, b) c_ds_add_ds_f(a, b, ret)
+#define RDS_SUB_F(ret, a, b) c_ds_sub_ds_f(a, b, ret)
+#define RDS_MUL_F(ret, a, b) c_ds_mul_ds_f(a, b, ret)
+#define RDS_DIV_UI(ret, a, b) c_ds_div_ds_f(a, (float)(b), ret)
+#define RDS_ADD_UI(ret, a, b) c_ds_add_ds_f(a, (float)(b), ret)
+#define RDS_SUB_UI(ret, a, b) c_ds_sub_ds_f(a, (float)(b), ret)
+#define RDS_MUL_UI(ret, a, b) c_ds_mul_ds_f(a, (float)(b), ret)
+
+#define RDS_PI(ret) c_ds_pi(ret)
+#define RDS_EXP(ret, x) c_ds_exp(x, ret)
+#define RDS_SIN(ret, x) c_ds_sin(x, ret)
+#define RDS_COS(ret, x) c_ds_cos(x, ret)
+#define RDS_LOG(ret, x) c_ds_log(x, ret)
+#define RDS_ASIN(ret, x) c_ds_asin(x, ret)
+#define RDS_ACOS(ret, x) c_ds_acos(x, ret)
+
+// TD only in C
+//#define RTS_ADD(ret, a, b) c_ts_add(a, b, ret)
+#define RTS_ADDT(ret, a, b) c_ts_add(a, b, ret) // original
+#define RTS_ADD(ret, a, b) c_ts_addq(a, b, ret) // default
+#define RTS_ADDQ(ret, a, b) c_ts_addq(a, b, ret)
+#define RTS_SUBT(ret, a, b) c_ts_sub(a, b, ret) // original
+#define RTS_SUB(ret, a, b) c_ts_subq(a, b, ret) // default
+#define RTS_SUBQ(ret, a, b) c_ts_subq(a, b, ret)
+#ifdef USE_ACCURATE_TD_MUL
+	#define RTS_MUL(ret, a, b) c_ts_mul_accurate(a, b, ret)
+#else // USE_ACCURATE_TD_MUL
+	#define RTS_MUL(ret, a, b) c_ts_mul_sloppy(a, b, ret)
+#endif // USE_ACCURATE_TD_MUL
+//#define RTS_MUL(ret, a, b) c_ts_mul(a, b, ret)
+#define RTS_DIVT(ret, a, b) c_ts_divt(a, b, ret)
+#define RTS_DIVTQ(ret, a, b) c_ts_divtq(a, b, ret)
+#ifdef BNC_USE_FMA_DIV
+	#define RTS_DIV(ret, a, b) bnc_ts_div_fma(a, b, ret)
+#else
+	#define RTS_DIV(ret, a, b) c_ts_divtq(a, b, ret)
+#endif // BNC_USE_FMA_DIV
+#define RTS_DIVQ(ret, a, b) c_ts_divq(a, b, ret)
+#define RTS_SQRT(ret, a) c_ts_sqrt(a, ret)
+//#define RTS_OUT_STR(a) c_ts_write(a)
+//#define RTS_OUT_STR(a) rts_out_str_base(stdout, 10, 33, a)
+
+//#define RTS_SET_STR(str, a) c_ts_swrite(a, 33, str, 48)
+//#define RTS_GET_STR(a, str) c_ts_read(str, a)
+#define RTS_SET_STR(str, a) 
+#define RTS_GET_STR(a, str) 
+
+// rts_get_str("str", a) -> "str" := (char *)a
+// rts_set_str(a, "str") -> a := (td_real)"str"
+//#define RTS_GET_STR(str, a) c_ts_swrite(a, 33, str, 48)
+//#define RTS_SET_STR(a, str) c_ts_read(str, a)
+
+#define RTS_GET_F(a) ((a)[0])
+#define RTS_SET_D(ret, d) c_ts_copy_d((double)(d), ret)
+#define RTS_SET_UI(ret, org) c_ts_copy_f((float)(org), ret)
+#define RTS_SET(ret, org) c_ts_copy(org, ret)
+#define RTS_NEG(ret, a) c_ts_neg(a, ret)
+#define RTS_ABS(ret, a) c_ts_abs(a, ret)
+#define RTS_UI_DIV(ret, a, b) c_ts_div_f_ts((float)(a), b, ret)
+#define RTS_UI_SUB(ret, a, b) c_ts_sub_f_ts((float)(a), b, ret)
+#define RTS_DIV_F(ret, a, b) c_ts_div_ts_f(a, b, ret)
+#define RTS_ADD_F(ret, a, b) c_ts_add_ts_f(a, b, ret)
+#define RTS_SUB_F(ret, a, b) c_ts_sub_ts_f(a, b, ret)
+#define RTS_MUL_F(ret, a, b) c_ts_mul_ts_f(a, b, ret)
+#define RTS_DIV_UI(ret, a, b) c_ts_div_ts_f(a, (float)(b), ret)
+#define RTS_ADD_UI(ret, a, b) c_ts_add_ts_f(a, (float)(b), ret)
+#define RTS_SUB_UI(ret, a, b) c_ts_sub_ts_f(a, (float)(b), ret)
+#define RTS_MUL_UI(ret, a, b) c_ts_mul_ts_f(a, (float)(b), ret)
+
+#define RTS_PI(ret) c_ts_pi(ret)
+#define RTS_EXP(ret, x) c_ts_exp(x, ret)
+#define RTS_SIN(ret, x) c_ts_sin(x, ret)
+#define RTS_COS(ret, x) c_ts_cos(x, ret)
+#define RTS_LOG(ret, x) c_ts_log(x, ret)
+#define RTS_ASIN(ret, x) c_ts_asin(x, ret)
+#define RTS_ACOS(ret, x) c_ts_acos(x, ret)
+
+// QD in C
+#define RQS_ADD(ret, a, b) c_qs_add(a, b, ret)
+#define RQS_SUB(ret, a, b) c_qs_sub(a, b, ret)
+#define RQS_MUL(ret, a, b) c_qs_mul(a, b, ret)
+#define RQS_DIV(ret, a, b) c_qs_div(a, b, ret)
+#define RQS_SQRT(ret, a) c_qs_sqrt(a, ret)
+//#define RQS_OUT_STR(a) c_qs_write(a)
+//#define RQS_OUT_STR(a) rqs_out_str_base(stdout, 10, 64, a)
+
+//#define RQS_SET_STR(str, a) c_qs_swrite(a, 66, str, 84)
+//#define RQS_GET_STR(a, str) c_qs_read(str, a)
+#define RQS_SET_STR(str, a)
+#define RQS_GET_STR(a, str)
+
+// rqs_get_str("str", a) -> "str" := (char *)a
+// rqs_set_str(a, "str") -> a := (qd_real)"str"
+//#define RQS_GET_STR(str, a) c_qs_swrite(a, 33, str, 48)
+//#define RQS_SET_STR(a, str) c_qs_read(str, a)
+
+#define RQS_GET_F(a) ((a)[0])
+#define RQS_SET_D(ret, d) c_qs_copy_d(d, ret)
+#define RQS_SET_UI(ret, org) c_qs_copy_f((float)(org), ret)
+#define RQS_SET(ret, org) c_qs_copy(org, ret)
+#define RQS_NEG(ret, a) c_qs_neg(a, ret)
+#define RQS_ABS(ret, a) c_qs_abs(a, ret)
+#define RQS_UI_DIV(ret, a, b) c_qs_div_f_qs((float)(a), b, ret)
+#define RQS_UI_SUB(ret, a, b) c_qs_sub_f_qs((float)(a), b, ret)
+#define RQS_DIV_F(ret, a, b) c_qs_div_qs_f(a, b, ret)
+#define RQS_ADD_F(ret, a, b) c_qs_add_qs_f(a, b, ret)
+#define RQS_SUB_F(ret, a, b) c_qs_sub_qs_f(a, b, ret)
+#define RQS_MUL_F(ret, a, b) c_qs_mul_qs_f(a, b, ret)
+#define RQS_DIV_UI(ret, a, b) c_qs_div_qs_f(a, (float)(b), ret)
+#define RQS_ADD_UI(ret, a, b) c_qs_add_qs_f(a, (float)(b), ret)
+#define RQS_SUB_UI(ret, a, b) c_qs_sub_qs_f(a, (float)(b), ret)
+#define RQS_MUL_UI(ret, a, b) c_qs_mul_qs_f(a, (float)(b), ret)
+
+#define RQS_PI(ret) c_qs_pi(ret)
+#define RQS_EXP(ret, x) c_qs_exp(x, ret)
+#define RQS_SIN(ret, x) c_qs_sin(x, ret)
+#define RQS_COS(ret, x) c_qs_cos(x, ret)
+#define RQS_LOG(ret, x) c_qs_log(x, ret)
+#define RQS_ASIN(ret, x) c_qs_asin(x, ret)
+#define RQS_ACOS(ret, x) c_qs_acos(x, ret)
+
+// rds_
+
+
+// DS print(no appending CR)
+static inline void rds_out_str_base(FILE *fp, int base, int length, float val[DSSIZE])
+{
+	static char str[64];
+	c_ds_swrite(val, (length > 40) ? 40 : length, str, 46);
+	fprintf(fp, "%s", str);
+}
+
+// DD comparing functions
+// ret = 1 in case of a  > b
+// ret = 0            a == b
+// ret = -1           a <  b
+static inline int rds_cmp(float a[DSSIZE], float b[DSSIZE])
+{
+	int ret;
+
+	c_ds_comp(a, b, &ret);
+
+	return ret;
+}
+
+// DD comparing functions
+// ret = 1 in case of a  > b
+// ret = 0            a == b
+// ret = -1           a <  b
+static inline int rds_cmp_f(float a[DSSIZE], float b)
+{
+	int ret;
+
+	c_ds_comp_ds_f(a, b, &ret);
+
+	return ret;
+}
+
+// DD sqrt_d
+static inline void rds_sqrt_f(float ret[DSSIZE], float a)
+{
+	/* was "static": data race under OpenMP */ float tmp[DSSIZE];
+
+	c_ds_copy_f(a, tmp);
+	c_ds_sqrt(tmp, ret);
+
+	return;
+}
+
+// DD fma
+// ret = a * b + c
+static inline void rds_fma(float ret[DSSIZE], float a[DSSIZE], float b[DSSIZE], float c[DSSIZE])
+{
+#ifdef BNC_USE_NEW_FMA
+	// Proposed branch-free DW-FMA on binary32 (17 flops, arXiv:2607.11391 Alg.1)
+	bnc_dwfmaf(ret, a, b, c);
+#else // BNC_USE_NEW_FMA
+	float tmp[DSSIZE]; // NOTE: was "static" -- data race under OpenMP
+
+	c_ds_mul(a, b, tmp);
+	c_ds_add(tmp, c, ret);
+#endif // BNC_USE_NEW_FMA
+
+	return;
+}
+
+// DD pow
+// ret = base^power = exp(power * log(base))
+static inline void rds_pow(float ret[DSSIZE], float base[DSSIZE], float power[DSSIZE])
+{
+	/* was "static": data race under OpenMP */ float tmp[DSSIZE], tmp1[DSSIZE];
+
+	c_ds_log(base, tmp);
+	c_ds_mul(power, tmp, tmp1);
+	c_ds_exp(tmp1, ret);
+
+	return;
+}
+
+#define RDS_CMP(a, b) rds_cmp(a, b)
+#define RDS_CMP_F(a, b) rds_cmp_f(a, b)
+#define RDS_CMP_UI(a, b) rds_cmp_f(a, (float)(b))
+#define RDS_SQRT_F(ret, a) rds_sqrt_f(ret, a)
+#define RDS_SQRT_UI(ret, a) rds_sqrt_f(ret, (float)(a))
+
+// QD print(no appending CR)
+static inline void rqs_out_str_base(FILE *fp, int base, int length, float val[QSSIZE])
+{
+	static char str[128];
+	// void c_qs_swrite(const float *a, int precision, char *s, int len);
+	c_qs_swrite(val, (length > 70) ? 70 : length, str, 80);
+	fprintf(fp, "%s", str);
+}
+
+// QD comparing functions
+// ret = 1 in case of a  > b
+// ret = 0            a == b
+// ret = -1           a <  b
+static inline int rqs_cmp(float a[QSSIZE], float b[QSSIZE])
+{
+	int ret;
+
+	c_qs_comp(a, b, &ret);
+
+	return ret;
+}
+
+// QD comparing functions
+// ret = 1 in case of a  > b
+// ret = 0            a == b
+// ret = -1           a <  b
+static inline int rqs_cmp_f(float a[QSSIZE], float b)
+{
+	int ret;
+
+	c_qs_comp_qs_f(a, b, &ret);
+
+	return ret;
+}
+
+// QD sqrt_d
+static inline void rqs_sqrt_f(float ret[QSSIZE], float a)
+{
+	/* was "static": data race under OpenMP */ float tmp[QSSIZE];
+
+	c_qs_copy_f(a, tmp);
+	c_qs_sqrt(tmp, ret);
+
+	return;
+}
+
+// QD fma
+// ret = a * b + c
+static inline void rqs_fma(float ret[QSSIZE], float a[QSSIZE], float b[QSSIZE], float c[QSSIZE])
+{
+#ifdef BNC_USE_NEW_FMA
+	// Proposed branch-free QW-FMA on binary32 (146 flops, arXiv:2607.11391 Alg.3)
+	bnc_qwfmaf(ret, a, b, c);
+#else // BNC_USE_NEW_FMA
+	float tmp[QSSIZE]; // NOTE: was "static" -- data race under OpenMP
+
+	c_qs_mul(a, b, tmp);
+	c_qs_add(tmp, c, ret);
+#endif // BNC_USE_NEW_FMA
+
+	return;
+}
+
+// QD pow
+// ret = base^power = exp(power * log(base))
+static inline void rqs_pow(float ret[QSSIZE], float base[QSSIZE], float power[QSSIZE])
+{
+	/* was "static": data race under OpenMP */ float tmp[QSSIZE], tmp1[QSSIZE];
+
+	c_qs_log(base, tmp);
+	c_qs_mul(power, tmp, tmp1);
+	c_qs_exp(tmp1, ret);
+
+	return;
+}
+
+#define RQS_CMP(a, b) rqs_cmp(a, b)
+#define RQS_CMP_F(a, b) rqs_cmp_f(a, b)
+#define RQS_CMP_UI(a, b) rqs_cmp_f(a, (float)(b))
+#define RQS_SQRT_F(ret, a) rqs_sqrt_f(ret, a)
+#define RQS_SQRT_UI(ret, a) rqs_sqrt_f(ret, (float)(a))
+
+// TD print(no appending CR)
+static inline void rts_out_str_base(FILE *fp, int base, int length, float val[TSSIZE])
+{
+	static char str[128];
+	// void c_qs_swrite(const float *a, int precision, char *s, int len);
+	c_ts_swrite(val, (length > 70) ? 70 : length, str, 80);
+	fprintf(fp, "%s", str);
+}
+
+// TD comparing functions
+// ret = 1 in case of a  > b
+// ret = 0            a == b
+// ret = -1           a <  b
+static inline int rts_cmp(float a[TSSIZE], float b[TSSIZE])
+{
+	int ret;
+
+	c_ts_comp(a, b, &ret);
+
+	return ret;
+}
+
+// TD comparing functions
+// ret = 1 in case of a  > b
+// ret = 0            a == b
+// ret = -1           a <  b
+static inline int rts_cmp_f(float a[TSSIZE], float b)
+{
+	int ret;
+
+	c_ts_comp_ts_f(a, b, &ret);
+
+	return ret;
+}
+
+// TD sqrt_d
+static inline void rts_sqrt_f(float ret[TSSIZE], float a)
+{
+	/* was "static": data race under OpenMP */ float tmp[TSSIZE];
+
+	c_ts_copy_f(a, tmp);
+	c_ts_sqrt(tmp, ret);
+
+	return;
+}
+
+// TD fma
+// ret = a * b + c
+static inline void rts_fma(float ret[TSSIZE], float a[TSSIZE], float b[TSSIZE], float c[TSSIZE])
+{
+#ifdef BNC_USE_NEW_FMA
+	// Proposed branch-free TW-FMA on binary32 (66 flops, arXiv:2607.11391 Alg.2)
+	bnc_twfmaf(ret, a, b, c);
+
+	return;
+#else // BNC_USE_NEW_FMA
+	float tmp[TSSIZE]; // NOTE: was "static" -- data race under OpenMP
+
+#ifdef USE_ACCURATE_TD_MUL
+	c_ts_mul_accurate(a, b, tmp);
+#else // USE_ACCURATE_TD_MUL
+	c_ts_mul_sloppy(a, b, tmp);
+#endif // USE_ACCURATE_TD_MUL
+	c_ts_add(tmp, c, ret);
+	//rts_mul(tmp, a, b);
+	//rts_add(ret, c, tmp);
+
+	return;
+#endif // BNC_USE_NEW_FMA
+}
+
+// TD pow
+// ret = base^power = exp(power * log(base))
+static inline void rts_pow(float ret[TSSIZE], float base[TSSIZE], float power[TSSIZE])
+{
+	/* was "static": data race under OpenMP */ float tmp[TSSIZE], tmp1[TSSIZE];
+
+#if 0
+	c_ts_log(base, tmp);
+	c_ts_mul(power, tmp, tmp1);
+	c_ts_exp(tmp1, ret);
+#endif // 0
+
+	return;
+}
+
+#define RTS_CMP(a, b) rts_cmp(a, b)
+#define RTS_CMP_F(a, b) rts_cmp_f(a, b)
+#define RTS_CMP_UI(a, b) rts_cmp_f(a, (float)(b))
+#define RTS_SQRT_F(ret, a) rts_sqrt_f(ret, a)
+#define RTS_SQRT_UI(ret, a) rts_sqrt_f(ret, (float)(a))
+
+
+#ifndef USE_RDS_FUNCTIONS
+	#define set0_ds(val) SET0_DS(val)
+	#define rds_set0(val) SET0_DS(val)
+	#define rds_add(ret, a, b) RDS_ADD(ret, a, b)
+	#define rds_sub(ret, a, b) RDS_SUB(ret, a, b)
+	#define rds_mul(ret, a, b) RDS_MUL(ret, a, b)
+	#define rds_div(ret, a, b) RDS_DIV(ret, a, b)
+	#define rds_sqrt(ret, a) RDS_SQRT(ret, a)
+	#define rds_sqrt_f(ret, a) RDS_SQRT_F(ret, a)
+	#define rds_sqrt_ui(ret, a) RDS_SQRT_UI(ret, a)
+//	#define rds_out_str(a) RDS_OUT_STR(a)
+	#define rds_set_str(str, a) RDS_SET_STR(str, a)
+	#define rds_get_str(a, str) RDS_GET_STR(a, str)
+	#define rds_get_f(a) RDS_GET_F(a)
+	#define rds_set_d(ret, d) RDS_SET_D(ret, d)
+	#define rds_set_ui(ret, d) RDS_SET_UI(ret, d)
+	#define rds_set(ret, org) RDS_SET(ret, org)
+	#define rds_neg(ret, a) RDS_NEG(ret, a)
+	#define rds_abs(ret, a) RDS_ABS(ret, a)
+	#define rds_cmp_ui(a, b) RDS_CMP_UI(a, b)
+	#define rds_ui_div(ret, a, b) RDS_UI_DIV(ret, a, b)
+	#define rds_ui_sub(ret, a, b) RDS_UI_SUB(ret, a, b)
+	#define rds_div_f(ret, a, b) RDS_DIV_F(ret, a, b)
+	#define rds_add_f(ret, a, b) RDS_ADD_F(ret, a, b)
+	#define rds_sub_f(ret, a, b) RDS_SUB_F(ret, a, b)
+	#define rds_mul_f(ret, a, b) RDS_MUL_F(ret, a, b)
+	#define rds_div_ui(ret, a, b) RDS_DIV_UI(ret, a, b)
+	#define rds_add_ui(ret, a, b) RDS_ADD_UI(ret, a, b)
+	#define rds_sub_ui(ret, a, b) RDS_SUB_UI(ret, a, b)
+	#define rds_mul_ui(ret, a, b) RDS_MUL_UI(ret, a, b)
+
+	#define rds_pi(ret) RDS_PI(ret)
+	#define rds_exp(ret, x) RDS_EXP(ret, x)
+	#define rds_sin(ret, x) RDS_SIN(ret, x)
+	#define rds_cos(ret, x) RDS_COS(ret, x)
+	#define rds_log(ret, x) RDS_LOG(ret, x)
+	#define rds_asin(ret, x) RDS_ASIN(ret, x)
+	#define rds_acos(ret, x) RDS_ACOS(ret, x)
+#endif // USE_RDS_FUNCTIONS
+
+#ifndef USE_RTS_FUNCTIONS
+	#define set0_ts(val) SET0_TS(val)
+	#define rts_set0(val) SET0_TS(val)
+	#define rts_add(ret, a, b) RTS_ADD(ret, a, b) // default -> RTS_ADDQ
+	#define rts_addt(ret, a, b) RTS_ADDT(ret, a, b)
+	#define rts_addq(ret, a, b) RTS_ADDQ(ret, a, b)
+	#define rts_sub(ret, a, b) RTS_SUB(ret, a, b) // default -> RTS_SUBQ
+	#define rts_subt(ret, a, b) RTS_SUBT(ret, a, b)
+	#define rts_subq(ret, a, b) RTS_SUBQ(ret, a, b)
+	#define rts_mul(ret, a, b) RTS_MUL(ret, a, b)
+	#define rts_divt(ret, a, b) RTS_DIVT(ret, a, b)
+	#define rts_divtq(ret, a, b) RTS_DIVTQ(ret, a, b)
+	#define rts_divq(ret, a, b) RTS_DIVQ(ret, a, b)
+	#define rts_div(ret, a, b) RTS_DIV(ret, a, b) // default -> RTS_DIVQ
+	#define rts_sqrt(ret, a) RTS_SQRT(ret, a)
+	#define rts_sqrt_f(ret, a) RTS_SQRT_F(ret, a)
+	#define rts_sqrt_ui(ret, a) RTS_SQRT_UI(ret, a)
+//	#define rts_out_str(a) RTS_OUT_STR(a)
+	#define rts_set_str(str, a) RTS_SET_STR(str, a)
+	#define rts_get_str(a, str) RTS_GET_STR(a, str)
+	#define rts_get_f(a) RTS_GET_F(a)
+	#define rts_set_f(ret, d) RTS_SET_F(ret, d)
+	#define rts_set_d(ret, d) RTS_SET_D(ret, d)
+	#define rts_set_ui(ret, d) RTS_SET_UI(ret, d)
+	#define rts_set(ret, org) RTS_SET(ret, org)
+	#define rts_neg(ret, a) RTS_NEG(ret, a)
+	#define rts_abs(ret, a) RTS_ABS(ret, a)
+	#define rts_cmp_ui(a, b) RTS_CMP_UI(a, b)
+	#define rts_ui_div(ret, a, b) RTS_UI_DIV(ret, a, b)
+	#define rts_ui_sub(ret, a, b) RTS_UI_SUB(ret, a, b)
+	#define rts_div_f(ret, a, b) RTS_DIV_F(ret, a, b)
+	#define rts_add_f(ret, a, b) RTS_ADD_F(ret, a, b)
+	#define rts_sub_f(ret, a, b) RTS_SUB_F(ret, a, b)
+	#define rts_mul_f(ret, a, b) RTS_MUL_F(ret, a, b)
+	#define rts_div_ui(ret, a, b) RTS_DIV_UI(ret, a, b)
+	#define rts_add_ui(ret, a, b) RTS_ADD_UI(ret, a, b)
+	#define rts_sub_ui(ret, a, b) RTS_SUB_UI(ret, a, b)
+	#define rts_mul_ui(ret, a, b) RTS_MUL_UI(ret, a, b)
+
+	#define rts_pi(ret) RTS_PI(ret)
+	#define rts_exp(ret, x) RTS_EXP(ret, x)
+	#define rts_sin(ret, x) RTS_SIN(ret, x)
+	#define rts_cos(ret, x) RTS_COS(ret, x)
+	#define rts_log(ret, x) RTS_LOG(ret, x)
+	#define rts_asin(ret, x) RTS_ASIN(ret, x)
+	#define rts_acos(ret, x) RTS_ACOS(ret, x)
+#endif // USE_RTS_FUNCTIONS
+
+
+#ifndef USE_RQS_FUNCTIONS
+	#define set0_qs(val) SET0_QS(val)
+	#define rqs_set0(val) SET0_QS(val)
+	#define rqs_add(ret, a, b) RQS_ADD(ret, a, b)
+	#define rqs_sub(ret, a, b) RQS_SUB(ret, a, b)
+	#define rqs_mul(ret, a, b) RQS_MUL(ret, a, b)
+	#define rqs_div(ret, a, b) RQS_DIV(ret, a, b)
+	#define rqs_sqrt(ret, a) RQS_SQRT(ret, a)
+	#define rqs_sqrt_s(ret, a) RQS_SQRT_S(ret, a)
+	#define rqs_sqrt_ui(ret, a) RQS_SQRT_UI(ret, a)
+//	#define rqs_out_str(a) RQS_OUT_STR(a)
+	#define rqs_set_str(str, a) RQS_SET_STR(str, a)
+	#define rqs_get_str(a, str) RQS_GET_STR(a, str)
+	#define rqs_get_f(a) RQS_GET_F(a)
+	#define rqs_set_f(ret, d) RQS_SET_F(ret, d)
+	#define rqs_set_d(ret, d) RQS_SET_D(ret, d)
+	#define rqs_set_ui(ret, d) RQS_SET_UI(ret, d)
+	#define rqs_set(ret, org) RQS_SET(ret, org)
+	#define rqs_neg(ret, a) RQS_NEG(ret, a)
+	#define rqs_abs(ret, a) RQS_ABS(ret, a)
+	#define rqs_cmp_ui(a, b) RQS_CMP_UI(a, b)
+	#define rqs_ui_div(ret, a, b) RQS_UI_DIV(ret, a, b)
+	#define rqs_ui_sub(ret, a, b) RQS_UI_SUB(ret, a, b)
+	#define rqs_div_f(ret, a, b) RQS_DIV_F(ret, a, b)
+	#define rqs_add_f(ret, a, b) RQS_ADD_F(ret, a, b)
+	#define rqs_sub_f(ret, a, b) RQS_SUB_F(ret, a, b)
+	#define rqs_mul_f(ret, a, b) RQS_MUL_F(ret, a, b)
+	#define rqs_div_ui(ret, a, b) RQS_DIV_UI(ret, a, b)
+	#define rqs_add_ui(ret, a, b) RQS_ADD_UI(ret, a, b)
+	#define rqs_sub_ui(ret, a, b) RQS_SUB_UI(ret, a, b)
+	#define rqs_mul_ui(ret, a, b) RQS_MUL_UI(ret, a, b)
+
+	#define rqs_pi(ret) RQS_PI(ret)
+	#define rqs_exp(ret, x) RQS_EXP(ret, x)
+	#define rqs_sin(ret, x) RQS_SIN(ret, x)
+	#define rqs_cos(ret, x) RQS_COS(ret, x)
+	#define rqs_log(ret, x) RQS_LOG(ret, x)
+	#define rqs_asin(ret, x) RQS_ASIN(ret, x)
+	#define rqs_acos(ret, x) RQS_ACOS(ret, x)
+#endif // USE_RQS_FUNCTIONS
+
+#ifdef __cplusplus
+} // extern "C" {
+#endif // __cplusplus
+
+#endif // __BNC_RDS_H_
+
