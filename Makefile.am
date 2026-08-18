@@ -24,7 +24,6 @@ EXTRA_DIST = \
 	mmbench_dd.sh \
 	mmbench_qd.sh \
 	README.md \
-	mds_gpu_01.xlsx
 
 # Strip generated artifacts from the dist tarball
 dist-hook:
