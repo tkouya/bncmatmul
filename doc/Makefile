@@ -303,6 +303,7 @@ AUTOMAKE_OPTIONS = foreign
 # chap01-08.tex  : shared bilingual chapter sources (\bi{English}{Japanese})
 EXTRA_DIST = \
 	manual.tex manual_ja.tex \
+	$(wildcard $(srcdir)/manual.pdf) $(wildcard $(srcdir)/manual_ja.pdf) \
 	chap01.tex chap02.tex chap03.tex chap04.tex \
 	chap05.tex chap06.tex chap07.tex chap08.tex chap09.tex \
 	fig/bncmatmul_fig.pdf \
