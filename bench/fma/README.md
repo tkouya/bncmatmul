@@ -45,7 +45,10 @@ Define **`BNC_USE_NEW_FMA`** at library build time. It switches
 * 32 sites in `src/{dd,td,qd}_poly.c` — Horner (`eval_*poly_horner`), Estrin
   (`eval_*poly_estrin`, `_bncavx2_eval_*poly_estrin`), the derivative
   (`eval_diff_*poly`) and polynomial multiplication (`mul_*poly`).
-  AVX2 / AVX-512 sites are deliberately left untouched (see Notes).
+  AVX2 / AVX-512 kernels of the FMA itself are provided in
+  `include/avx2/_bncavx_fma.h` and wired into the LU translation units
+  (`src/{dd,td,qd,ds}lu.c`); the AVX2/AVX-512 *linear/poly* call sites are
+  still on their original kernels (see Notes).
 
 Without the macro the library is bit-for-bit unchanged.
 
@@ -118,5 +121,9 @@ type x kernel x backend combination must change by `O(u^K)` and no more.
   (DD: max rel. err 4.4e-32 vs 5.0e-32).
 * `c_ds_qs.h` has **no scalar `_bf` routines**, so the BF column is `n/a` for
   DS/TS/QS on the serial backend (NEON and SVE2 do have float `_bf`).
-* AVX2 / AVX-512 versions of the proposed FMA are **not** included; the paper
-  covers them, but they could not be tested on this AArch64 machine.
+* AVX2 / AVX-512 versions of the proposed FMA are provided
+  (`include/avx2/_bncavx_fma.h`, operation-by-operation identical to the
+  scalar reference, multi-pass renormalization included) and are used by the
+  LU kernels.  They compile cleanly under cross-gcc but **cannot be executed
+  on this AArch64 machine** — run `test_fma_simd` (extended with the AVX
+  backends) on an x86 host for the bitwise check.
