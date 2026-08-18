@@ -26,7 +26,6 @@
 extern "C" {
 #endif // __cplusplus
 
-#ifdef USE_DDLINEAR
 /* DD */
 #include "ddlinear.h"
 #include "cddlinear.h"
@@ -739,7 +738,6 @@ long int dd_aberth(CDDVector ans, CDDVector x_init, DDPoly func, long int maxtim
 
 	return times;
 }
-#endif // USE_DDLINEAR
 
 #ifdef __cplusplus
 } // extern "C" {

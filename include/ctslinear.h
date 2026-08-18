@@ -24,9 +24,7 @@
 #include "rcds.h" // Complex TD arithmetic
 
 #include "cdlinear.h"
-#ifdef USE_DDLINEAR
 #include "cdslinear.h"
-#endif // USE_DDLINEAR
 #include "tslinear.h"
 //#include "bmatrix.h"
 
@@ -86,7 +84,7 @@ static inline void subst_ctsvector_i(ctsfloat *ret, CTSVector vec, long int inde
 } 
 // Very dangerous!! 2024-04-18(Thu) T.Kouya
 //	GET_CDDVECTOR_I(vec, index))
-#define GET_CTDVECTOR_I(vec, index) ((ctsfloat *)&(get_ctsvector_i_ctsfloat((vec), (index))))
+#define GET_CTSVECTOR_I(vec, index) ((ctsfloat *)&(get_ctsvector_i_ctsfloat((vec), (index))))
 //#define get_ctsvector_i(vec, index) ((ctsfloat *)&(get_ctsvector_i_ctsfloat((vec), (index))))
 static inline ctsfloat *get_ctsvector_i(CTSVector vec, long int index)
 {
@@ -107,7 +105,7 @@ static inline void set_ctsvector_i(CTSVector vec, long int index, ctsfloat *val)
     set_tsvector_i(vec->re, index, val->val_re);
     set_tsvector_i(vec->im, index, val->val_im);
 }
-#define SET_CTDVECTOR_I(vec, index, val) set_ctsvector_i((vec), (index), (val))
+#define SET_CTSVECTOR_I(vec, index, val) set_ctsvector_i((vec), (index), (val))
 
 // set_ctsvector_i_d
 static inline void set_ctsvector_i_d(CTSVector vec, long int index, float val) // val
@@ -115,7 +113,7 @@ static inline void set_ctsvector_i_d(CTSVector vec, long int index, float val) /
     set_tsvector_i_f(vec->re, index, val);
     set0_tsvector_i(vec->im, index);
 }
-#define SET_CTDVECTOR_I_D(vec, index, val) set_ctsvector_i_d((vec), (index), (val))
+#define SET_CTSVECTOR_I_D(vec, index, val) set_ctsvector_i_d((vec), (index), (val))
 
 // set_ctsvector_i_cd
 static inline void set_ctsvector_i_cd(CTSVector vec, long int index, float _Complex val) // val
@@ -130,7 +128,7 @@ static inline void set0_ctsvector_i(CTSVector vec, long int index)
 	set0_tsvector_i(vec->re, index);
 	set0_tsvector_i(vec->im, index);
 }
-#define SET0_CTDVECTOR_I(vec, index) set0_ctsvector_i((vec), (index))
+#define SET0_CTSVECTOR_I(vec, index) set0_ctsvector_i((vec), (index))
 
 // initialize CTSVector
 CTSVector init_ctsvector(int dimension);
@@ -262,7 +260,7 @@ static inline void subst_ctsmatrix_ij(ctsfloat *ret, CTSMatrix mat, long int i, 
 	//return ret;
 } 
 // Very dangerous!! 2024-04-18(Thu) T.Kouya
-#define GET_CTDMATRIX_IJ(mat, i, j) (&(get_ctsmatrix_ij_ctsfloat((mat), (i), (j))))
+#define GET_CTSMATRIX_IJ(mat, i, j) (&(get_ctsmatrix_ij_ctsfloat((mat), (i), (j))))
 //#define get_ctsmatrix_ij(mat, i, j) (&(get_ctsmatrix_ij_ctsfloat((mat), (i), (j))))
 static inline ctsfloat *get_ctsmatrix_ij(CTSMatrix mat, long int i, long int j)
 {
@@ -291,7 +289,7 @@ static inline void set_ctsmatrix_ij(CTSMatrix mat, long int i, long int j, ctsfl
 
 	return;
 } 
-#define SET_CTDMATRIX_IJ(mat, i, j, val) set_ctsmatrix_ij((mat), (i), (j), (val))
+#define SET_CTSMATRIX_IJ(mat, i, j, val) set_ctsmatrix_ij((mat), (i), (j), (val))
 
 // set_ctsmatrix_ij_d
 static inline void set_ctsmatrix_ij_d(CTSMatrix mat, long int i, long int j, float val)
@@ -305,8 +303,8 @@ static inline void set_ctsmatrix_ij_d(CTSMatrix mat, long int i, long int j, flo
 
 	return;
 } 
-#define SET_CTDMATRIX_IJ_D(mat, i, j, val) set_ctsmatrix_ij_d((mat), (i), (j), (val))
-#define SET_CTDMATRIX_IJ_UI(mat, i, j, val) set_ctsmatrix_ij_d((mat), (i), (j), (float)(val))
+#define SET_CTSMATRIX_IJ_D(mat, i, j, val) set_ctsmatrix_ij_d((mat), (i), (j), (val))
+#define SET_CTSMATRIX_IJ_UI(mat, i, j, val) set_ctsmatrix_ij_d((mat), (i), (j), (float)(val))
 #define set_ctsmatrix_ij_ui(mat, i, j, val) set_ctsmatrix_ij_d((mat), (i), (j), (float)(val))
 
 // set_ctsmatrix_ij_td
@@ -347,7 +345,7 @@ static inline void set0_ctsmatrix_ij(CTSMatrix mat, long int i, long int j)
 
 	return;
 }
-#define SET0_CTDMATRIX_IJ(mat, i, j) set0_ctsmatrix_ij((mat), (i), (j))
+#define SET0_CTSMATRIX_IJ(mat, i, j) set0_ctsmatrix_ij((mat), (i), (j))
 
 // set a zero matrix
 //void set0_ctsmatrix(CTSMatrix mat);
@@ -492,7 +490,6 @@ void subst_ctsmatrix_cdmat(CTSMatrix c, CDMatrix a);
 /* c := (d)a */
 void subst_cdmatrix_ctsmat(CDMatrix c, CTSMatrix a);
 
-#ifdef USE_DDLINEAR
 /* c := (td)a */
 void subst_ctsvector_cdsvec(CTSVector c, CDSVector a);
 
@@ -504,7 +501,6 @@ void subst_ctsmatrix_cdsmat(CTSMatrix c, CDSMatrix a);
 
 /* c := (dd)a */
 void subst_cdsmatrix_ctsmat(CDSMatrix c, CTSMatrix a);
-#endif // USE_DDLINEAR
 
 
 /* Normwise relative error of vector */

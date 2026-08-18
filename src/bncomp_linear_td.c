@@ -24,7 +24,6 @@
 //---------------------------------------
 // TD
 //---------------------------------------
-#ifdef USE_TDLINEAR
 //--------
 // Vector
 //--------
@@ -2452,4 +2451,3 @@ int _bncomp_SolveTDLSPM(TDVector answer, TDMatrix lu, TDVector b, long int ch[])
 	return 0;
 }
 
-#endif // USE_TDLINEAR

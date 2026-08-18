@@ -15,7 +15,6 @@
 
 #include "bncsparse.h"
 
-#ifdef USE_TSLINEAR
 
 #ifndef SUCCESS
 #define SUCCESS (0)
@@ -172,4 +171,3 @@ int mul_ctsrsmatrixt_ctsvec(CTSVector ret, CTSRSMatrix mat, CTSVector vec)
 	return SUCCESS;
 }
 
-#endif // USE_TSLINEAR

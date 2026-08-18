@@ -34,67 +34,67 @@ test_iterative_ref_avx512: test_iterative_ref_dd.cpp test_iterative_ref_qd.cpp t
 # Complex linear compucation
 #---------------------------------------
 test_clinear: test_clinear.c test_clu.c
-	$(CC) $(COMMON_INC) $(INC) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_MPFLINEAR test_clinear.c $(BNCMATMUL_LIB) $(COMMON_LIB) -lm -o test_clinear
-	$(CC) $(INC) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_MPFLINEAR test_clu.c $(BNCMATMUL_LIB) $(COMMON_LIB) -lm -o test_clu
+	$(CC) $(COMMON_INC) $(INC) test_clinear.c $(BNCMATMUL_LIB) $(COMMON_LIB) -lm -o test_clinear
+	$(CC) $(INC) test_clu.c $(BNCMATMUL_LIB) $(COMMON_LIB) -lm -o test_clu
 
 test_clinear_avx2: test_clinear.c test_clu.c
-	$(CC_AVX2) $(INC) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_MPFLINEAR test_clinear.c $(BNCMATMUL_LIB_AVX2) $(COMMON_LIB) -lm -o test_clinear_avx2
-	$(CC_AVX2) $(INC) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_MPFLINEAR test_clu.c $(BNCMATMUL_LIB_AVX2) $(COMMON_LIB) -lm -o test_clu_avx2
+	$(CC_AVX2) $(INC) test_clinear.c $(BNCMATMUL_LIB_AVX2) $(COMMON_LIB) -lm -o test_clinear_avx2
+	$(CC_AVX2) $(INC) test_clu.c $(BNCMATMUL_LIB_AVX2) $(COMMON_LIB) -lm -o test_clu_avx2
 
 test_clinear_avx512: test_clinear.c test_clu.c
-	$(CC_AVX512) $(INC) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_MPFLINEAR test_clinear.c $(BNCMATMUL_LIB_AVX512) $(COMMON_LIB) -lm -o test_clinear_avx512
-	$(CC_AVX512) $(INC) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_MPFLINEAR test_clu.c $(BNCMATMUL_LIB_AVX512) $(COMMON_LIB) -lm -o test_clu_avx512
+	$(CC_AVX512) $(INC) test_clinear.c $(BNCMATMUL_LIB_AVX512) $(COMMON_LIB) -lm -o test_clinear_avx512
+	$(CC_AVX512) $(INC) test_clu.c $(BNCMATMUL_LIB_AVX512) $(COMMON_LIB) -lm -o test_clu_avx512
 
 test_cddlinear: test_cddlinear.c
-	$(CC) $(COMMON_INC) $(INC) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_MPFLINEAR test_cddlinear.c $(BNCMATMUL_LIB) $(COMMON_LIB) -lm -o test_cddlinear
+	$(CC) $(COMMON_INC) $(INC) test_cddlinear.c $(BNCMATMUL_LIB) $(COMMON_LIB) -lm -o test_cddlinear
 
 test_cddlinear_avx2: test_cddlinear.c
-	$(CC_AVX2) $(INC) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_MPFLINEAR test_cddlinear.c $(BNCMATMUL_LIB_AVX2) $(COMMON_LIB) -lm -o test_cddlinear_avx2
+	$(CC_AVX2) $(INC) test_cddlinear.c $(BNCMATMUL_LIB_AVX2) $(COMMON_LIB) -lm -o test_cddlinear_avx2
 
 test_cddlinear_avx512: test_cddlinear.c
-	$(CC_AVX512) $(INC) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_MPFLINEAR test_cddlinear.c $(BNCMATMUL_LIB_AVX512) $(COMMON_LIB) -lm -o test_cddlinear_avx512
+	$(CC_AVX512) $(INC) test_cddlinear.c $(BNCMATMUL_LIB_AVX512) $(COMMON_LIB) -lm -o test_cddlinear_avx512
 
 # --------------------------
 # Generate linear equation for benchmark tests
 # --------------------------
 mptest_matrix: ../include/matmul_strassen.h $(LIBPATH)/$(BNCMATMUL_LIBNAME) mptest_matrix.c mptest_cmatrix.c
-	$(CC) $(COMMON_INC) $(INC) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_MPFLINEAR mptest_matrix.c $(BNCMATMUL_LIB) $(COMMON_LIB) -lm -o mptest_matrix
-	$(CC) $(COMMON_INC) $(INC) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_MPFLINEAR mptest_cmatrix.c $(BNCMATMUL_LIB) $(COMMON_LIB) -lm -o mptest_cmatrix
-#	$(CC) $(COMMON_INC) $(INC) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_MPFLINEAR -DDEBUG fread_write.c $(BNCMATMUL_LIB) $(COMMON_LIB) -lm -o test_rw_cmatrix
+	$(CC) $(COMMON_INC) $(INC) mptest_matrix.c $(BNCMATMUL_LIB) $(COMMON_LIB) -lm -o mptest_matrix
+	$(CC) $(COMMON_INC) $(INC) mptest_cmatrix.c $(BNCMATMUL_LIB) $(COMMON_LIB) -lm -o mptest_cmatrix
+#	$(CC) $(COMMON_INC) $(INC) -DDEBUG fread_write.c $(BNCMATMUL_LIB) $(COMMON_LIB) -lm -o test_rw_cmatrix
 
 # --------------------------
 # Test for Sparse matrix related routines
 # --------------------------
 test_spmm: ../include/bncmatmul.h $(LIBPATH)/$(BNCMATMUL_LIBNAME) test_spmm.c
-	$(CC) $(COMMON_INC) $(INC) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_MPFLINEAR test_spmm.c $(BNCMATMUL_LIB) $(COMMON_LIB) -lm -o test_spmm
+	$(CC) $(COMMON_INC) $(INC) test_spmm.c $(BNCMATMUL_LIB) $(COMMON_LIB) -lm -o test_spmm
 
 test_spmm_avx2: ../include/bncmatmul.h $(LIBPATH)/$(BNCMATMUL_LIBNAME) test_spmm.c
-	$(CC_AVX2) $(COMMON_INC) $(INC) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_MPFLINEAR test_spmm.c $(BNCMATMUL_LIB_AVX2) $(COMMON_LIB) -lm -o test_spmm_avx2
+	$(CC_AVX2) $(COMMON_INC) $(INC) test_spmm.c $(BNCMATMUL_LIB_AVX2) $(COMMON_LIB) -lm -o test_spmm_avx2
 
 test_krylov_spmm_cavity: ../include/bncmatmul.h $(LIBPATH)/$(BNCMATMUL_LIBNAME) test_krylov_spmm_cavity.c
-	$(CC) $(COMMON_INC) $(INC) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_MPFLINEAR test_krylov_spmm_cavity.c $(BNCMATMUL_LIB) $(COMMON_LIB) -lm -o test_krylov_spmm_cavity
+	$(CC) $(COMMON_INC) $(INC) test_krylov_spmm_cavity.c $(BNCMATMUL_LIB) $(COMMON_LIB) -lm -o test_krylov_spmm_cavity
 
 test_krylov_spmm_cavity_avx2: ../include/bncmatmul.h $(LIBPATH)/$(BNCMATMUL_LIBNAME) test_krylov_spmm_cavity.c
-	$(CC_AVX2) $(COMMON_INC) $(INC) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_MPFLINEAR test_krylov_spmm_cavity.c $(BNCMATMUL_LIB_AVX2) $(COMMON_LIB) -lm -o test_krylov_spmm_cavity_avx2
+	$(CC_AVX2) $(COMMON_INC) $(INC) test_krylov_spmm_cavity.c $(BNCMATMUL_LIB_AVX2) $(COMMON_LIB) -lm -o test_krylov_spmm_cavity_avx2
 
 test_sparse_oneapi: ../include/bncmatmul.h $(LIBPATH)/$(BNCMATMUL_LIBNAME) test_sparse_oneapi.c test_copilot_sparse.c
-	$(CC) $(COMMON_INC) $(INC) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_MPFLINEAR test_sparse_oneapi.c $(BNCMATMUL_LIB) $(COMMON_LIB) -lm -o test_sparse_oneapi
+	$(CC) $(COMMON_INC) $(INC) test_sparse_oneapi.c $(BNCMATMUL_LIB) $(COMMON_LIB) -lm -o test_sparse_oneapi
 
 test_sparse_oneapi_avx2: ../include/bncmatmul.h $(LIBPATH)/$(BNCMATMUL_LIBNAME) test_sparse_oneapi.c test_copilot_sparse.c
-	$(CC_AVX2) $(COMMON_INC) $(INC) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_MPFLINEAR test_sparse_oneapi.c $(BNCMATMUL_LIB_AVX2) $(COMMON_LIB) -lm -o test_sparse_oneapi_avx2
-	$(CC_AVX2) $(COMMON_INC) $(INC) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_MPFLINEAR test_copilot_sparse.c $(BNCMATMUL_LIB_AVX2) $(COMMON_LIB) -lm -o test_copilot_sparse_avx2
+	$(CC_AVX2) $(COMMON_INC) $(INC) test_sparse_oneapi.c $(BNCMATMUL_LIB_AVX2) $(COMMON_LIB) -lm -o test_sparse_oneapi_avx2
+	$(CC_AVX2) $(COMMON_INC) $(INC) test_copilot_sparse.c $(BNCMATMUL_LIB_AVX2) $(COMMON_LIB) -lm -o test_copilot_sparse_avx2
 
 # --------------------------
 # Test for Lancsoz method
 # --------------------------
 test_lanczos: ../include/bncmatmul.h $(LIBPATH)/$(BNCMATMUL_LIBNAME) test_lanczos.c
-	$(CC) $(COMMON_INC) $(INC) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_MPFLINEAR test_lanczos.c $(BNCMATMUL_LIB) $(COMMON_LIB) -lm -o test_lanczos
+	$(CC) $(COMMON_INC) $(INC) test_lanczos.c $(BNCMATMUL_LIB) $(COMMON_LIB) -lm -o test_lanczos
 
 # --------------------------
 # Test for Ozaki scheme
 # --------------------------
 test_mpf_oz_scheme: ../include/bncmatmul.h $(LIBPATH)/$(BNCMATMUL_LIBNAME) test_mpf_oz_scheme.c
-	$(CC) $(COMMON_INC) $(INC) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_MPFLINEAR test_mpf_oz_scheme.c $(BNCMATMUL_LIB) $(COMMON_LIB) -lm -o test_mpf_oz_scheme
+	$(CC) $(COMMON_INC) $(INC) test_mpf_oz_scheme.c $(BNCMATMUL_LIB) $(COMMON_LIB) -lm -o test_mpf_oz_scheme
 
 
 # --------------------------

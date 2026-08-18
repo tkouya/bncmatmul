@@ -56,7 +56,6 @@ void relerr3_cdvector_cmpfvec(double *max_abs_relerr, double *min_abs_relerr, do
 
 #endif // USE_GMP
 
-#ifdef USE_DDLINEAR
 	// ANSI C
 	// relative errors for DD vector
 	void relerr3_ddvector(double max_relerr[DDSIZE], double min_relerr[DDSIZE], double norm_relerr[DDSIZE], DDVector vec, DDVector vec_true, int kind_of_norm);
@@ -88,9 +87,7 @@ void relerr3_cddmatrix_cmpfmat(double max_abs_relerr[DDSIZE], double min_abs_rel
 void relerr3_cddvector_cmpfvec(double max_abs_relerr[DDSIZE], double min_abs_relerr[DDSIZE], double max_real_relerr[DDSIZE], double min_real_relerr[DDSIZE], double max_image_relerr[DDSIZE], double min_image_relerr[DDSIZE], double norm_relerr[DDSIZE], CDDVector vec, CMPFVector vec_true, int kind_of_norm);
 
 #endif // USE_GMP
-#endif // USE_DDLINEAR
 
-#ifdef USE_TDLINEAR
 	void relerr3_tdvector(double max_relerr[TDSIZE], double min_relerr[TDSIZE], double norm_relerr[TDSIZE], TDVector vec, TDVector vec_true, int kind_of_norm);
 
 	// relative errors of complex vector
@@ -115,13 +112,9 @@ void relerr3_ctdmatrix_cmpfmat(double max_abs_relerr[TDSIZE], double min_abs_rel
 void relerr3_ctdvector_cmpfvec(double max_abs_relerr[TDSIZE], double min_abs_relerr[TDSIZE], double max_real_relerr[TDSIZE], double min_real_relerr[TDSIZE], double max_image_relerr[TDSIZE], double min_image_relerr[TDSIZE], double norm_relerr[TDSIZE], CTDVector vec, CMPFVector vec_true, int kind_of_norm);
 
 #endif // USE_GMP
-#endif // USE_TDLINEAR
 
-#ifdef USE_QDLINEAR
-#ifdef USE_TDLINEAR
 // relative errors of vector using higher precision value
 void relerr3_tdvector_qdvec(double max_relerr[TDSIZE], double min_relerr[TDSIZE], double norm_relerr[TDSIZE], TDVector vec, QDVector vec_true, int kind_of_norm);
-#endif // USE_TDLINEAR
 
 	void relerr3_qdvector(double max_relerr[QDSIZE], double min_relerr[QDSIZE], double norm_relerr[QDSIZE], QDVector vec, QDVector vec_true, int kind_of_norm);
 
@@ -149,7 +142,6 @@ void relerr3_cqdvector_cmpfvec(double max_abs_relerr[QDSIZE], double min_abs_rel
 
 #endif // USE_GMP
 
-#endif // USE_QDLINEAR
 
 
 #ifdef USE_GMP

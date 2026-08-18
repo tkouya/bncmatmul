@@ -4935,7 +4935,6 @@ void subst_qsmatrix_dmat(QSMatrix c, DMatrix a)
 }
 #endif // __BNC_DLINEAR_H__
 
-#ifdef USE_TDLINEAR
 
 /* c := a */
 void subst_qsmatrix_tdmat(QSMatrix c, TDMatrix a)
@@ -5005,7 +5004,6 @@ void sub_qsmatrix_tdmat_tdmat(QSMatrix c, TDMatrix a, TDMatrix b)
 		}
 	}
 }
-#endif // USE_TDLINEAR
 
 /* Normwise relative error of vector */
 void relerr_qsvector(float relerr[QSSIZE], QSVector approx_vec, QSVector true_vec, int norm_type)

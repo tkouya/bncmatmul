@@ -22,7 +22,7 @@ export LD_LIBRARY_PATH="$PREFIX/lib:$CUDA_HOME/lib64:$LD_LIBRARY_PATH"
 # common compile fragments
 NVCC="nvcc -O3 -arch=$ARCH -std=c++17 -fmad=false -D__NV_NO_VECTOR_DEPRECATION_DIAG"
 INC="-Iinclude -I$PREFIX/include/gdtq -I$PREFIX/include -I$CUDA_HOME/include"
-DEFS="-DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_DSLINEAR -DUSE_TSLINEAR -DUSE_QSLINEAR -DUSE_GMP -DUSE_MPFR"
+DEFS="-DUSE_GMP -DUSE_MPFR"
 SUP="-diag-suppress 20011 -diag-suppress 177 -diag-suppress 550 -diag-suppress 20208 -diag-suppress 20044 -Wno-deprecated-declarations"
 CPULK="-Xlinker --start-group $OMPLIB $SERLIB -Xlinker --end-group -Xcompiler -fopenmp -lgomp"
 SYSLK="-L$CUDA_HOME/lib64 -lcudart -lcudadevrt -L$PREFIX/lib -lmpc -lmpfr -lgmp -lqd -lpthread -lstdc++ -lm"

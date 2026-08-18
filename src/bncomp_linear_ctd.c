@@ -25,7 +25,6 @@
 // TD
 //---------------------------------------
 
-#ifdef USE_TDLINEAR
 //--------
 // Vector
 //--------
@@ -576,4 +575,3 @@ void _bncomp_mul_ctdmatrix_4m(CTDMatrix ret, CTDMatrix a, CTDMatrix b)
     free_tdmatrix(t4);
 }
 
-#endif // USE_TDLINEAR

@@ -22,27 +22,15 @@
 
 #include <omp.h>
 #include "dlinear.h"
-#ifdef USE_DDLINEAR
 #include "ddlinear.h"
 #include "cddlinear.h"
-#endif // USE_DDLINEAR
-#ifdef USE_TDLINEAR
 #include "tdlinear.h"
 #include "ctdlinear.h"
-#endif // USE_TDLINEAR
-#ifdef USE_QDLINEAR
 #include "qdlinear.h"
 #include "cqdlinear.h"
-#endif //USE_QDLINEAR
-#ifdef USE_DSLINEAR
 #include "dslinear.h"
-#endif // USE_DSLINEAR
-#ifdef USE_TSLINEAR
 #include "tslinear.h"
-#endif // USE_TSLINEAR
-#ifdef USE_QSLINEAR
 #include "qslinear.h"
-#endif // USE_QSLINEAR
 
 //#include "mpflinear.h"
 //#include "clinear.h"
@@ -335,7 +323,6 @@ int _bncomp_mul_cdrsmatrixs_cdvec(CDVector ret, CDRSMatrix mat, CDVector vec);
 /******/
 /* DD */
 /******/
-#ifdef USE_DDLINEAR
 
 /* c := a */
 void _bncomp_subst_ddvector(DDVector c, DDVector a);
@@ -431,12 +418,10 @@ int _bncomp_mul_cdrsmatrixt_cddvec(CDDVector ret, CDRSMatrix mat, CDDVector vec)
 /* Multiply conj(CDRSMatrix)^T * CDDVector */
 int _bncomp_mul_cdrsmatrixs_cddvec(CDDVector ret, CDRSMatrix mat, CDDVector vec);
 
-#endif // USE_DDLINEAR
 
 /******/
 /* TD */
 /******/
-#ifdef USE_TDLINEAR
 
 /* c := a */
 void _bncomp_subst_tdvector(TDVector c, TDVector a);
@@ -524,12 +509,10 @@ int _bncomp_mul_cdrsmatrixt_ctdvec(CTDVector ret, CDRSMatrix mat, CTDVector vec)
 /* Multiply conj(CDRSMatrix)^T * CTDVector */
 int _bncomp_mul_cdrsmatrixs_ctdvec(CTDVector ret, CDRSMatrix mat, CTDVector vec);
 
-#endif // USE_TDLINEAR
 
 /******/
 /* QD */
 /******/
-#ifdef USE_QDLINEAR
 
 /* c := a */
 void _bncomp_subst_qdvector(QDVector c, QDVector a);
@@ -617,12 +600,10 @@ int _bncomp_mul_cdrsmatrixt_cqdvec(CQDVector ret, CDRSMatrix mat, CQDVector vec)
 /* Multiply conj(CDRSMatrix)^T * CQDVector */
 int _bncomp_mul_cdrsmatrixs_cqdvec(CQDVector ret, CDRSMatrix mat, CQDVector vec);
 
-#endif // USE_QDLINEAR
 
 /******/
 /* DS */
 /******/
-#ifdef USE_DSLINEAR
 
 /* c := a */
 void _bncomp_subst_dsvector(DSVector c, DSVector a);
@@ -671,12 +652,10 @@ void _bncomp_mul_dsmatrixt_dsvec(DSVector v, DSMatrix a, DSVector vb);
 
 void _bncomp_mul_dsmatrix_oz(DSMatrix ret, DSMatrix a, int max_num_div_a, DSMatrix b, int max_num_div_b);
 
-#endif // USE_DSLINEAR
 
 /******/
 /* TS */
 /******/
-#ifdef USE_TSLINEAR
 
 /* c := a */
 void _bncomp_subst_tsvector(TSVector c, TSVector a);
@@ -725,12 +704,10 @@ void _bncomp_mul_tsmatrixt_tsvec(TSVector v, TSMatrix a, TSVector vb);
 
 void _bncomp_mul_tsmatrix_oz(TSMatrix ret, TSMatrix a, int max_num_div_a, TSMatrix b, int max_num_div_b);
 
-#endif // USE_TSLINEAR
 
 /******/
 /* QS */
 /******/
-#ifdef USE_QSLINEAR
 
 /* c := a */
 void _bncomp_subst_qsvector(QSVector c, QSVector a);
@@ -779,7 +756,6 @@ void _bncomp_mul_qsmatrixt_qsvec(QSVector v, QSMatrix a, QSVector vb);
 
 void _bncomp_mul_qsmatrix_oz(QSMatrix ret, QSMatrix a, int max_num_div_a, QSMatrix b, int max_num_div_b);
 
-#endif // USE_QSLINEAR
 
 /*******/
 /* MPF */
@@ -1088,7 +1064,6 @@ long int _bncomp_CDCOCG_sp(CDVector answer, CDRSMatrix a, CDVector b, double rep
 long int _bncomp_CDCOCG(CDVector answer, CDMatrix a, CDVector b, double reps, double aeps, long int maxtimes);
 
 // DD
-#ifdef USE_DDLINEAR
 long int _bncomp_DDCG_sp(DDVector answer, DDRSMatrix a, DDVector b, double reps[DDSIZE], double aeps[DDSIZE], long int maxtimes);
 long int _bncomp_DDCG_sp_d(DDVector answer, DRSMatrix a, DDVector b, double reps[DDSIZE], double aeps[DDSIZE], long int maxtimes);
 long int _bncomp_DDCG(DDVector answer, DDMatrix a, DDVector b, double reps[DDSIZE], double aeps[DDSIZE], long int maxtimes);
@@ -1096,10 +1071,8 @@ long int _bncomp_DDCG(DDVector answer, DDMatrix a, DDVector b, double reps[DDSIZ
 long int _bncomp_CDDCOCG_sp(CDDVector answer, CDDRSMatrix a, CDDVector b, double reps[DDSIZE], double aeps[DDSIZE], long int maxtimes);
 long int _bncomp_CDDCOCG_sp_d(CDDVector answer, CDRSMatrix a, CDDVector b, double reps[DDSIZE], double aeps[DDSIZE], long int maxtimes);
 long int _bncomp_CDDCOCG(CDDVector answer, CDDMatrix a, CDDVector b, double reps[DDSIZE], double aeps[DDSIZE], long int maxtimes);
-#endif //  USE_DDLINEAR
 
 // TD
-#ifdef USE_TDLINEAR
 long int _bncomp_TDCG_sp(TDVector answer, TDRSMatrix a, TDVector b, double reps[TDSIZE], double aeps[TDSIZE], long int maxtimes);
 long int _bncomp_TDCG_sp_d(TDVector answer, DRSMatrix a, TDVector b, double reps[TDSIZE], double aeps[TDSIZE], long int maxtimes);
 long int _bncomp_TDCG(TDVector answer, TDMatrix a, TDVector b, double reps[TDSIZE], double aeps[TDSIZE], long int maxtimes);
@@ -1107,10 +1080,8 @@ long int _bncomp_TDCG(TDVector answer, TDMatrix a, TDVector b, double reps[TDSIZ
 long int _bncomp_CTDCOCG_sp(CTDVector answer, CTDRSMatrix a, CTDVector b, double reps[TDSIZE], double aeps[TDSIZE], long int maxtimes);
 long int _bncomp_CTDCOCG_sp_d(CTDVector answer, CDRSMatrix a, CTDVector b, double reps[TDSIZE], double aeps[TDSIZE], long int maxtimes);
 long int _bncomp_CTDCOCG(CTDVector answer, CTDMatrix a, CTDVector b, double reps[TDSIZE], double aeps[TDSIZE], long int maxtimes);
-#endif // USE_TDLINEAR
 
 // QD
-#ifdef USE_QDLINEAR
 long int _bncomp_QDCG_sp(QDVector answer, QDRSMatrix a, QDVector b, double reps[QDSIZE], double aeps[QDSIZE], long int maxtimes);
 long int _bncomp_QDCG_sp_d(QDVector answer, DRSMatrix a, QDVector b, double reps[QDSIZE], double aeps[QDSIZE], long int maxtimes);
 long int _bncomp_QDCG(QDVector answer, QDMatrix a, QDVector b, double reps[QDSIZE], double aeps[QDSIZE], long int maxtimes);
@@ -1118,7 +1089,6 @@ long int _bncomp_QDCG(QDVector answer, QDMatrix a, QDVector b, double reps[QDSIZ
 long int _bncomp_CQDCOCG_sp(CQDVector answer, CQDRSMatrix a, CQDVector b, double reps[QDSIZE], double aeps[QDSIZE], long int maxtimes);
 long int _bncomp_CQDCOCG_sp_d(CQDVector answer, CDRSMatrix a, CQDVector b, double reps[QDSIZE], double aeps[QDSIZE], long int maxtimes);
 long int _bncomp_CQDCOCG(CQDVector answer, CQDMatrix a, CQDVector b, double reps[QDSIZE], double aeps[QDSIZE], long int maxtimes);
-#endif // USE_QDLINEAR
 
 #ifdef USE_GMP
 long int _bncomp_MPFCG_sp(MPFVector answer, MPFRSMatrix a, MPFVector b, mpf_t reps, mpf_t aeps, long int maxtimes);
@@ -1150,7 +1120,6 @@ long int _bncomp_DBiCGSTAB_sp_iLU0(DVector answer, DRSMatrix a, DVector b, doubl
 long int _bncomp_DGPBiCG_sp_iLU0(DVector answer, DRSMatrix a, DVector b, double reps, double aeps, long int maxtimes, DRSMatrix ilu, double *norm2_res_history);
 
 // DD
-#ifdef USE_DDLINEAR
 // Sparse
 long int _bncomp_DDBiCG_sp(DDVector answer, DDRSMatrix a, DDVector b, double reps[DDSIZE], double aeps[DDSIZE], long int maxtimes);
 long int _bncomp_DDCGS_sp(DDVector answer, DDRSMatrix a, DDVector b, double reps[DDSIZE], double aeps[DDSIZE], long int maxtimes);
@@ -1180,10 +1149,8 @@ long int _bncomp_DDBiCG(DDVector answer, DDMatrix a, DDVector b, double reps[DDS
 long int _bncomp_DDCGS(DDVector answer, DDMatrix a, DDVector b, double reps[DDSIZE], double aeps[DDSIZE], long int maxtimes);
 long int _bncomp_DDBiCGSTAB(DDVector answer, DDMatrix a, DDVector b, double reps[DDSIZE], double aeps[DDSIZE], long int maxtimes);
 long int _bncomp_DDGPBiCG(DDVector answer, DDMatrix a, DDVector b, double reps[DDSIZE], double aeps[DDSIZE], long int maxtimes);
-#endif // USE_DDLINEAR
 
 // TD
-#ifdef USE_TDLINEAR
 // Sparse
 long int _bncomp_TDBiCG_sp(TDVector answer, TDRSMatrix a, TDVector b, double reps[TDSIZE], double aeps[TDSIZE], long int maxtimes);
 long int _bncomp_TDCGS_sp(TDVector answer, TDRSMatrix a, TDVector b, double reps[TDSIZE], double aeps[TDSIZE], long int maxtimes);
@@ -1213,10 +1180,8 @@ long int _bncomp_TDBiCG(TDVector answer, TDMatrix a, TDVector b, double reps[TDS
 long int _bncomp_TDCGS(TDVector answer, TDMatrix a, TDVector b, double reps[TDSIZE], double aeps[TDSIZE], long int maxtimes);
 long int _bncomp_TDBiCGSTAB(TDVector answer, TDMatrix a, TDVector b, double reps[TDSIZE], double aeps[TDSIZE], long int maxtimes);
 long int _bncomp_TDGPBiCG(TDVector answer, TDMatrix a, TDVector b, double reps[TDSIZE], double aeps[TDSIZE], long int maxtimes);
-#endif // USE_TDLINEAR
 
 // QD
-#ifdef USE_QDLINEAR
 // Sparse
 long int _bncomp_QDBiCG_sp(QDVector answer, QDRSMatrix a, QDVector b, double reps[QDSIZE], double aeps[QDSIZE], long int maxtimes);
 long int _bncomp_QDCGS_sp(QDVector answer, QDRSMatrix a, QDVector b, double reps[QDSIZE], double aeps[QDSIZE], long int maxtimes);
@@ -1246,7 +1211,6 @@ long int _bncomp_QDBiCG(QDVector answer, QDMatrix a, QDVector b, double reps[QDS
 long int _bncomp_QDCGS(QDVector answer, QDMatrix a, QDVector b, double reps[QDSIZE], double aeps[QDSIZE], long int maxtimes);
 long int _bncomp_QDBiCGSTAB(QDVector answer, QDMatrix a, QDVector b, double reps[QDSIZE], double aeps[QDSIZE], long int maxtimes);
 long int _bncomp_QDGPBiCG(QDVector answer, QDMatrix a, QDVector b, double reps[QDSIZE], double aeps[QDSIZE], long int maxtimes);
-#endif // USE_QDLINEAR
 
 #ifdef USE_GMP
 // SPARSE
@@ -1295,7 +1259,6 @@ long int _bncomp_CDCGS(CDVector answer, CDMatrix a, CDVector b, double reps, dou
 long int _bncomp_CDBiCGSTAB(CDVector answer, CDMatrix a, CDVector b, double reps, double aeps, long int maxtimes);
 long int _bncomp_CDGPBiCG(CDVector answer, CDMatrix a, CDVector b, double reps, double aeps, long int maxtimes);
 
-#ifdef USE_DDLINEAR
 long int _bncomp_CDDBiCG_sp    (CDDVector answer, CDDRSMatrix a, CDDVector b, double reps[DDSIZE], double aeps[DDSIZE], long int maxtimes);
 long int _bncomp_CDDCGS_sp     (CDDVector answer, CDDRSMatrix a, CDDVector b, double reps[DDSIZE], double aeps[DDSIZE], long int maxtimes);
 long int _bncomp_CDDBiCGSTAB_sp(CDDVector answer, CDDRSMatrix a, CDDVector b, double reps[DDSIZE], double aeps[DDSIZE], long int maxtimes);
@@ -1310,9 +1273,7 @@ long int _bncomp_CDDBiCG       (CDDVector answer, CDDMatrix a, CDDVector b, doub
 long int _bncomp_CDDCGS        (CDDVector answer, CDDMatrix a, CDDVector b, double reps[DDSIZE], double aeps[DDSIZE], long int maxtimes);
 long int _bncomp_CDDBiCGSTAB   (CDDVector answer, CDDMatrix a, CDDVector b, double reps[DDSIZE], double aeps[DDSIZE], long int maxtimes);
 long int _bncomp_CDDGPBiCG     (CDDVector answer, CDDMatrix a, CDDVector b, double reps[DDSIZE], double aeps[DDSIZE], long int maxtimes);
-#endif // USE_DDLINEAR
 
-#ifdef USE_TDLINEAR
 long int _bncomp_CTDBiCG_sp    (CTDVector answer, CTDRSMatrix a, CTDVector b, double reps[TDSIZE], double aeps[TDSIZE], long int maxtimes);
 long int _bncomp_CTDCGS_sp     (CTDVector answer, CTDRSMatrix a, CTDVector b, double reps[TDSIZE], double aeps[TDSIZE], long int maxtimes);
 long int _bncomp_CTDBiCGSTAB_sp(CTDVector answer, CTDRSMatrix a, CTDVector b, double reps[TDSIZE], double aeps[TDSIZE], long int maxtimes);
@@ -1327,9 +1288,7 @@ long int _bncomp_CTDBiCG       (CTDVector answer, CTDMatrix a, CTDVector b, doub
 long int _bncomp_CTDCGS        (CTDVector answer, CTDMatrix a, CTDVector b, double reps[TDSIZE], double aeps[TDSIZE], long int maxtimes);
 long int _bncomp_CTDBiCGSTAB   (CTDVector answer, CTDMatrix a, CTDVector b, double reps[TDSIZE], double aeps[TDSIZE], long int maxtimes);
 long int _bncomp_CTDGPBiCG     (CTDVector answer, CTDMatrix a, CTDVector b, double reps[TDSIZE], double aeps[TDSIZE], long int maxtimes);
-#endif // USE_TDLINEAR
 
-#ifdef USE_QDLINEAR
 long int _bncomp_CQDBiCG_sp    (CQDVector answer, CQDRSMatrix a, CQDVector b, double reps[QDSIZE], double aeps[QDSIZE], long int maxtimes);
 long int _bncomp_CQDCGS_sp     (CQDVector answer, CQDRSMatrix a, CQDVector b, double reps[QDSIZE], double aeps[QDSIZE], long int maxtimes);
 long int _bncomp_CQDBiCGSTAB_sp(CQDVector answer, CQDRSMatrix a, CQDVector b, double reps[QDSIZE], double aeps[QDSIZE], long int maxtimes);
@@ -1344,7 +1303,6 @@ long int _bncomp_CQDBiCG       (CQDVector answer, CQDMatrix a, CQDVector b, doub
 long int _bncomp_CQDCGS        (CQDVector answer, CQDMatrix a, CQDVector b, double reps[QDSIZE], double aeps[QDSIZE], long int maxtimes);
 long int _bncomp_CQDBiCGSTAB   (CQDVector answer, CQDMatrix a, CQDVector b, double reps[QDSIZE], double aeps[QDSIZE], long int maxtimes);
 long int _bncomp_CQDGPBiCG     (CQDVector answer, CQDMatrix a, CQDVector b, double reps[QDSIZE], double aeps[QDSIZE], long int maxtimes);
-#endif // USE_QDLINEAR
 
 
 #ifdef USE_GMP

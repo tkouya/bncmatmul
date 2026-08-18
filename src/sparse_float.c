@@ -17,7 +17,6 @@
 
 #include "bncsparse.h"
 
-#ifdef USE_FLINEAR
 
 #ifndef EMPTY
 #define EMPTY (-1)
@@ -415,4 +414,3 @@ int mul_frsmatrixt_fvec(FVector ret, FRSMatrix mat, FVector vec)
 	return SUCCESS;
 }
 
-#endif // USE_FLINEAR

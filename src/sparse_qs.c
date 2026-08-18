@@ -17,7 +17,6 @@
 
 #include "bncsparse.h"
 
-#ifdef USE_QSLINEAR
 
 #ifndef EMPTY
 #define EMPTY (-1)
@@ -490,4 +489,3 @@ int mul_qsrsmatrixt_qsvec(QSVector ret, QSRSMatrix mat, QSVector vec)
 	return SUCCESS;
 }
 
-#endif // USE_QSLINEAR

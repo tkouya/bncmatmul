@@ -20,7 +20,7 @@ ARCH=sm_121
 NVCC="nvcc -O3 -arch=$ARCH -std=c++17 -fmad=false -D__NV_NO_VECTOR_DEPRECATION_DIAG"
 INC="-Iinclude -I/usr/local/include/gdtq -I/usr/local/cuda/include"
 NAT_INC="-Iinclude -I/usr/local/cuda/include"
-MR_DEFS="-DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_DSLINEAR -DUSE_TSLINEAR -DUSE_QSLINEAR -DUSE_GMP -DUSE_MPFR"
+MR_DEFS="-DUSE_GMP -DUSE_MPFR"
 SUP="-diag-suppress 20011 -diag-suppress 177 -diag-suppress 550 -diag-suppress 20208 -diag-suppress 20044 -Wno-deprecated-declarations"
 LK="-L/usr/local/cuda/lib64 -lcudart -lcudadevrt -lmpc -lmpfr -lgmp -lpthread -lqd -lstdc++ -lm"
 # CPU baseline library tag.  Default = SVE2 (strongest dense CPU baseline on this

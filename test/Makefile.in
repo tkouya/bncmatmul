@@ -378,7 +378,7 @@ top_srcdir = @top_srcdir@
 AUTOMAKE_OPTIONS = foreign subdir-objects no-dependencies
 AM_CPPFLAGS = \
 	-I$(top_srcdir)/include \
-	-DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_MPFLINEAR \
+	\
 	-DUSE_TD_BF -DUSE_QD_BF \
 	-DUSE_GMP -DUSE_MPFR -DUSE_DD -DUSE_QD \
 	@GMP_CPPFLAGS@ @MPFR_CPPFLAGS@ @MPC_CPPFLAGS@ @QD_CPPFLAGS@

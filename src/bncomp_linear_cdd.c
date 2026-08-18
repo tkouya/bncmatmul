@@ -25,7 +25,6 @@
 // DD
 //---------------------------------------
 
-#ifdef USE_DDLINEAR
 //--------
 // Vector
 //--------
@@ -642,4 +641,3 @@ void _bncomp_mul_cddmatrix_4m(CDDMatrix ret, CDDMatrix a, CDDMatrix b)
     free_ddmatrix(t4);
 }
 
-#endif // USE_DDLINEAR

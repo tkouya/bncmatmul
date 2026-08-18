@@ -34,7 +34,6 @@
 //  #include "bncsparse.h"
 //#endif
 
-#ifdef USE_DDLINEAR
 
 /************************************************************/
 /*                                                          */
@@ -1406,4 +1405,3 @@
 
 }
 
-#endif // USE_DDLINEAR

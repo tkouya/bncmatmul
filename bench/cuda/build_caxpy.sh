@@ -49,13 +49,13 @@ echo "==== complex axpy(cmul): native cd/cf ===="
 build_native cd double
 build_native cf float
 echo "==== complex axpy(cmul): multi-component cdd/ctd/cqd ===="
-build_mc dd double DDSIZE -DUSE_DDLINEAR -DUSE_GMP -DUSE_MPFR
-build_mc td double TDSIZE -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_GMP -DUSE_MPFR
-build_mc qd double QDSIZE -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_GMP -DUSE_MPFR
+build_mc dd double DDSIZE -DUSE_GMP -DUSE_MPFR
+build_mc td double TDSIZE -DUSE_GMP -DUSE_MPFR
+build_mc qd double QDSIZE -DUSE_GMP -DUSE_MPFR
 echo "==== complex axpy(cmul): multi-component cds/cts/cqs ===="
-build_mc ds float DSSIZE -DUSE_DSLINEAR
-build_mc ts float TSSIZE -DUSE_DSLINEAR -DUSE_TSLINEAR
-build_mc qs float QSSIZE -DUSE_DSLINEAR -DUSE_TSLINEAR -DUSE_QSLINEAR
+build_mc ds float DSSIZE 
+build_mc ts float TSSIZE 
+build_mc qs float QSSIZE 
 
 echo "================ complex axpy: $OK built, $FAIL failed ================"
 [ -n "$FL" ] && echo "failed:$FL"

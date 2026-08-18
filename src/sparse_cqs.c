@@ -15,7 +15,6 @@
 
 #include "bncsparse.h"
 
-#ifdef USE_QSLINEAR
 
 #ifndef SUCCESS
 #define SUCCESS (0)
@@ -172,4 +171,3 @@ int mul_cqsrsmatrixt_cqsvec(CQSVector ret, CQSRSMatrix mat, CQSVector vec)
 	return SUCCESS;
 }
 
-#endif // USE_QSLINEAR

@@ -33,7 +33,6 @@
 //---------------------------------------
 // QS
 //---------------------------------------
-#ifdef USE_QSLINEAR
 //--------
 // Vector
 //--------
@@ -2825,4 +2824,3 @@ void _bncomp_mul_cqsmatrix_4m(CQSMatrix ret, CQSMatrix a, CQSMatrix b)
 }
 #endif // 0
 
-#endif // USE_QSLINEAR

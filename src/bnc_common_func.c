@@ -108,21 +108,11 @@ void bnc_print_env_all(void)
 	// Available precisions
 	//---------------------
 	printf("Available kinds of precision: ");
-	#ifdef USE_FLINEAR
 		printf("Float ");
-	#endif //USE_FLINEAR 
-	#ifdef USE_DLINEAR
 		printf("Double ");
-	#endif //USE_DLINEAR 
-	#ifdef USE_DDLINEAR
 		printf("DD ");
-	#endif //USE_DDLINEAR 
-	#ifdef USE_TDLINEAR
 		printf("TD ");
-	#endif //USE_TDLINEAR 
-	#ifdef USE_QDLINEAR
 		printf("QD ");
-	#endif //USE_QDLINEAR 
 	#ifdef USE_GMP
 		printf("GMP ");
 	#endif // USE_GMP

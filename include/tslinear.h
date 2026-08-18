@@ -25,9 +25,7 @@
 #include "rds.h"
 
 #include "flinear.h" // Double precision linear computation
-#ifdef USE_DSLINEAR
 #include "dslinear.h" // DD precision linear computation
-#endif // USE_DSLINEAR
 
 #ifdef USE_GMP
 #include "gmp.h"

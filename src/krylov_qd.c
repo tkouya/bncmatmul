@@ -34,7 +34,6 @@
 //  #include "bncsparse.h"
 //#endif
 
-#ifdef USE_QDLINEAR
 
 /************************************************************/
 /*                                                          */
@@ -1418,4 +1417,3 @@
 
 }
 
-#endif // USE_QDLINEAR

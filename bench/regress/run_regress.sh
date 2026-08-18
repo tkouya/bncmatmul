@@ -21,7 +21,7 @@ mkdir -p "$(dirname "$OUTCSV")" bench/regress/out
 
 CF="-O3 -ffp-contract=off -Iinclude"
 LK="-lmpc -lmpfr -lgmp -lpthread -lqd -lstdc++ -lm"
-DEFS="-DUSE_DD -DUSE_QD -DUSE_GMP -DUSE_MPFR -DUSE_MPC -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_DSLINEAR -DUSE_TSLINEAR -DUSE_QSLINEAR"
+DEFS="-DUSE_DD -DUSE_QD -DUSE_GMP -DUSE_MPFR -DUSE_MPC"
 MMDIM=128
 LUDIM=128
 MCDIM=96
@@ -119,7 +119,6 @@ sp_build_run() { # prec extra_srcs
     fi
   done
 }
-DEFS="$DEFS -DUSE_FLINEAR"   # FRSMatrix in bncsparse.h is behind USE_FLINEAR
 sp_build_run float src/sparse_float.c
 sp_build_run ds  src/sparse_ds.c
 sp_build_run ts  src/sparse_ts.c

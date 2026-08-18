@@ -29,7 +29,6 @@
 // --------------------------
 // QD precision
 // --------------------------
-#ifdef USE_QDLINEAR
 
 // Missing function in rcqd.h
 // ret := a_real + a_imag * I (where a_imag is usually 0)
@@ -678,4 +677,3 @@ void deflation_cqdpoly(CQDPoly ret, CQDPoly pol, cqdfloat *root)
     return;
 }
 
-#endif // USE_QDLINEAR

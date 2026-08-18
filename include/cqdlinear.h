@@ -25,12 +25,8 @@
 
 //#include "clinear.h"
 #include "cdlinear.h"
-#ifdef USE_DDLINEAR
 #include "cddlinear.h"
-#endif // USE_DDLINEAR
-#ifdef USE_TDLINEAR
 #include "ctdlinear.h"
-#endif // USE_TDLINEAR
 #include "qdlinear.h"
 //#include "bmatrix.h"
 
@@ -523,7 +519,6 @@ void subst_cqdmatrix_cdmat(CQDMatrix c, CDMatrix a);
 //void subst_cdmatrix_cddmat(CDMatrix c, CQDMatrix a);
 
 
-#ifdef USE_DDLINEAR
 /* c := (qd)a */
 void subst_cqdvector_cddvec(CQDVector c, CDDVector a);
 
@@ -536,9 +531,7 @@ void subst_cqdmatrix_cddmat(CQDMatrix c, CDDMatrix a);
 /* c := (dd)a */
 void subst_cddmatrix_cqdmat(CDDMatrix c, CQDMatrix a);
 
-#endif // USE_DDLINEAR
 
-#ifdef USE_TDLINEAR
 /* c := (qd)a */
 void subst_cqdvector_ctdvec(CQDVector c, CTDVector a);
 
@@ -550,7 +543,6 @@ void subst_cqdmatrix_ctdmat(CQDMatrix c, CTDMatrix a);
 
 /* c := (td)a */
 void subst_ctdmatrix_cqdmat(CTDMatrix c, CQDMatrix a);
-#endif // USE_TDLINEAR
 
 /* Normwise relative error of vector */
 void relerr_cqdvector(double relerr[QDSIZE], CQDVector approx_vec, CQDVector true_vec, int norm_type);

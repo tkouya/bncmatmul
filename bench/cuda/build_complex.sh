@@ -53,13 +53,13 @@ build_cm() {
 }
 
 echo "==== complex multi-component: cdd/ctd/cqd (OpenMP) ===="
-build_cm dd double DDSIZE d -DUSE_DDLINEAR -DUSE_GMP -DUSE_MPFR
-build_cm td double TDSIZE d -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_GMP -DUSE_MPFR
-build_cm qd double QDSIZE d -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_GMP -DUSE_MPFR
+build_cm dd double DDSIZE d -DUSE_GMP -DUSE_MPFR
+build_cm td double TDSIZE d -DUSE_GMP -DUSE_MPFR
+build_cm qd double QDSIZE d -DUSE_GMP -DUSE_MPFR
 echo "==== complex multi-component: cds/cts/cqs (serial; no OpenMP routine) ===="
-build_cm ds float DSSIZE s -DUSE_DSLINEAR
-build_cm ts float TSSIZE s -DUSE_DSLINEAR -DUSE_TSLINEAR
-build_cm qs float QSSIZE s -DUSE_DSLINEAR -DUSE_TSLINEAR -DUSE_QSLINEAR
+build_cm ds float DSSIZE s 
+build_cm ts float TSSIZE s 
+build_cm qs float QSSIZE s 
 
 echo "================ complex: $OK built, $FAIL failed ================"
 [ -n "$FL" ] && echo "failed:$FL"

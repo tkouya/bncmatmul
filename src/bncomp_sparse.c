@@ -878,7 +878,6 @@ int _bncomp_mul_cdrsmatrixs_cdvec(CDVector ret, CDRSMatrix mat, CDVector vec)
 //-----------------------------------------------
 // DD precision
 //-----------------------------------------------
-#ifdef USE_DDLINEAR
 
 /* Multiply DDRSMatrix * DDVector */
 int _bncomp_mul_ddrsmatrix_ddvec(DDVector ret, DDRSMatrix mat, DDVector vec)
@@ -2669,12 +2668,10 @@ int _bncomp_mul_cdrsmatrixs_cddvec(CDDVector ret, CDRSMatrix mat, CDDVector vec)
 
 	return SUCCESS;
 }
-#endif // ifdef USE_DDLINEAR
 
 //-----------------------------------------------
 // TD precision
 //-----------------------------------------------
-#ifdef USE_TDLINEAR
 
 /* Multiply TDRSMatrix * TDVector */
 int _bncomp_mul_tdrsmatrix_tdvec(TDVector ret, TDRSMatrix mat, TDVector vec)
@@ -4531,12 +4528,10 @@ int _bncomp_mul_cdrsmatrixs_ctdvec(CTDVector ret, CDRSMatrix mat, CTDVector vec)
 	return SUCCESS;
 }
 
-#endif // USE_TDLINEAR
 
 //-----------------------------------------------
 // QD precision
 //-----------------------------------------------
-#ifdef USE_QDLINEAR
 
 /* Multiply QDRSMatrix * QDVector */
 int _bncomp_mul_qdrsmatrix_qdvec(QDVector ret, QDRSMatrix mat, QDVector vec)
@@ -6518,7 +6513,6 @@ int _bncomp_mul_cdrsmatrixs_cqdvec(CQDVector ret, CDRSMatrix mat, CQDVector vec)
 
 	return SUCCESS;
 }
-#endif // USE_QDLINEAR
 
 //-----------------------------------------------
 // MPF precision

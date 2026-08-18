@@ -26,13 +26,9 @@
 
 #include "flinear.h"  // Single precision linear computation
 
-#ifdef USE_DSLINEAR
 #include "dslinear.h" // DS precision linear computation
-#endif // USE_DSLINEAR
 
-#ifdef USE_TSLINEAR
 #include "tslinear.h" // TS precision linear computation
-#endif // USE_TSLINEAR
 
 #ifdef USE_GMP
 #include "gmp.h"
@@ -482,7 +478,6 @@ void diag_qsmatrix(QSMatrix mat, QSVector diag, long int dim);
 /* 8. Toeplitz Matrix */
 void toeplitz_qsmatrix(QSMatrix mat, float gamma_param[QSSIZE], long int dim);
 
-#ifdef USE_TDLINEAR
 #include "tdlinear.h" // brings in TDMatrix type
 
 /* c := a */
@@ -490,7 +485,6 @@ void subst_qsmatrix_tdmat(QSMatrix c, TDMatrix a);
 
 /* (QSMatrix)c := (TDMatrix)a - (TDMatrix)b */
 void sub_qsmatrix_tdmat_tdmat(QSMatrix c, TDMatrix a, TDMatrix b);
-#endif // USE_TDLINEAR
 
 #ifdef __cplusplus
 }

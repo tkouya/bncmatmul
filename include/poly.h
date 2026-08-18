@@ -1030,7 +1030,6 @@ void deflation_cmpfpoly(CMPFPoly ret, CMPFPoly pol, mpc_t root);
 /*************************************************/
 /* dd_hirano.c                                   */
 /*************************************************/
-#ifdef USE_DDLINEAR
 
 // Horner method
 // return p(x)
@@ -1053,12 +1052,10 @@ long int cdd_hirano(cddfloat *ret, cddfloat *init_x, CDDPoly poly, double reps[D
 // Deflation of polynomial
 // p(x) / (x - r)
 void deflation_cddpoly(CDDPoly ret, CDDPoly pol, cddfloat *root);
-#endif // def USE_DDLINEAR
 
 /*************************************************/
 /* td_hirano.h                                   */
 /*************************************************/
-#ifdef USE_TDLINEAR
 
 // Horner method
 // return p(x)
@@ -1081,12 +1078,10 @@ long int ctd_hirano(ctdfloat *ret, ctdfloat *init_x, CTDPoly poly, double reps[T
 // Deflation of polynomial
 // p(x) / (x - r)
 void deflation_ctdpoly(CTDPoly ret, CTDPoly pol, ctdfloat *root);
-#endif // def USE_TDLINEAR
 
 /*************************************************/
 /* qd_hirano.h                                   */
 /*************************************************/
-#ifdef USE_QDLINEAR
 
 // Horner method
 // return p(x)
@@ -1109,7 +1104,6 @@ long int cqd_hirano(cqdfloat *ret, cqdfloat *init_x, CQDPoly poly, double reps[Q
 // Deflation of polynomial
 // p(x) / (x - r)
 void deflation_cqdpoly(CQDPoly ret, CQDPoly pol, cqdfloat *root);
-#endif // def USE_QDLINEAR
 
 /*************************************************/
 /* fread_write_complex.c                         */

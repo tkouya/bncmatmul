@@ -40,7 +40,6 @@
 #endif // USE_OMP_VERSION
 
 
-#ifdef USE_QDLINEAR
 
 /************************************************************/
 /*                                                          */
@@ -1397,4 +1396,3 @@
 	return return_val;
 }
 
-#endif // USE_QDLINEAR

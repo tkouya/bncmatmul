@@ -4034,7 +4034,6 @@ void subst_dmatrix_tdmat(DMatrix c, TDMatrix a)
 //---------------------------------/
 // TD <-> DD
 //---------------------------------/
-#ifdef USE_DDLINEAR
 /* c := (dd)a */
 void subst_tdvector_ddvec(TDVector c, DDVector a)
 {
@@ -4100,7 +4099,6 @@ void subst_ddmatrix_tdmat(DDMatrix c, TDMatrix a)
 		}
 	}
 }
-#endif // USE_DDLINEAR
 
 /* Normwise relative error of vector */
 void relerr_tdvector(double relerr[TDSIZE], TDVector approx_vec, TDVector true_vec, int norm_type)

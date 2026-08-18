@@ -1243,7 +1243,6 @@ void inv_mpfmatrix(MPFMatrix a)
 
 // ----- linear_append.c ------
 
-#ifdef USE_FLINEAR
 
 /* c := (double)a */
 void subst_fmatrix_dmat(FMatrix c, DMatrix a)
@@ -1304,7 +1303,6 @@ void subst_dvector_fvec(DVector c, FVector a)
 	for(i = 0; i < a->dim; i++)
 		set_dvector_i(c, i, (double)get_fvector_i(a, i));
 }
-#endif // ifdef USE_FLINEAR
 
 
 

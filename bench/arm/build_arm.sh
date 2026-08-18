@@ -3,7 +3,7 @@
 cd "$(dirname "$0")/../.."   # repo root
 CF="-O3 -ffp-contract=off -Iinclude"
 LK="-lmpc -lmpfr -lgmp -lpthread -lqd -lstdc++ -lm"
-SPDEF="-DUSE_DD -DUSE_QD -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR"
+SPDEF="-DUSE_DD -DUSE_QD -DUSE_GMP -DUSE_MPFR "
 OUT=bench/arm
 OK=0; FAIL=0; FL=""
 

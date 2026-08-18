@@ -25,7 +25,6 @@
 // QD
 //---------------------------------------
 
-#ifdef USE_QDLINEAR
 //--------
 // Vector
 //--------
@@ -585,4 +584,3 @@ void _bncomp_mul_cqdmatrix_4m(CQDMatrix ret, CQDMatrix a, CQDMatrix b)
     free_qdmatrix(t4);
 }
 
-#endif // USE_QDLINEAR

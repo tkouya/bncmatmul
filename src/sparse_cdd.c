@@ -29,7 +29,6 @@
 
 #include "bncsparse.h"
 
-#ifdef USE_DDLINEAR
 
 /* Sparse matrix struct */
 /* Example:             */
@@ -1181,4 +1180,3 @@ void solve_iLU0s_cdrsmatrix_cddvec(CDDVector ret, CDRSMatrix ilu, CDDVector b)
 	}
 }
 
-#endif // ifdef USE_DDLINEAR

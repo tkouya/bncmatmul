@@ -12,9 +12,6 @@ AUTOMAKE_OPTIONS = foreign subdir-objects no-dependencies
 
 AM_CPPFLAGS = \
 	-I$(top_srcdir)/include \
-	-DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR \
-	-DUSE_DSLINEAR -DUSE_TSLINEAR -DUSE_QSLINEAR \
-	-DUSE_MPFLINEAR \
 	-DUSE_TD_BF -DUSE_QD_BF \
 	-DUSE_TS_BF -DUSE_QS_BF \
 	-DUSE_GMP -DUSE_MPFR -DUSE_DD -DUSE_QD \
@@ -70,6 +67,11 @@ BNCMM_BASE_SOURCES = \
 	sparse_dd.c sparse_cdd.c \
 	sparse_td.c sparse_ctd.c \
 	sparse_qd.c sparse_cqd.c \
+	cdslinear.c ctslinear.c cqslinear.c \
+	cdslu.c ctslu.c cqslu.c \
+	sparse_float.c \
+	sparse_ds.c sparse_ts.c sparse_qs.c \
+	sparse_cds.c sparse_cts.c sparse_cqs.c \
 	tridiagonal.c \
 	cg.c cocg.c \
 	krylov.c krylov_c.c \
@@ -108,8 +110,6 @@ SP_PRECOND_SOURCES = \
 #---------------------------------------
 noinst_LTLIBRARIES = \
 	libbncmm_base.la \
-	libbncmm_single.la \
-	libbncmm_fsparse.la \
 	libbncmm_sp.la \
 	libbncmm_sp_d.la \
 	libbncmm_sp_precond.la \
@@ -136,46 +136,14 @@ libbncmm_base_la_SOURCES += $(OMP_STRASSEN_SOURCES)
 endif
 libbncmm_base_la_CPPFLAGS = $(AM_CPPFLAGS)
 
-#---------------------------------------
-# Single-based (ds/ts/qs) family — complex-single linear/LU and the
-# real+complex single-based sparse SpMV.  These MUST be compiled with the
-# single-based macros ONLY (NOT USE_DDLINEAR/TDLINEAR/QDLINEAR), exactly as
-# src/Makefile.legacy does: cdslinear.h / cddlinear.h (etc.) share several
-# declaration names, so mixing the two families in one TU clashes.  Built as
-# its own convenience library and merged into libbncmatmul, giving the
-# Automake build parity with the legacy .a (which already shipped these).
-#---------------------------------------
-BNCMM_SINGLE_SOURCES = \
-	cdslinear.c ctslinear.c cqslinear.c \
-	cdslu.c ctslu.c cqslu.c \
-	sparse_ds.c sparse_ts.c sparse_qs.c \
-	sparse_cds.c sparse_cts.c sparse_cqs.c
-
-# NOTE: deliberately NO -DUSE_GMP/-DUSE_MPFR here (only the include paths).
-# Like src/Makefile.legacy, the single-based family uses its native multi-
-# component sqrt (rts_sqrt/rqs_sqrt macros from rds.h/rsd.h).  The USE_GMP
-# code path in cts/cqslinear.c calls r{ts,qs}_sqrt_mpfr(), which is declared
-# nowhere — harmless in the legacy static .a (unresolved refs tolerated) but
-# fatal for the Automake shared lib built with -no-undefined.
-libbncmm_single_la_SOURCES  = $(BNCMM_SINGLE_SOURCES)
-libbncmm_single_la_CPPFLAGS = \
-	-I$(top_srcdir)/include \
-	-DUSE_DSLINEAR -DUSE_TSLINEAR -DUSE_QSLINEAR \
-	@GMP_CPPFLAGS@ @MPFR_CPPFLAGS@ @MPC_CPPFLAGS@ @QD_CPPFLAGS@
-
-#---------------------------------------
-# Single-precision (float) real sparse SpMV.  Like the single-based family
-# above, this MUST be compiled with -DUSE_FLINEAR ONLY (NOT the DD/TD/QD
-# families) — mixing flinear.h with the cddlinear.h family in one TU clashes
-# (cdslinear.h vs cddlinear.h share macro names).  Matches src/Makefile.legacy
-# (which compiles sparse_float.c with -DUSE_FLINEAR) and keeps the Automake
-# library at parity with the legacy .a, which already shipped sparse_float.o.
-#---------------------------------------
-libbncmm_fsparse_la_SOURCES  = sparse_float.c
-libbncmm_fsparse_la_CPPFLAGS = \
-	-I$(top_srcdir)/include \
-	-DUSE_FLINEAR \
-	@GMP_CPPFLAGS@ @MPFR_CPPFLAGS@ @MPC_CPPFLAGS@ @QD_CPPFLAGS@
+# NOTE: the single-based (ds/ts/qs, complex-single, sparse_float) family
+# used to live in separate convenience libs (libbncmm_single/libbncmm_fsparse)
+# compiled WITHOUT the DD-family macros: cdslinear.h etc. accidentally
+# redefined GET_CDDMATRIX_IJ & co. (copy-paste vestiges, since renamed to
+# their own GET_CDSMATRIX_IJ names) and the USE_GMP path referenced the
+# then-missing r{ds,ts,qs}_sqrt_mpfr (since implemented in mpfr_dtq_sd.c).
+# Both root causes are fixed, so everything is one library now and the
+# USE_*LINEAR compile-time gates are gone entirely.
 
 libbncmm_sp_la_SOURCES  = $(SP_SOURCES)
 libbncmm_sp_la_CPPFLAGS = $(AM_CPPFLAGS) -DUSE_SPARSE_VERSION
@@ -204,8 +172,6 @@ lib_LTLIBRARIES = libbncmatmul.la
 libbncmatmul_la_SOURCES =
 libbncmatmul_la_LIBADD = \
 	libbncmm_base.la \
-	libbncmm_single.la \
-	libbncmm_fsparse.la \
 	libbncmm_sp.la \
 	libbncmm_sp_d.la \
 	libbncmm_sp_precond.la \

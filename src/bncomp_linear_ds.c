@@ -34,7 +34,6 @@
 #endif
 // #endif
 
-#ifdef USE_DSLINEAR
 //---------------------------------------
 // Double-Double - Vector operations with NEON
 //---------------------------------------
@@ -2127,4 +2126,3 @@ void _bncomp_mul_cdsmatrix_4m(CDSMatrix ret, CDSMatrix a, CDSMatrix b)
 }
 #endif // 0
 
-#endif // USE_DSLINEAR

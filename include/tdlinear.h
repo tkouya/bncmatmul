@@ -25,9 +25,7 @@
 #include "rdd.h"
 
 #include "dlinear.h" // Double precision linear computation
-#ifdef USE_DDLINEAR
 #include "ddlinear.h" // DD precision linear computation
-#endif // USE_DDLINEAR
 
 #ifdef USE_GMP
 #include "gmp.h"
@@ -521,7 +519,6 @@ void subst_dmatrix_tdmat(DMatrix c, TDMatrix a);
 //---------------------------------/
 // TD <-> DD
 //---------------------------------/
-#ifdef USE_DDLINEAR
 /* c := (dd)a */
 void subst_tdvector_ddvec(TDVector c, DDVector a);
 
@@ -533,7 +530,6 @@ void subst_tdmatrix_ddmat(TDMatrix c, DDMatrix a);
 
 /* c := (dd)a */
 void subst_ddmatrix_tdmat(DDMatrix c, TDMatrix a);
-#endif // USE_DDLINEAR
 
 //----------------------------------------/
 // tdlinear.c

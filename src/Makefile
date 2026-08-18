@@ -154,10 +154,10 @@ am__DEPENDENCIES_1 =
 #am__DEPENDENCIES_2 = $(am__DEPENDENCIES_1)
 am__DEPENDENCIES_3 =  \
 	$(top_builddir)/src/cuda/libbncmm_cuda.a
-libbncmatmul_la_DEPENDENCIES = libbncmm_base.la libbncmm_single.la \
-	libbncmm_fsparse.la libbncmm_sp.la libbncmm_sp_d.la \
-	libbncmm_sp_precond.la libbncmm_sp_d_precond.la \
-	$(am__DEPENDENCIES_2) $(am__DEPENDENCIES_3)
+libbncmatmul_la_DEPENDENCIES = libbncmm_base.la libbncmm_sp.la \
+	libbncmm_sp_d.la libbncmm_sp_precond.la \
+	libbncmm_sp_d_precond.la $(am__DEPENDENCIES_2) \
+	$(am__DEPENDENCIES_3)
 am_libbncmatmul_la_OBJECTS =
 libbncmatmul_la_OBJECTS = $(am_libbncmatmul_la_OBJECTS)
 AM_V_lt = $(am__v_lt_$(V))
@@ -195,9 +195,12 @@ am__libbncmm_base_la_SOURCES_DIST = bnc_common_func.c complex.c poly.c \
 	mmio.c readmatrix.c writematrix.c readwrite_clinear.c \
 	sparse_double.c sparse_cd.c sparse_mpf.c sparse_cmpf.c \
 	sparse_dd.c sparse_cdd.c sparse_td.c sparse_ctd.c sparse_qd.c \
-	sparse_cqd.c tridiagonal.c cg.c cocg.c krylov.c krylov_c.c \
-	krylov_dd.c krylov_cdd.c krylov_td.c krylov_ctd.c krylov_qd.c \
-	krylov_cqd.c lanczos.c algebraic_eq.c hessenberg.c \
+	sparse_cqd.c cdslinear.c ctslinear.c cqslinear.c cdslu.c \
+	ctslu.c cqslu.c sparse_float.c sparse_ds.c sparse_ts.c \
+	sparse_qs.c sparse_cds.c sparse_cts.c sparse_cqs.c \
+	tridiagonal.c cg.c cocg.c krylov.c krylov_c.c krylov_dd.c \
+	krylov_cdd.c krylov_td.c krylov_ctd.c krylov_qd.c krylov_cqd.c \
+	lanczos.c algebraic_eq.c hessenberg.c \
 	matmul_strassen_general_mpf_omp.c \
 	matmul_strassen_general_mpc_omp.c \
 	matmul_strassen_general_dd_omp.c \
@@ -282,13 +285,20 @@ am__objects_1 = libbncmm_base_la-bnc_common_func.lo \
 	libbncmm_base_la-sparse_cmpf.lo libbncmm_base_la-sparse_dd.lo \
 	libbncmm_base_la-sparse_cdd.lo libbncmm_base_la-sparse_td.lo \
 	libbncmm_base_la-sparse_ctd.lo libbncmm_base_la-sparse_qd.lo \
-	libbncmm_base_la-sparse_cqd.lo libbncmm_base_la-tridiagonal.lo \
-	libbncmm_base_la-cg.lo libbncmm_base_la-cocg.lo \
-	libbncmm_base_la-krylov.lo libbncmm_base_la-krylov_c.lo \
-	libbncmm_base_la-krylov_dd.lo libbncmm_base_la-krylov_cdd.lo \
-	libbncmm_base_la-krylov_td.lo libbncmm_base_la-krylov_ctd.lo \
-	libbncmm_base_la-krylov_qd.lo libbncmm_base_la-krylov_cqd.lo \
-	libbncmm_base_la-lanczos.lo libbncmm_base_la-algebraic_eq.lo \
+	libbncmm_base_la-sparse_cqd.lo libbncmm_base_la-cdslinear.lo \
+	libbncmm_base_la-ctslinear.lo libbncmm_base_la-cqslinear.lo \
+	libbncmm_base_la-cdslu.lo libbncmm_base_la-ctslu.lo \
+	libbncmm_base_la-cqslu.lo libbncmm_base_la-sparse_float.lo \
+	libbncmm_base_la-sparse_ds.lo libbncmm_base_la-sparse_ts.lo \
+	libbncmm_base_la-sparse_qs.lo libbncmm_base_la-sparse_cds.lo \
+	libbncmm_base_la-sparse_cts.lo libbncmm_base_la-sparse_cqs.lo \
+	libbncmm_base_la-tridiagonal.lo libbncmm_base_la-cg.lo \
+	libbncmm_base_la-cocg.lo libbncmm_base_la-krylov.lo \
+	libbncmm_base_la-krylov_c.lo libbncmm_base_la-krylov_dd.lo \
+	libbncmm_base_la-krylov_cdd.lo libbncmm_base_la-krylov_td.lo \
+	libbncmm_base_la-krylov_ctd.lo libbncmm_base_la-krylov_qd.lo \
+	libbncmm_base_la-krylov_cqd.lo libbncmm_base_la-lanczos.lo \
+	libbncmm_base_la-algebraic_eq.lo \
 	libbncmm_base_la-hessenberg.lo
 am__objects_2 = libbncmm_base_la-matmul_strassen_general_mpf_omp.lo \
 	libbncmm_base_la-matmul_strassen_general_mpc_omp.lo \
@@ -318,41 +328,25 @@ am__objects_2 = libbncmm_base_la-matmul_strassen_general_mpf_omp.lo \
 #am__objects_3 = $(am__objects_2)
 am_libbncmm_base_la_OBJECTS = $(am__objects_1) $(am__objects_3)
 libbncmm_base_la_OBJECTS = $(am_libbncmm_base_la_OBJECTS)
-libbncmm_fsparse_la_LIBADD =
-am_libbncmm_fsparse_la_OBJECTS = libbncmm_fsparse_la-sparse_float.lo
-libbncmm_fsparse_la_OBJECTS = $(am_libbncmm_fsparse_la_OBJECTS)
-libbncmm_single_la_LIBADD =
-am__objects_4 = libbncmm_single_la-cdslinear.lo \
-	libbncmm_single_la-ctslinear.lo \
-	libbncmm_single_la-cqslinear.lo libbncmm_single_la-cdslu.lo \
-	libbncmm_single_la-ctslu.lo libbncmm_single_la-cqslu.lo \
-	libbncmm_single_la-sparse_ds.lo \
-	libbncmm_single_la-sparse_ts.lo \
-	libbncmm_single_la-sparse_qs.lo \
-	libbncmm_single_la-sparse_cds.lo \
-	libbncmm_single_la-sparse_cts.lo \
-	libbncmm_single_la-sparse_cqs.lo
-am_libbncmm_single_la_OBJECTS = $(am__objects_4)
-libbncmm_single_la_OBJECTS = $(am_libbncmm_single_la_OBJECTS)
 libbncmm_sp_la_LIBADD =
-am__objects_5 = libbncmm_sp_la-cg.lo libbncmm_sp_la-cocg.lo \
+am__objects_4 = libbncmm_sp_la-cg.lo libbncmm_sp_la-cocg.lo \
 	libbncmm_sp_la-krylov.lo libbncmm_sp_la-krylov_c.lo \
 	libbncmm_sp_la-krylov_dd.lo libbncmm_sp_la-krylov_cdd.lo \
 	libbncmm_sp_la-krylov_td.lo libbncmm_sp_la-krylov_ctd.lo \
 	libbncmm_sp_la-krylov_qd.lo libbncmm_sp_la-krylov_cqd.lo \
 	libbncmm_sp_la-lanczos.lo
-am_libbncmm_sp_la_OBJECTS = $(am__objects_5)
+am_libbncmm_sp_la_OBJECTS = $(am__objects_4)
 libbncmm_sp_la_OBJECTS = $(am_libbncmm_sp_la_OBJECTS)
 libbncmm_sp_d_la_LIBADD =
-am__objects_6 = libbncmm_sp_d_la-cg.lo libbncmm_sp_d_la-cocg.lo \
+am__objects_5 = libbncmm_sp_d_la-cg.lo libbncmm_sp_d_la-cocg.lo \
 	libbncmm_sp_d_la-krylov.lo libbncmm_sp_d_la-krylov_c.lo \
 	libbncmm_sp_d_la-krylov_dd.lo libbncmm_sp_d_la-krylov_cdd.lo \
 	libbncmm_sp_d_la-krylov_td.lo libbncmm_sp_d_la-krylov_ctd.lo \
 	libbncmm_sp_d_la-krylov_qd.lo libbncmm_sp_d_la-krylov_cqd.lo
-am_libbncmm_sp_d_la_OBJECTS = $(am__objects_6)
+am_libbncmm_sp_d_la_OBJECTS = $(am__objects_5)
 libbncmm_sp_d_la_OBJECTS = $(am_libbncmm_sp_d_la_OBJECTS)
 libbncmm_sp_d_precond_la_LIBADD =
-am__objects_7 = libbncmm_sp_d_precond_la-krylov.lo \
+am__objects_6 = libbncmm_sp_d_precond_la-krylov.lo \
 	libbncmm_sp_d_precond_la-krylov_c.lo \
 	libbncmm_sp_d_precond_la-krylov_dd.lo \
 	libbncmm_sp_d_precond_la-krylov_cdd.lo \
@@ -360,11 +354,11 @@ am__objects_7 = libbncmm_sp_d_precond_la-krylov.lo \
 	libbncmm_sp_d_precond_la-krylov_ctd.lo \
 	libbncmm_sp_d_precond_la-krylov_qd.lo \
 	libbncmm_sp_d_precond_la-krylov_cqd.lo
-am_libbncmm_sp_d_precond_la_OBJECTS = $(am__objects_7)
+am_libbncmm_sp_d_precond_la_OBJECTS = $(am__objects_6)
 libbncmm_sp_d_precond_la_OBJECTS =  \
 	$(am_libbncmm_sp_d_precond_la_OBJECTS)
 libbncmm_sp_precond_la_LIBADD =
-am__objects_8 = libbncmm_sp_precond_la-krylov.lo \
+am__objects_7 = libbncmm_sp_precond_la-krylov.lo \
 	libbncmm_sp_precond_la-krylov_c.lo \
 	libbncmm_sp_precond_la-krylov_dd.lo \
 	libbncmm_sp_precond_la-krylov_cdd.lo \
@@ -372,7 +366,7 @@ am__objects_8 = libbncmm_sp_precond_la-krylov.lo \
 	libbncmm_sp_precond_la-krylov_ctd.lo \
 	libbncmm_sp_precond_la-krylov_qd.lo \
 	libbncmm_sp_precond_la-krylov_cqd.lo
-am_libbncmm_sp_precond_la_OBJECTS = $(am__objects_8)
+am_libbncmm_sp_precond_la_OBJECTS = $(am__objects_7)
 libbncmm_sp_precond_la_OBJECTS = $(am_libbncmm_sp_precond_la_OBJECTS)
 AM_V_P = $(am__v_P_$(V))
 am__v_P_ = $(am__v_P_$(AM_DEFAULT_VERBOSITY))
@@ -408,14 +402,12 @@ am__v_CCLD_ = $(am__v_CCLD_$(AM_DEFAULT_VERBOSITY))
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
 SOURCES = $(libbncmatmul_la_SOURCES) $(libbncmm_base_la_SOURCES) \
-	$(libbncmm_fsparse_la_SOURCES) $(libbncmm_single_la_SOURCES) \
 	$(libbncmm_sp_la_SOURCES) $(libbncmm_sp_d_la_SOURCES) \
 	$(libbncmm_sp_d_precond_la_SOURCES) \
 	$(libbncmm_sp_precond_la_SOURCES)
 DIST_SOURCES = $(libbncmatmul_la_SOURCES) \
-	$(am__libbncmm_base_la_SOURCES_DIST) \
-	$(libbncmm_fsparse_la_SOURCES) $(libbncmm_single_la_SOURCES) \
-	$(libbncmm_sp_la_SOURCES) $(libbncmm_sp_d_la_SOURCES) \
+	$(am__libbncmm_base_la_SOURCES_DIST) $(libbncmm_sp_la_SOURCES) \
+	$(libbncmm_sp_d_la_SOURCES) \
 	$(libbncmm_sp_d_precond_la_SOURCES) \
 	$(libbncmm_sp_precond_la_SOURCES)
 RECURSIVE_TARGETS = all-recursive check-recursive cscopelist-recursive \
@@ -655,9 +647,6 @@ top_srcdir = ..
 AUTOMAKE_OPTIONS = foreign subdir-objects no-dependencies
 AM_CPPFLAGS = \
 	-I$(top_srcdir)/include \
-	-DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR \
-	-DUSE_DSLINEAR -DUSE_TSLINEAR -DUSE_QSLINEAR \
-	-DUSE_MPFLINEAR \
 	-DUSE_TD_BF -DUSE_QD_BF \
 	-DUSE_TS_BF -DUSE_QS_BF \
 	-DUSE_GMP -DUSE_MPFR -DUSE_DD -DUSE_QD \
@@ -705,6 +694,11 @@ BNCMM_BASE_SOURCES = \
 	sparse_dd.c sparse_cdd.c \
 	sparse_td.c sparse_ctd.c \
 	sparse_qd.c sparse_cqd.c \
+	cdslinear.c ctslinear.c cqslinear.c \
+	cdslu.c ctslu.c cqslu.c \
+	sparse_float.c \
+	sparse_ds.c sparse_ts.c sparse_qs.c \
+	sparse_cds.c sparse_cts.c sparse_cqs.c \
 	tridiagonal.c \
 	cg.c cocg.c \
 	krylov.c krylov_c.c \
@@ -745,8 +739,6 @@ SP_PRECOND_SOURCES = \
 #---------------------------------------
 noinst_LTLIBRARIES = \
 	libbncmm_base.la \
-	libbncmm_single.la \
-	libbncmm_fsparse.la \
 	libbncmm_sp.la \
 	libbncmm_sp_d.la \
 	libbncmm_sp_precond.la \
@@ -771,49 +763,14 @@ OMP_STRASSEN_SOURCES = \
 libbncmm_base_la_SOURCES = $(BNCMM_BASE_SOURCES) $(am__append_3)
 libbncmm_base_la_CPPFLAGS = $(AM_CPPFLAGS)
 
-#---------------------------------------
-# Single-based (ds/ts/qs) family — complex-single linear/LU and the
-# real+complex single-based sparse SpMV.  These MUST be compiled with the
-# single-based macros ONLY (NOT USE_DDLINEAR/TDLINEAR/QDLINEAR), exactly as
-# src/Makefile.legacy does: cdslinear.h / cddlinear.h (etc.) share several
-# declaration names, so mixing the two families in one TU clashes.  Built as
-# its own convenience library and merged into libbncmatmul, giving the
-# Automake build parity with the legacy .a (which already shipped these).
-#---------------------------------------
-BNCMM_SINGLE_SOURCES = \
-	cdslinear.c ctslinear.c cqslinear.c \
-	cdslu.c ctslu.c cqslu.c \
-	sparse_ds.c sparse_ts.c sparse_qs.c \
-	sparse_cds.c sparse_cts.c sparse_cqs.c
-
-
-# NOTE: deliberately NO -DUSE_GMP/-DUSE_MPFR here (only the include paths).
-# Like src/Makefile.legacy, the single-based family uses its native multi-
-# component sqrt (rts_sqrt/rqs_sqrt macros from rds.h/rsd.h).  The USE_GMP
-# code path in cts/cqslinear.c calls r{ts,qs}_sqrt_mpfr(), which is declared
-# nowhere — harmless in the legacy static .a (unresolved refs tolerated) but
-# fatal for the Automake shared lib built with -no-undefined.
-libbncmm_single_la_SOURCES = $(BNCMM_SINGLE_SOURCES)
-libbncmm_single_la_CPPFLAGS = \
-	-I$(top_srcdir)/include \
-	-DUSE_DSLINEAR -DUSE_TSLINEAR -DUSE_QSLINEAR \
-	   
-
-
-#---------------------------------------
-# Single-precision (float) real sparse SpMV.  Like the single-based family
-# above, this MUST be compiled with -DUSE_FLINEAR ONLY (NOT the DD/TD/QD
-# families) — mixing flinear.h with the cddlinear.h family in one TU clashes
-# (cdslinear.h vs cddlinear.h share macro names).  Matches src/Makefile.legacy
-# (which compiles sparse_float.c with -DUSE_FLINEAR) and keeps the Automake
-# library at parity with the legacy .a, which already shipped sparse_float.o.
-#---------------------------------------
-libbncmm_fsparse_la_SOURCES = sparse_float.c
-libbncmm_fsparse_la_CPPFLAGS = \
-	-I$(top_srcdir)/include \
-	-DUSE_FLINEAR \
-	   
-
+# NOTE: the single-based (ds/ts/qs, complex-single, sparse_float) family
+# used to live in separate convenience libs (libbncmm_single/libbncmm_fsparse)
+# compiled WITHOUT the DD-family macros: cdslinear.h etc. accidentally
+# redefined GET_CDDMATRIX_IJ & co. (copy-paste vestiges, since renamed to
+# their own GET_CDSMATRIX_IJ names) and the USE_GMP path referenced the
+# then-missing r{ds,ts,qs}_sqrt_mpfr (since implemented in mpfr_dtq_sd.c).
+# Both root causes are fixed, so everything is one library now and the
+# USE_*LINEAR compile-time gates are gone entirely.
 libbncmm_sp_la_SOURCES = $(SP_SOURCES)
 libbncmm_sp_la_CPPFLAGS = $(AM_CPPFLAGS) -DUSE_SPARSE_VERSION
 libbncmm_sp_d_la_SOURCES = $(SP_D_SOURCES)
@@ -835,10 +792,10 @@ libbncmm_sp_d_precond_la_CPPFLAGS = $(AM_CPPFLAGS) -DUSE_SPARSE_D_VERSION -DUSE_
 #---------------------------------------
 lib_LTLIBRARIES = libbncmatmul.la
 libbncmatmul_la_SOURCES = 
-libbncmatmul_la_LIBADD = libbncmm_base.la libbncmm_single.la \
-	libbncmm_fsparse.la libbncmm_sp.la libbncmm_sp_d.la \
-	libbncmm_sp_precond.la libbncmm_sp_d_precond.la  \
-	-lmpc  -lmpfr  -lgmp \
+libbncmatmul_la_LIBADD = libbncmm_base.la libbncmm_sp.la \
+	libbncmm_sp_d.la libbncmm_sp_precond.la \
+	libbncmm_sp_d_precond.la  -lmpc \
+	 -lmpfr  -lgmp \
 	 -lqd -lpthread -lm -lstdc++ $(am__append_4) \
 	$(am__append_5)
 libbncmatmul_la_LDFLAGS = \
@@ -998,12 +955,6 @@ libbncmatmul.la: $(libbncmatmul_la_OBJECTS) $(libbncmatmul_la_DEPENDENCIES) $(EX
 
 libbncmm_base.la: $(libbncmm_base_la_OBJECTS) $(libbncmm_base_la_DEPENDENCIES) $(EXTRA_libbncmm_base_la_DEPENDENCIES) 
 	$(AM_V_CCLD)$(LINK)  $(libbncmm_base_la_OBJECTS) $(libbncmm_base_la_LIBADD) $(LIBS)
-
-libbncmm_fsparse.la: $(libbncmm_fsparse_la_OBJECTS) $(libbncmm_fsparse_la_DEPENDENCIES) $(EXTRA_libbncmm_fsparse_la_DEPENDENCIES) 
-	$(AM_V_CCLD)$(LINK)  $(libbncmm_fsparse_la_OBJECTS) $(libbncmm_fsparse_la_LIBADD) $(LIBS)
-
-libbncmm_single.la: $(libbncmm_single_la_OBJECTS) $(libbncmm_single_la_DEPENDENCIES) $(EXTRA_libbncmm_single_la_DEPENDENCIES) 
-	$(AM_V_CCLD)$(LINK)  $(libbncmm_single_la_OBJECTS) $(libbncmm_single_la_LIBADD) $(LIBS)
 
 libbncmm_sp.la: $(libbncmm_sp_la_OBJECTS) $(libbncmm_sp_la_DEPENDENCIES) $(EXTRA_libbncmm_sp_la_DEPENDENCIES) 
 	$(AM_V_CCLD)$(LINK)  $(libbncmm_sp_la_OBJECTS) $(libbncmm_sp_la_LIBADD) $(LIBS)
@@ -1353,6 +1304,45 @@ libbncmm_base_la-sparse_qd.lo: sparse_qd.c
 libbncmm_base_la-sparse_cqd.lo: sparse_cqd.c
 	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libbncmm_base_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libbncmm_base_la-sparse_cqd.lo `test -f 'sparse_cqd.c' || echo '$(srcdir)/'`sparse_cqd.c
 
+libbncmm_base_la-cdslinear.lo: cdslinear.c
+	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libbncmm_base_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libbncmm_base_la-cdslinear.lo `test -f 'cdslinear.c' || echo '$(srcdir)/'`cdslinear.c
+
+libbncmm_base_la-ctslinear.lo: ctslinear.c
+	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libbncmm_base_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libbncmm_base_la-ctslinear.lo `test -f 'ctslinear.c' || echo '$(srcdir)/'`ctslinear.c
+
+libbncmm_base_la-cqslinear.lo: cqslinear.c
+	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libbncmm_base_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libbncmm_base_la-cqslinear.lo `test -f 'cqslinear.c' || echo '$(srcdir)/'`cqslinear.c
+
+libbncmm_base_la-cdslu.lo: cdslu.c
+	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libbncmm_base_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libbncmm_base_la-cdslu.lo `test -f 'cdslu.c' || echo '$(srcdir)/'`cdslu.c
+
+libbncmm_base_la-ctslu.lo: ctslu.c
+	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libbncmm_base_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libbncmm_base_la-ctslu.lo `test -f 'ctslu.c' || echo '$(srcdir)/'`ctslu.c
+
+libbncmm_base_la-cqslu.lo: cqslu.c
+	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libbncmm_base_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libbncmm_base_la-cqslu.lo `test -f 'cqslu.c' || echo '$(srcdir)/'`cqslu.c
+
+libbncmm_base_la-sparse_float.lo: sparse_float.c
+	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libbncmm_base_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libbncmm_base_la-sparse_float.lo `test -f 'sparse_float.c' || echo '$(srcdir)/'`sparse_float.c
+
+libbncmm_base_la-sparse_ds.lo: sparse_ds.c
+	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libbncmm_base_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libbncmm_base_la-sparse_ds.lo `test -f 'sparse_ds.c' || echo '$(srcdir)/'`sparse_ds.c
+
+libbncmm_base_la-sparse_ts.lo: sparse_ts.c
+	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libbncmm_base_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libbncmm_base_la-sparse_ts.lo `test -f 'sparse_ts.c' || echo '$(srcdir)/'`sparse_ts.c
+
+libbncmm_base_la-sparse_qs.lo: sparse_qs.c
+	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libbncmm_base_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libbncmm_base_la-sparse_qs.lo `test -f 'sparse_qs.c' || echo '$(srcdir)/'`sparse_qs.c
+
+libbncmm_base_la-sparse_cds.lo: sparse_cds.c
+	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libbncmm_base_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libbncmm_base_la-sparse_cds.lo `test -f 'sparse_cds.c' || echo '$(srcdir)/'`sparse_cds.c
+
+libbncmm_base_la-sparse_cts.lo: sparse_cts.c
+	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libbncmm_base_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libbncmm_base_la-sparse_cts.lo `test -f 'sparse_cts.c' || echo '$(srcdir)/'`sparse_cts.c
+
+libbncmm_base_la-sparse_cqs.lo: sparse_cqs.c
+	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libbncmm_base_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libbncmm_base_la-sparse_cqs.lo `test -f 'sparse_cqs.c' || echo '$(srcdir)/'`sparse_cqs.c
+
 libbncmm_base_la-tridiagonal.lo: tridiagonal.c
 	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libbncmm_base_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libbncmm_base_la-tridiagonal.lo `test -f 'tridiagonal.c' || echo '$(srcdir)/'`tridiagonal.c
 
@@ -1469,45 +1459,6 @@ libbncmm_base_la-bncomp_linear_cqd.lo: bncomp_linear_cqd.c
 
 libbncmm_base_la-bncomp_sparse.lo: bncomp_sparse.c
 	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libbncmm_base_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libbncmm_base_la-bncomp_sparse.lo `test -f 'bncomp_sparse.c' || echo '$(srcdir)/'`bncomp_sparse.c
-
-libbncmm_fsparse_la-sparse_float.lo: sparse_float.c
-	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libbncmm_fsparse_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libbncmm_fsparse_la-sparse_float.lo `test -f 'sparse_float.c' || echo '$(srcdir)/'`sparse_float.c
-
-libbncmm_single_la-cdslinear.lo: cdslinear.c
-	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libbncmm_single_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libbncmm_single_la-cdslinear.lo `test -f 'cdslinear.c' || echo '$(srcdir)/'`cdslinear.c
-
-libbncmm_single_la-ctslinear.lo: ctslinear.c
-	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libbncmm_single_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libbncmm_single_la-ctslinear.lo `test -f 'ctslinear.c' || echo '$(srcdir)/'`ctslinear.c
-
-libbncmm_single_la-cqslinear.lo: cqslinear.c
-	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libbncmm_single_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libbncmm_single_la-cqslinear.lo `test -f 'cqslinear.c' || echo '$(srcdir)/'`cqslinear.c
-
-libbncmm_single_la-cdslu.lo: cdslu.c
-	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libbncmm_single_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libbncmm_single_la-cdslu.lo `test -f 'cdslu.c' || echo '$(srcdir)/'`cdslu.c
-
-libbncmm_single_la-ctslu.lo: ctslu.c
-	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libbncmm_single_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libbncmm_single_la-ctslu.lo `test -f 'ctslu.c' || echo '$(srcdir)/'`ctslu.c
-
-libbncmm_single_la-cqslu.lo: cqslu.c
-	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libbncmm_single_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libbncmm_single_la-cqslu.lo `test -f 'cqslu.c' || echo '$(srcdir)/'`cqslu.c
-
-libbncmm_single_la-sparse_ds.lo: sparse_ds.c
-	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libbncmm_single_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libbncmm_single_la-sparse_ds.lo `test -f 'sparse_ds.c' || echo '$(srcdir)/'`sparse_ds.c
-
-libbncmm_single_la-sparse_ts.lo: sparse_ts.c
-	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libbncmm_single_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libbncmm_single_la-sparse_ts.lo `test -f 'sparse_ts.c' || echo '$(srcdir)/'`sparse_ts.c
-
-libbncmm_single_la-sparse_qs.lo: sparse_qs.c
-	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libbncmm_single_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libbncmm_single_la-sparse_qs.lo `test -f 'sparse_qs.c' || echo '$(srcdir)/'`sparse_qs.c
-
-libbncmm_single_la-sparse_cds.lo: sparse_cds.c
-	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libbncmm_single_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libbncmm_single_la-sparse_cds.lo `test -f 'sparse_cds.c' || echo '$(srcdir)/'`sparse_cds.c
-
-libbncmm_single_la-sparse_cts.lo: sparse_cts.c
-	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libbncmm_single_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libbncmm_single_la-sparse_cts.lo `test -f 'sparse_cts.c' || echo '$(srcdir)/'`sparse_cts.c
-
-libbncmm_single_la-sparse_cqs.lo: sparse_cqs.c
-	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libbncmm_single_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libbncmm_single_la-sparse_cqs.lo `test -f 'sparse_cqs.c' || echo '$(srcdir)/'`sparse_cqs.c
 
 libbncmm_sp_la-cg.lo: cg.c
 	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libbncmm_sp_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libbncmm_sp_la-cg.lo `test -f 'cg.c' || echo '$(srcdir)/'`cg.c

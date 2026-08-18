@@ -1654,7 +1654,6 @@ void _bncavx2_ceval_qdpoly_estrin(cqdfloat *ret, QDPoly a, cqdfloat *x)
     return;
 }
 
-#ifdef USE_QDLINEAR
 // eval based on Hessenberg matrix
 // mphes: Upper Hessenberg matrix
 // return |hes - x * I|
@@ -1715,7 +1714,6 @@ void test_ceval_hes_qdmatrix(cqdfloat *ret, QDMatrix hes, cqdfloat *x)
 
 	free(x_array);
 }
-#endif // USE_QDLINEAR
 
 #ifdef __cpluplus
 } // extern "C" {

@@ -40,7 +40,6 @@
 #endif // USE_OMP_VERSION
 
 
-#ifdef USE_DDLINEAR
 
 //#if 0
 /************************************************************/
@@ -1823,4 +1822,3 @@
 	return return_val;
 }
 
-#endif // USE_DDLINEAR

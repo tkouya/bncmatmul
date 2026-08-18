@@ -26,7 +26,6 @@
 extern "C" {
 #endif // __cplusplus
 
-#ifdef USE_TDLINEAR
 /* DD */
 #include "tdlinear.h"
 #include "ctdlinear.h"
@@ -736,7 +735,6 @@ long int qd_aberth(CQDVector ans, CQDVector x_init, QDPoly func, long int maxtim
 
 	return times;
 }
-#endif // USE_TDLINEAR
 
 #ifdef __cplusplus
 } // extern "C" {

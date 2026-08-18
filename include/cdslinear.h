@@ -85,8 +85,8 @@ static inline void subst_cdsvector_i(cdsfloat *ret, CDSVector vec, long int inde
 	rds_set(ret->val_im, get_dsvector_i(vec->im, index));
 } 
 // Very dangerous!! 2024-04-18(Thu) T.Kouya
-//	GET_CDDVECTOR_I(vec, index))
-#define GET_CDDVECTOR_I(vec, index) ((cdsfloat *)&(get_cdsvector_i_cdsfloat((vec), (index))))
+//	GET_CDSVECTOR_I(vec, index))
+#define GET_CDSVECTOR_I(vec, index) ((cdsfloat *)&(get_cdsvector_i_cdsfloat((vec), (index))))
 //#define get_cdsvector_i(vec, index) ((cdsfloat *)&(get_cdsvector_i_cdsfloat((vec), (index))))
 static inline cdsfloat *get_cdsvector_i(CDSVector vec, long int index)
 {
@@ -107,7 +107,7 @@ static inline void set_cdsvector_i(CDSVector vec, long int index, cdsfloat *val)
     set_dsvector_i(vec->re, index, val->val_re);
     set_dsvector_i(vec->im, index, val->val_im);
 }
-#define SET_CDDVECTOR_I(vec, index, val) set_cdsvector_i((vec), (index), (val))
+#define SET_CDSVECTOR_I(vec, index, val) set_cdsvector_i((vec), (index), (val))
 
 // set_cdsvector_i_d
 static inline void set_cdsvector_i_d(CDSVector vec, long int index, float val) // val
@@ -115,7 +115,7 @@ static inline void set_cdsvector_i_d(CDSVector vec, long int index, float val) /
     set_dsvector_i_d(vec->re, index, val);
     set0_dsvector_i(vec->im, index);
 }
-#define SET_CDDVECTOR_I_D(vec, index, val) set_cdsvector_i_d((vec), (index), (val))
+#define SET_CDSVECTOR_I_D(vec, index, val) set_cdsvector_i_d((vec), (index), (val))
 
 // set_cdsvector_i_cd
 static inline void set_cdsvector_i_cd(CDSVector vec, long int index, float _Complex val) // val
@@ -140,7 +140,7 @@ static inline void set0_cdsvector_i(CDSVector vec, long int index)
 	set0_dsvector_i(vec->re, index);
 	set0_dsvector_i(vec->im, index);
 }
-#define SET0_CDDVECTOR_I(vec, index) set0_cdsvector_i((vec), (index))
+#define SET0_CDSVECTOR_I(vec, index) set0_cdsvector_i((vec), (index))
 
 // initialize CDSVector
 CDSVector init_cdsvector(int dimension);
@@ -275,7 +275,7 @@ static inline void subst_cdsmatrix_ij(cdsfloat *ret, CDSMatrix mat, long int i, 
 	//return ret;
 } 
 // Very dangerous!! 2024-04-18(Thu) T.Kouya
-#define GET_CDDMATRIX_IJ(mat, i, j) (&(get_cdsmatrix_ij_cdsfloat((mat), (i), (j))))
+#define GET_CDSMATRIX_IJ(mat, i, j) (&(get_cdsmatrix_ij_cdsfloat((mat), (i), (j))))
 //#define get_cdsmatrix_ij(mat, i, j) (&(get_cdsmatrix_ij_cdsfloat((mat), (i), (j))))
 static inline cdsfloat *get_cdsmatrix_ij(CDSMatrix mat, long int i, long int j)
 {
@@ -304,7 +304,7 @@ static inline void set_cdsmatrix_ij(CDSMatrix mat, long int i, long int j, cdsfl
 
 	return;
 } 
-#define SET_CDDMATRIX_IJ(mat, i, j, val) set_cdsmatrix_ij((mat), (i), (j), (val))
+#define SET_CDSMATRIX_IJ(mat, i, j, val) set_cdsmatrix_ij((mat), (i), (j), (val))
 
 // For MPBLAS
 #ifdef _DD_COMPLEX_H_
@@ -335,8 +335,8 @@ static inline void set_cdsmatrix_ij_d(CDSMatrix mat, long int i, long int j, flo
 
 	return;
 } 
-#define SET_CDDMATRIX_IJ_D(mat, i, j, val) set_cdsmatrix_ij_d((mat), (i), (j), (val))
-#define SET_CDDMATRIX_IJ_UI(mat, i, j, val) set_cdsmatrix_ij_d((mat), (i), (j), (float)(val))
+#define SET_CDSMATRIX_IJ_D(mat, i, j, val) set_cdsmatrix_ij_d((mat), (i), (j), (val))
+#define SET_CDSMATRIX_IJ_UI(mat, i, j, val) set_cdsmatrix_ij_d((mat), (i), (j), (float)(val))
 #define set_cdsmatrix_ij_ui(mat, i, j, val) set_cdsmatrix_ij_d((mat), (i), (j), (float)(val))
 
 // set_cdsmatrix_ij_dd
@@ -377,7 +377,7 @@ static inline void set0_cdsmatrix_ij(CDSMatrix mat, long int i, long int j)
 
 	return;
 }
-#define SET0_CDDMATRIX_IJ(mat, i, j) set0_cdsmatrix_ij((mat), (i), (j))
+#define SET0_CDSMATRIX_IJ(mat, i, j) set0_cdsmatrix_ij((mat), (i), (j))
 
 // set a zero matrix
 //void set0_cdsmatrix(CDSMatrix mat);

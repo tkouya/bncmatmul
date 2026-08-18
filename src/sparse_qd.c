@@ -27,7 +27,6 @@
 #include "bncsparse.h"
 
 //#ifdef USE_GMP
-#ifdef USE_QDLINEAR
 
 /* Sparse matrix struct */
 /* Example:             */
@@ -4992,4 +4991,3 @@ void solve_iLU0t_drsmatrix_qdvec(QDVector ret, DRSMatrix ilu, QDVector b)
 		}
 	}
 }
-#endif // USE_QDLINEAR

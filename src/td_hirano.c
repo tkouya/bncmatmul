@@ -29,7 +29,6 @@
 // --------------------------
 // TD precision
 // --------------------------
-#ifdef USE_TDLINEAR
 
 // Missing function in rctd.h
 // ret := a_real + a_imag * I (where a_imag is usually 0)
@@ -679,4 +678,3 @@ void deflation_ctdpoly(CTDPoly ret, CTDPoly pol, ctdfloat *root)
     return;
 }
 
-#endif // USE_TDLINEAR

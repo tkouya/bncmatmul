@@ -17,7 +17,6 @@
 
 #include "bncsparse.h"
 
-#ifdef USE_TSLINEAR
 
 #ifndef EMPTY
 #define EMPTY (-1)
@@ -486,4 +485,3 @@ int mul_tsrsmatrixt_tsvec(TSVector ret, TSRSMatrix mat, TSVector vec)
 	return SUCCESS;
 }
 
-#endif // USE_TSLINEAR

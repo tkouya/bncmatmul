@@ -348,7 +348,6 @@ long int FCG(FVector answer, FMatrix a, FVector b, float reps, float aeps, long 
 #endif // ifndef USE_SPARSE_D_VERSION
 
 // DD CG
-#ifdef USE_DDLINEAR
 /************************************************************/
 /*                                                          */
 /*                 Conjugate-Gradient Method                */
@@ -511,10 +510,8 @@ long int FCG(FVector answer, FMatrix a, FVector b, float reps, float aeps, long 
 
 	return return_val;
 }
-#endif // USE_DDLINEAR
 
 // TD CG
-#ifdef USE_TDLINEAR
 /************************************************************/
 /*                                                          */
 /*                 Conjugate-Gradient Method                */
@@ -677,10 +674,8 @@ long int FCG(FVector answer, FMatrix a, FVector b, float reps, float aeps, long 
 
 	return return_val;
 }
-#endif // USE_TDLINEAR
 
 // QD CG
-#ifdef USE_QDLINEAR
 /************************************************************/
 /*                                                          */
 /*                 Conjugate-Gradient Method                */
@@ -843,7 +838,6 @@ long int FCG(FVector answer, FMatrix a, FVector b, float reps, float aeps, long 
 
 	return return_val;
 }
-#endif // USE_QDLINEAR
 
 
 #ifdef USE_GMP

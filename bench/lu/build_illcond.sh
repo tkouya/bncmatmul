@@ -4,7 +4,7 @@ cd "$(dirname "$0")/../.."   # repo root
 CF="-O3 -ffp-contract=off -Iinclude"
 LK="-lmpc -lmpfr -lgmp -lpthread -lqd -lstdc++ -lm"
 DEFS="-DUSE_DD -DUSE_QD -DUSE_GMP -DUSE_MPFR -DUSE_MPC -DUSE_TD_BF -DUSE_QD_BF -DUSE_TS_BF -DUSE_QS_BF"
-LINDEFS="-DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_DSLINEAR -DUSE_TSLINEAR -DUSE_QSLINEAR"
+LINDEFS=""
 OUT=bench/lu
 OK=0; FAIL=0; FL=""
 

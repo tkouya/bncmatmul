@@ -204,7 +204,6 @@
 #endif // ifndef USE_SPARSE_D_VERSION
 
 // DD CG
-#ifdef USE_DDLINEAR
 /************************************************************/
 /*                                                          */
 /*      Conjugate-Orthogonal Conjugate-Gradient Method      */
@@ -386,10 +385,8 @@
 
 	return return_val;
 }
-#endif // USE_DDLINEAR
 
 // TD CG
-#ifdef USE_TDLINEAR
 /************************************************************/
 /*                                                          */
 /*      Conjugate-Orthogonal Conjugate-Gradient Method      */
@@ -571,10 +568,8 @@
 
 	return return_val;
 }
-#endif // USE_TDLINEAR
 
 // QD CG
-#ifdef USE_QDLINEAR
 /************************************************************/
 /*                                                          */
 /*      Conjugate-Orthogonal Conjugate-Gradient Method      */
@@ -755,7 +750,6 @@
 
 	return return_val;
 }
-#endif // USE_QDLINEAR
 
 
 #ifdef USE_GMP

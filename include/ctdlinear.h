@@ -24,9 +24,7 @@
 #include "rcdd.h" // Complex TD arithmetic
 
 #include "cdlinear.h"
-#ifdef USE_DDLINEAR
 #include "cddlinear.h"
-#endif // USE_DDLINEAR
 #include "tdlinear.h"
 //#include "bmatrix.h"
 
@@ -492,7 +490,6 @@ void subst_ctdmatrix_cdmat(CTDMatrix c, CDMatrix a);
 /* c := (d)a */
 void subst_cdmatrix_ctdmat(CDMatrix c, CTDMatrix a);
 
-#ifdef USE_DDLINEAR
 /* c := (td)a */
 void subst_ctdvector_cddvec(CTDVector c, CDDVector a);
 
@@ -504,7 +501,6 @@ void subst_ctdmatrix_cddmat(CTDMatrix c, CDDMatrix a);
 
 /* c := (dd)a */
 void subst_cddmatrix_ctdmat(CDDMatrix c, CTDMatrix a);
-#endif // USE_DDLINEAR
 
 
 /* Normwise relative error of vector */

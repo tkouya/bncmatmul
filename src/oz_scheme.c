@@ -529,9 +529,7 @@ int split_dmatrix_t_dmat(DMatrix ret_mat[], int num_div, DMatrix org_mat)
 // Testing
 #ifdef DEBUG
 
-#ifdef USE_DDLINEAR
 #include "dd_oz_scheme.c"
-#endif // USE_DDLINEAR
 
 #define DIM 5
 //#define DIM 10

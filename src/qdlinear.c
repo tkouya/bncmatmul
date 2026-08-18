@@ -3838,7 +3838,6 @@ void subst_dmatrix_qdmat(DMatrix c, QDMatrix a)
 }
 #endif // 0
 
-#ifdef USE_DDLINEAR
 /* c := (dd)a */
 void subst_qdvector_ddvec(QDVector c, DDVector a)
 {
@@ -3901,9 +3900,7 @@ void subst_ddmatrix_qdmat(DDMatrix c, QDMatrix a)
 		}
 	}
 }
-#endif // USE_DDLINEAR
 
-#ifdef USE_TDLINEAR
 /* c := (td)a */
 void subst_tdvector_qdvec(TDVector c, QDVector a)
 {
@@ -4025,7 +4022,6 @@ void sub_qdmatrix_tdmat_tdmat(QDMatrix c, TDMatrix a, TDMatrix b)
 		}
 	}
 }
-#endif // USE_TDLINEAR
 
 /* Normwise relative error of vector */
 void relerr_qdvector(double relerr[QDSIZE], QDVector approx_vec, QDVector true_vec, int norm_type)

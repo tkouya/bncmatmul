@@ -15,7 +15,6 @@
 
 #include "bncsparse.h"
 
-#ifdef USE_DSLINEAR
 
 #ifndef SUCCESS
 #define SUCCESS (0)
@@ -172,4 +171,3 @@ int mul_cdsrsmatrixt_cdsvec(CDSVector ret, CDSRSMatrix mat, CDSVector vec)
 	return SUCCESS;
 }
 
-#endif // USE_DSLINEAR

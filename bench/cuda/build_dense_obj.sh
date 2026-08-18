@@ -20,12 +20,12 @@ NAT_INC="-Iinclude -I/usr/local/cuda/include"
 SUP="-diag-suppress 20011 -diag-suppress 177 -diag-suppress 550 -diag-suppress 20208 -Wno-deprecated-declarations"
 mkdir -p cuda_obj
 
-defs_dd="-DUSE_DDLINEAR";
-defs_td="-DUSE_DDLINEAR -DUSE_TDLINEAR";
-defs_qd="-DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR";
-defs_ds="-DUSE_DSLINEAR";
-defs_ts="-DUSE_DSLINEAR -DUSE_TSLINEAR";
-defs_qs="-DUSE_DSLINEAR -DUSE_TSLINEAR -DUSE_QSLINEAR";
+defs_dd="";
+defs_td="";
+defs_qd="";
+defs_ds="";
+defs_ts="";
+defs_qs="";
 
 echo "== multi-component real linear (dd td qd ds ts qs) =="
 for t in dd td qd ds ts qs; do

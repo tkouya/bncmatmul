@@ -332,24 +332,17 @@ void subst_mpfmatrix_mpfvec(MPFMatrix mat, MPFVector vec[]);
 /* (mpf_t)c := (double)a */
 void subst_mpfmatrix_dmat(MPFMatrix c, DMatrix a);
 
-#ifdef USE_DDLINEAR
 /* (mpf_t)c := (dd)a */
 //void subst_mpfmatrix_ddmat(MPFMatrix c, DDMatrix a);
-#endif // USE_DDLINEAR
 
-#ifdef USE_TDLINEAR
 /* (mpf_t)c := (td)a */
 //void subst_mpfmatrix_tdmat(MPFMatrix c, TDMatrix a);
-#endif // USE_TDLINEAR
 
-#ifdef USE_QDLINEAR
 /* (mpf_t)c := (qd)a */
 //void subst_mpfmatrix_qdmat(MPFMatrix c, QDMatrix a);
-#endif // USE_QDLINEAR
 
 // ----- linear_append.c ------
 
-#ifdef USE_FLINEAR
 
 /* c := (double)a */
 void subst_fmatrix_dmat(FMatrix c, DMatrix a);
@@ -363,7 +356,6 @@ void subst_fvector_dvec(FVector c, DVector a);
 /* (double)c := (float)a */
 void subst_dvector_fvec(DVector c, FVector a);
 
-#endif // ifdef USE_FLINEAR
 
 //#ifdef USE_DLINEAR
 /* get residual in double precision */

@@ -29,7 +29,6 @@
 // --------------------------
 // DD precision
 // --------------------------
-#ifdef USE_DDLINEAR
 
 // Missing function in rcdd.h
 // ret := a_real + a_imag * I (where a_imag is usually 0)
@@ -678,4 +677,3 @@ void deflation_cddpoly(CDDPoly ret, CDDPoly pol, cddfloat *root)
     return;
 }
 
-#endif // USE_DDLINEAR

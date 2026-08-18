@@ -1190,7 +1190,6 @@ void subst_cdmatrix_ctdmat(CDMatrix c, CTDMatrix a)
     free_dmatrix(im);
 }
 
-#ifdef USE_DDLINEAR
 
 /* c := (td)a */
 void subst_ctdvector_cddvec(CTDVector c, CDDVector a)
@@ -1220,7 +1219,6 @@ void subst_cddmatrix_ctdmat(CDDMatrix c, CTDMatrix a)
     subst_ddmatrix_tdmat(c->im, a->im);
 }
 
-#endif // USE_DDLINEAR
 
 /* Normwise relative error of vector */
 void relerr_ctdvector(double relerr[TDSIZE], CTDVector approx_vec, CTDVector true_vec, int norm_type)

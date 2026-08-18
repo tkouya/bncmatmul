@@ -17,7 +17,6 @@
 
 #include "bncsparse.h"
 
-#ifdef USE_DSLINEAR
 
 #ifndef EMPTY
 #define EMPTY (-1)
@@ -487,4 +486,3 @@ int mul_dsrsmatrixt_dsvec(DSVector ret, DSRSMatrix mat, DSVector vec)
 	return SUCCESS;
 }
 
-#endif // USE_DSLINEAR

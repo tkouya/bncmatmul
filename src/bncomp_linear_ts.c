@@ -33,7 +33,6 @@
 //---------------------------------------
 // TS
 //---------------------------------------
-#ifdef USE_TSLINEAR
 //--------
 // Vector
 //--------
@@ -2433,4 +2432,3 @@ void _bncomp_mul_ctsmatrix_4m(CTSMatrix ret, CTSMatrix a, CTSMatrix b)
 }
 #endif // 0
 
-#endif // USE_TSLINEAR

@@ -1154,7 +1154,6 @@ void subst_cdmatrix_cqdmat(CDMatrix c, CQDMatrix a)
     free_dmatrix(im);
 }
 
-#ifdef USE_DDLINEAR
 
 /* c := (qd)a */
 void subst_cqdvector_cddvec(CQDVector c, CDDVector a)
@@ -1184,9 +1183,7 @@ void subst_cddmatrix_cqdmat(CDDMatrix c, CQDMatrix a)
     subst_ddmatrix_qdmat(c->im, a->im);
 }
 
-#endif // USE_DDLINEAR
 
-#ifdef USE_TDLINEAR
 
 /* c := (qd)a */
 void subst_cqdvector_ctdvec(CQDVector c, CTDVector a)
@@ -1216,7 +1213,6 @@ void subst_ctdmatrix_cqdmat(CTDMatrix c, CQDMatrix a)
     subst_tdmatrix_qdmat(c->im, a->im);
 }
 
-#endif // USE_TDLINEAR
 
 
 /* Normwise relative error of vector */

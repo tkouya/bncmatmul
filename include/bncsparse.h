@@ -298,7 +298,6 @@ void solve_iLU0s_cdrsmatrix(CDVector ret, CDRSMatrix ilu, CDVector b);
 // -------------
 // Double-double
 // ------------- 
-#ifdef USE_DDLINEAR
 #include "ddlinear.h"
 #include "cddlinear.h"
 
@@ -518,12 +517,10 @@ void solve_iLU0t_cdrsmatrix_cddvec(CDDVector ret, CDRSMatrix ilu, CDDVector b);
 
 // iLU0s_solve: x^T * conj(iLU) = b^T
 void solve_iLU0s_cdrsmatrix_cddvec(CDDVector ret, CDRSMatrix ilu, CDDVector b);
-#endif // USE_DDLINEAR
 
 // -------------
 // Triple-double
 // ------------- 
-#ifdef USE_TDLINEAR
 #include "tdlinear.h"
 #include "ctdlinear.h"
 
@@ -736,12 +733,10 @@ void solve_iLU0t_cdrsmatrix_ctdvec(CTDVector ret, CDRSMatrix ilu, CTDVector b);
 // iLU0_solve: x^t * conj(iLU) = b^t
 void solve_iLU0s_cdrsmatrix_ctdvec(CTDVector ret, CDRSMatrix ilu, CTDVector b);
 
-#endif // USE_TDLINEAR
 
 // ----------------
 // Quadruple-double
 // ---------------- 
-#ifdef USE_QDLINEAR
 #include "qdlinear.h"
 #include "cqdlinear.h"
 
@@ -959,7 +954,6 @@ void solve_iLU0t_cdrsmatrix_cqdvec(CQDVector ret, CDRSMatrix ilu, CQDVector b);
 // iLU0s_solve: x^t * conj(iLU) = b^t
 void solve_iLU0s_cdrsmatrix_cqdvec(CQDVector ret, CDRSMatrix ilu, CQDVector b);
 
-#endif // USE_QDLINEAR
 
 /* MPF */
 #ifdef USE_GMP
@@ -1225,23 +1219,17 @@ DRSMatrix init_set_drsmatrix_mpfrsmatrix(MPFRSMatrix org_sp);
 // CMPFRSMatrix -> CDRSMatrix
 CDRSMatrix init_set_cdrsmatrix_cmpfrsmatrix(CMPFRSMatrix org_sp);
 
-#ifdef USE_DDLINEAR
 /* initialize and substitute DRSMatrix from MPFRSMatrix */
 DDRSMatrix init_set_ddrsmatrix_mpfrsmatrix(MPFRSMatrix org_sp);
 CDDRSMatrix init_set_cddrsmatrix_cmpfrsmatrix(CMPFRSMatrix org_sp);
-#endif // USE_DDLINEAR
 
-#ifdef USE_TDLINEAR
 // MPFRSMatrix -> TDRSMatrix
 TDRSMatrix init_set_tdrsmatrix_mpfrsmatrix(MPFRSMatrix org_sp);
 CTDRSMatrix init_set_ctdrsmatrix_cmpfrsmatrix(CMPFRSMatrix org_sp);
-#endif // USE_TDLINEAR
 
-#ifdef USE_QDLINEAR
 // MPFRSMatrix -> QDRSMatrix
 QDRSMatrix init_set_qdrsmatrix_mpfrsmatrix(MPFRSMatrix org_sp);
 CQDRSMatrix init_set_cqdrsmatrix_cmpfrsmatrix(CMPFRSMatrix org_sp);
-#endif // USE_QDLINEAR
 
 #endif // USE_GMP
 
@@ -1256,7 +1244,6 @@ long int CDCOCG_sp(CDVector answer, CDRSMatrix a, CDVector b, double reps, doubl
 long int CDCOCG(CDVector answer, CDMatrix a, CDVector b, double reps, double aeps, long int maxtimes);
 
 // DD
-#ifdef USE_DDLINEAR
 long int DDCG_sp(DDVector answer, DDRSMatrix a, DDVector b, double reps[DDSIZE], double aeps[DDSIZE], long int maxtimes);
 long int DDCG_sp_d(DDVector answer, DRSMatrix a, DDVector b, double reps[DDSIZE], double aeps[DDSIZE], long int maxtimes);
 long int DDCG(DDVector answer, DDMatrix a, DDVector b, double reps[DDSIZE], double aeps[DDSIZE], long int maxtimes);
@@ -1264,10 +1251,8 @@ long int DDCG(DDVector answer, DDMatrix a, DDVector b, double reps[DDSIZE], doub
 long int CDDCOCG_sp(CDDVector answer, CDDRSMatrix a, CDDVector b, double reps[DDSIZE], double aeps[DDSIZE], long int maxtimes);
 long int CDDCOCG_sp_d(CDDVector answer, CDRSMatrix a, CDDVector b, double reps[DDSIZE], double aeps[DDSIZE], long int maxtimes);
 long int CDDCOCG(CDDVector answer, CDDMatrix a, CDDVector b, double reps[DDSIZE], double aeps[DDSIZE], long int maxtimes);
-#endif //  USE_DDLINEAR
 
 // TD
-#ifdef USE_TDLINEAR
 long int TDCG_sp(TDVector answer, TDRSMatrix a, TDVector b, double reps[TDSIZE], double aeps[TDSIZE], long int maxtimes);
 long int TDCG_sp_d(TDVector answer, DRSMatrix a, TDVector b, double reps[TDSIZE], double aeps[TDSIZE], long int maxtimes);
 long int TDCG(TDVector answer, TDMatrix a, TDVector b, double reps[TDSIZE], double aeps[TDSIZE], long int maxtimes);
@@ -1275,10 +1260,8 @@ long int TDCG(TDVector answer, TDMatrix a, TDVector b, double reps[TDSIZE], doub
 long int CTDCOCG_sp(CTDVector answer, CTDRSMatrix a, CTDVector b, double reps[TDSIZE], double aeps[TDSIZE], long int maxtimes);
 long int CTDCOCG_sp_d(CTDVector answer, CDRSMatrix a, CTDVector b, double reps[TDSIZE], double aeps[TDSIZE], long int maxtimes);
 long int CTDCOCG(CTDVector answer, CTDMatrix a, CTDVector b, double reps[TDSIZE], double aeps[TDSIZE], long int maxtimes);
-#endif // USE_TDLINEAR
 
 // QD
-#ifdef USE_QDLINEAR
 long int QDCG_sp(QDVector answer, QDRSMatrix a, QDVector b, double reps[QDSIZE], double aeps[QDSIZE], long int maxtimes);
 long int QDCG_sp_d(QDVector answer, DRSMatrix a, QDVector b, double reps[QDSIZE], double aeps[QDSIZE], long int maxtimes);
 long int QDCG(QDVector answer, QDMatrix a, QDVector b, double reps[QDSIZE], double aeps[QDSIZE], long int maxtimes);
@@ -1286,7 +1269,6 @@ long int QDCG(QDVector answer, QDMatrix a, QDVector b, double reps[QDSIZE], doub
 long int CQDCOCG_sp(CQDVector answer, CQDRSMatrix a, CQDVector b, double reps[QDSIZE], double aeps[QDSIZE], long int maxtimes);
 long int CQDCOCG_sp_d(CQDVector answer, CDRSMatrix a, CQDVector b, double reps[QDSIZE], double aeps[QDSIZE], long int maxtimes);
 long int CQDCOCG(CQDVector answer, CQDMatrix a, CQDVector b, double reps[QDSIZE], double aeps[QDSIZE], long int maxtimes);
-#endif // USE_QDLINEAR
 
 // MPFR
 #ifdef USE_GMP
@@ -1335,7 +1317,6 @@ long int CDBiCGSTAB(CDVector answer, CDMatrix a, CDVector b, double reps, double
 long int CDGPBiCG(CDVector answer, CDMatrix a, CDVector b, double reps, double aeps, long int maxtimes);
 
 // DD
-#ifdef USE_DDLINEAR
 // -----------
 // Real 
 // -----------
@@ -1401,10 +1382,8 @@ long int CDDBiCG(CDDVector answer, CDDMatrix a, CDDVector b, double reps[DDSIZE]
 long int CDDCGS(CDDVector answer, CDDMatrix a, CDDVector b, double reps[DDSIZE], double aeps[DDSIZE], long int maxtimes);
 long int CDDBiCGSTAB(CDDVector answer, CDDMatrix a, CDDVector b, double reps[DDSIZE], double aeps[DDSIZE], long int maxtimes);
 long int CDDGPBiCG(CDDVector answer, CDDMatrix a, CDDVector b, double reps[DDSIZE], double aeps[DDSIZE], long int maxtimes);
-#endif // USE_DDLINEAR
 
 // TD
-#ifdef USE_TDLINEAR
 // Sparse
 long int TDBiCG_sp(TDVector answer, TDRSMatrix a, TDVector b, double reps[TDSIZE], double aeps[TDSIZE], long int maxtimes);
 long int TDCGS_sp(TDVector answer, TDRSMatrix a, TDVector b, double reps[TDSIZE], double aeps[TDSIZE], long int maxtimes);
@@ -1467,10 +1446,8 @@ long int CTDBiCG		(CTDVector answer, CTDMatrix a, CTDVector b, double reps[TDSIZ
 long int CTDCGS			(CTDVector answer, CTDMatrix a, CTDVector b, double reps[TDSIZE], double aeps[TDSIZE], long int maxtimes);
 long int CTDBiCGSTAB	(CTDVector answer, CTDMatrix a, CTDVector b, double reps[TDSIZE], double aeps[TDSIZE], long int maxtimes);
 long int CTDGPBiCG		(CTDVector answer, CTDMatrix a, CTDVector b, double reps[TDSIZE], double aeps[TDSIZE], long int maxtimes);
-#endif // USE_TDLINEAR
 
 // QD
-#ifdef USE_QDLINEAR
 // Sparse
 long int QDBiCG_sp(QDVector answer, QDRSMatrix a, QDVector b, double reps[QDSIZE], double aeps[QDSIZE], long int maxtimes);
 long int QDCGS_sp(QDVector answer, QDRSMatrix a, QDVector b, double reps[QDSIZE], double aeps[QDSIZE], long int maxtimes);
@@ -1534,7 +1511,6 @@ long int CQDCGS			(CQDVector answer, CQDMatrix a, CQDVector b, double reps[QDSIZ
 long int CQDBiCGSTAB	(CQDVector answer, CQDMatrix a, CQDVector b, double reps[QDSIZE], double aeps[QDSIZE], long int maxtimes);
 long int CQDGPBiCG		(CQDVector answer, CQDMatrix a, CQDVector b, double reps[QDSIZE], double aeps[QDSIZE], long int maxtimes);
 
-#endif // USE_QDLINEAR
 
 #ifdef USE_GMP
 // ----------
@@ -1624,7 +1600,6 @@ long int mpf_lanczos(MPFMatrix trimat, MPFVector *qvec, MPFVector *pvec, MPFMatr
 // / quad-single) and SpMV.  Added 2026-06-15 (T.Kouya).
 // SpMV implementations: scalar + AVX2 + AVX-512 + NEON + SVE2(=NEON).
 // =====================================================================
-#ifdef USE_FLINEAR
 #include "flinear.h"
 typedef struct {
 	float *element;
@@ -1646,9 +1621,7 @@ float get_frsmatrix_ij(FRSMatrix, long int, long int);
 FRSMatrix init_set_frsmatrix_fmatrix(FMatrix);
 int mul_frsmatrix_fvec(FVector, FRSMatrix, FVector);
 int mul_frsmatrixt_fvec(FVector, FRSMatrix, FVector);
-#endif // USE_FLINEAR
 
-#ifdef USE_DSLINEAR
 #include "dslinear.h"
 typedef struct {
 	float *element[DSSIZE];
@@ -1682,9 +1655,7 @@ void get_cdsrsmatrix_ij(cdsfloat *, CDSRSMatrix, long int, long int);
 CDSRSMatrix init_set_cdsrsmatrix_cdsmatrix(CDSMatrix);
 int mul_cdsrsmatrix_cdsvec(CDSVector, CDSRSMatrix, CDSVector);
 int mul_cdsrsmatrixt_cdsvec(CDSVector, CDSRSMatrix, CDSVector);
-#endif // USE_DSLINEAR
 
-#ifdef USE_TSLINEAR
 #include "tslinear.h"
 typedef struct {
 	float *element[TSSIZE];
@@ -1718,9 +1689,7 @@ void get_ctsrsmatrix_ij(ctsfloat *, CTSRSMatrix, long int, long int);
 CTSRSMatrix init_set_ctsrsmatrix_ctsmatrix(CTSMatrix);
 int mul_ctsrsmatrix_ctsvec(CTSVector, CTSRSMatrix, CTSVector);
 int mul_ctsrsmatrixt_ctsvec(CTSVector, CTSRSMatrix, CTSVector);
-#endif // USE_TSLINEAR
 
-#ifdef USE_QSLINEAR
 #include "qslinear.h"
 typedef struct {
 	float *element[QSSIZE];
@@ -1754,7 +1723,6 @@ void get_cqsrsmatrix_ij(cqsfloat *, CQSRSMatrix, long int, long int);
 CQSRSMatrix init_set_cqsrsmatrix_cqsmatrix(CQSMatrix);
 int mul_cqsrsmatrix_cqsvec(CQSVector, CQSRSMatrix, CQSVector);
 int mul_cqsrsmatrixt_cqsvec(CQSVector, CQSRSMatrix, CQSVector);
-#endif // USE_QSLINEAR
 
 /* End of __BNC_SPARSE_H__ */
 #endif // __BNC_SPARSE_H__

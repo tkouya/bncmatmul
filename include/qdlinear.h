@@ -26,13 +26,9 @@
 
 #include "dlinear.h"  // Double precision linear computation
 
-#ifdef USE_DDLINEAR
 #include "ddlinear.h" // DD precision linear computation
-#endif // USE_DDLINEAR
 
-#ifdef USE_TDLINEAR
 #include "tdlinear.h" // TD precision linear computation
-#endif // USE_TDLINEAR
 
 #ifdef USE_GMP
 #include "gmp.h"
@@ -600,7 +596,6 @@ void subst_qdmatrix_dmat(QDMatrix c, DMatrix a);
 void subst_dmatrix_qdmat(DMatrix c, QDMatrix a);
 
 
-#ifdef USE_DDLINEAR
 /* c := (dd)a */
 void subst_qdvector_ddvec(QDVector c, DDVector a);
 
@@ -612,9 +607,7 @@ void subst_qdmatrix_ddmat(QDMatrix c, DDMatrix a);
 
 /* c := (dd)a */
 void subst_ddmatrix_qdmat(DDMatrix c, QDMatrix a);
-#endif // USE_DDLINEAR
 
-#ifdef USE_TDLINEAR
 /* c := (td)a */
 void subst_tdvector_qdvec(TDVector c, QDVector a);
 
@@ -630,7 +623,6 @@ void subst_qdmatrix_tdmat(QDMatrix c, TDMatrix a);
 /* (QDMatrix)c := (TDMatrix)a - (TDMatrix)b */
 void sub_qdmatrix_tdmat_tdmat(QDMatrix c, TDMatrix a, TDMatrix b);
 
-#endif // USE_TDLINEAR
 
 
 int QDLUdecomp(QDMatrix a);
@@ -714,13 +706,11 @@ void pascal_qdmatrix(QDMatrix ret, long int dim);
 // 10. I - randmatrix
 void im_rand_qdmatrix(QDMatrix ret, unsigned long seed);
 
-#ifdef USE_TDLINEAR
 /* c := a */
 void subst_qdmatrix_tdmat(QDMatrix c, TDMatrix a);
 
 /* (QDMatrix)c := (TDMatrix)a - (TDMatrix)b */
 void sub_qdmatrix_tdmat_tdmat(QDMatrix c, TDMatrix a, TDMatrix b);
-#endif // USE_TDLINEAR
 
 #ifdef __cplusplus
 }

@@ -27,7 +27,6 @@
 // #include "_bncneon_dd.h"
 // #endif
 
-#ifdef USE_DDLINEAR
 //---------------------------------------
 // Double-Double - Vector operations with NEON
 //---------------------------------------
@@ -2199,4 +2198,3 @@ int _bncomp_SolveDDLSPM(DDVector answer, DDMatrix lu, DDVector b, long int ch[])
 	return 0;
 }
 
-#endif // USE_DDLINEAR

@@ -27,7 +27,6 @@
 #include "bncsparse.h"
 
 //#ifdef USE_GMP
-#ifdef USE_DDLINEAR
 
 /* Sparse matrix struct */
 /* Example:             */
@@ -4019,4 +4018,3 @@ void solve_iLU0t_drsmatrix_ddvec(DDVector ret, DRSMatrix ilu, DDVector b)
 		}
 	}
 }
-#endif // USE_DDLINEAR

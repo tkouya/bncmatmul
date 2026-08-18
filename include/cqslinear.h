@@ -25,12 +25,8 @@
 
 //#include "clinear.h"
 #include "cdlinear.h"
-#ifdef USE_DDLINEAR
 #include "cdslinear.h"
-#endif // USE_DDLINEAR
-#ifdef USE_TDLINEAR
 #include "ctslinear.h"
-#endif // USE_TDLINEAR
 #include "qslinear.h"
 //#include "bmatrix.h"
 
@@ -90,8 +86,8 @@ static inline void subst_cqsvector_i(cqsfloat *ret, CQSVector vec, long int inde
 	rqs_set(ret->val_im, get_qsvector_i(vec->im, index));
 } 
 // Very dangerous!! 2024-04-18(Thu) T.Kouya
-//	GET_CQDVECTOR_I(vec, index))
-#define GET_CQDVECTOR_I(vec, index) ((cqsfloat *)&(get_cqsvector_i_cqsfloat((vec), (index))))
+//	GET_CQSVECTOR_I(vec, index))
+#define GET_CQSVECTOR_I(vec, index) ((cqsfloat *)&(get_cqsvector_i_cqsfloat((vec), (index))))
 //#define get_cqsvector_i(vec, index) ((cqsfloat *)&(get_cqsvector_i_cqsfloat((vec), (index))))
 static inline cqsfloat *get_cqsvector_i(CQSVector vec, long int index)
 {
@@ -112,7 +108,7 @@ static inline void set_cqsvector_i(CQSVector vec, long int index, cqsfloat *val)
     set_qsvector_i(vec->re, index, val->val_re);
     set_qsvector_i(vec->im, index, val->val_im);
 }
-#define SET_CQDVECTOR_I(vec, index, val) set_cqsvector_i((vec), (index), (val))
+#define SET_CQSVECTOR_I(vec, index, val) set_cqsvector_i((vec), (index), (val))
 
 // set_cqsvector_i_d
 static inline void set_cqsvector_i_d(CQSVector vec, long int index, float val) // val
@@ -120,7 +116,7 @@ static inline void set_cqsvector_i_d(CQSVector vec, long int index, float val) /
     set_qsvector_i_f(vec->re, index, val);
     set0_qsvector_i(vec->im, index);
 }
-#define SET_CQDVECTOR_I_D(vec, index, val) set_cqsvector_i_d((vec), (index), (val))
+#define SET_CQSVECTOR_I_D(vec, index, val) set_cqsvector_i_d((vec), (index), (val))
 
 // set_cqsvector_i_cd
 static inline void set_cqsvector_i_cd(CQSVector vec, long int index, float _Complex val) // val
@@ -145,7 +141,7 @@ static inline void set0_cqsvector_i(CQSVector vec, long int index)
 	set0_qsvector_i(vec->re, index);
 	set0_qsvector_i(vec->im, index);
 }
-#define SET0_CQDVECTOR_I(vec, index) set0_cqsvector_i((vec), (index))
+#define SET0_CQSVECTOR_I(vec, index) set0_cqsvector_i((vec), (index))
 
 // initialize CQSVector
 CQSVector init_cqsvector(int dimension);
@@ -277,7 +273,7 @@ static inline void subst_cqsmatrix_ij(cqsfloat *ret, CQSMatrix mat, long int i, 
 	//return ret;
 } 
 // Very dangerous!! 2024-04-18(Thu) T.Kouya
-#define GET_CQDMATRIX_IJ(mat, i, j) (&(get_cqsmatrix_ij_cqsfloat((mat), (i), (j))))
+#define GET_CQSMATRIX_IJ(mat, i, j) (&(get_cqsmatrix_ij_cqsfloat((mat), (i), (j))))
 //#define get_cqsmatrix_ij(mat, i, j) (&(get_cqsmatrix_ij_cqsfloat((mat), (i), (j))))
 static inline cqsfloat *get_cqsmatrix_ij(CQSMatrix mat, long int i, long int j)
 {
@@ -306,7 +302,7 @@ static inline void set_cqsmatrix_ij(CQSMatrix mat, long int i, long int j, cqsfl
 
 	return;
 } 
-#define SET_CQDMATRIX_IJ(mat, i, j, val) set_cqsmatrix_ij((mat), (i), (j), (val))
+#define SET_CQSMATRIX_IJ(mat, i, j, val) set_cqsmatrix_ij((mat), (i), (j), (val))
 
 // For MPBLAS
 #ifdef _QD_COMPLEX_H_
@@ -335,8 +331,8 @@ static inline void set_cqsmatrix_ij_d(CQSMatrix mat, long int i, long int j, flo
 
 	return;
 } 
-#define SET_CQDMATRIX_IJ_D(mat, i, j, val) set_cqsmatrix_ij_d((mat), (i), (j), (val))
-#define SET_CQDMATRIX_IJ_UI(mat, i, j, val) set_cqsmatrix_ij_d((mat), (i), (j), (float)(val))
+#define SET_CQSMATRIX_IJ_D(mat, i, j, val) set_cqsmatrix_ij_d((mat), (i), (j), (val))
+#define SET_CQSMATRIX_IJ_UI(mat, i, j, val) set_cqsmatrix_ij_d((mat), (i), (j), (float)(val))
 #define set_cqsmatrix_ij_ui(mat, i, j, val) set_cqsmatrix_ij_d((mat), (i), (j), (float)(val))
 
 // set_cqsmatrix_ij_qd
@@ -377,7 +373,7 @@ static inline void set0_cqsmatrix_ij(CQSMatrix mat, long int i, long int j)
 
 	return;
 }
-#define SET0_CQDMATRIX_IJ(mat, i, j) set0_cqsmatrix_ij((mat), (i), (j))
+#define SET0_CQSMATRIX_IJ(mat, i, j) set0_cqsmatrix_ij((mat), (i), (j))
 
 // set a zero matrix
 //void set0_cqsmatrix(CQSMatrix mat);
@@ -523,7 +519,6 @@ void subst_cqsmatrix_cdmat(CQSMatrix c, CDMatrix a);
 //void subst_cdmatrix_cdsmat(CDMatrix c, CQSMatrix a);
 
 
-#ifdef USE_DDLINEAR
 /* c := (qd)a */
 void subst_cqsvector_cdsvec(CQSVector c, CDSVector a);
 
@@ -536,9 +531,7 @@ void subst_cqsmatrix_cdsmat(CQSMatrix c, CDSMatrix a);
 /* c := (dd)a */
 void subst_cdsmatrix_cqsmat(CDSMatrix c, CQSMatrix a);
 
-#endif // USE_DDLINEAR
 
-#ifdef USE_TDLINEAR
 /* c := (qd)a */
 void subst_cqsvector_ctsvec(CQSVector c, CTSVector a);
 
@@ -550,7 +543,6 @@ void subst_cqsmatrix_ctsmat(CQSMatrix c, CTSMatrix a);
 
 /* c := (td)a */
 void subst_ctsmatrix_cqsmat(CTSMatrix c, CQSMatrix a);
-#endif // USE_TDLINEAR
 
 /* Normwise relative error of vector */
 void relerr_cqsvector(float relerr[QSSIZE], CQSVector approx_vec, CQSVector true_vec, int norm_type);

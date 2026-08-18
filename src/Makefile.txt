@@ -57,10 +57,10 @@ matmul_strassen_lib:
 	$(CC) $(INC) -c clinear.c -o clinear.o
 	$(CC) $(INC) -c clu.c -o clu.o
 	$(CC) $(INC) -c matmul_strassen_general.c -o matmul_strassen_general.o
-	$(CC) -DUSE_DDLINEAR $(INC) -c matmul_strassen_general_dd.c -o matmul_strassen_general_dd.o
-	$(CC) -DUSE_DDLINEAR $(INC) -c matmul_strassen_general_cdd.c -o matmul_strassen_general_cdd.o
-	$(CC) -DUSE_DDLINEAR -DUSE_TDLINEAR $(INC) -c matmul_strassen_general_td.c -o matmul_strassen_general_td.o
-	$(CC) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c matmul_strassen_general_qd.c -o matmul_strassen_general_qd.o
+	$(CC) $(INC) -c matmul_strassen_general_dd.c -o matmul_strassen_general_dd.o
+	$(CC) $(INC) -c matmul_strassen_general_cdd.c -o matmul_strassen_general_cdd.o
+	$(CC) $(INC) -c matmul_strassen_general_td.c -o matmul_strassen_general_td.o
+	$(CC) $(INC) -c matmul_strassen_general_qd.c -o matmul_strassen_general_qd.o
 	$(CC) $(INC) -c matmul_strassen_general_mpf.c -o matmul_strassen_general_mpf.o
 	$(CC) $(INC) -c matmul_strassen_general_mpc.c -o matmul_strassen_general_mpc.o
 	$(CC) $(INC) -c get_sec.c -o get_sec.o
@@ -68,44 +68,44 @@ matmul_strassen_lib:
 	$(CC) $(INC) -c mpflinear.c -o mpflinear.o
 	$(CC) $(INC) -c flinear.c -o flinear.o
 	$(CC) $(INC) -c dlinear.c -o dlinear.o
-	$(CC) -DUSE_DDLINEAR $(INC) -c ddlinear.c -o ddlinear.o
-	$(CC) -DUSE_DDLINEAR $(INC) -c cddlinear.c -o cddlinear.o
-	$(CC) -DUSE_DDLINEAR -DUSE_TDLINEAR $(INC) -c tdlinear.c -o tdlinear.o
-	$(CC) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c qdlinear.c -o qdlinear.o
-	$(CC) -DUSE_DSLINEAR $(INC) -c dslinear.c -o dslinear.o
-	$(CC) -DUSE_DSLINEAR -DUSE_TSLINEAR $(INC) -c tslinear.c -o tslinear.o
-	$(CC) -DUSE_DSLINEAR -DUSE_TSLINEAR -DUSE_QSLINEAR $(INC) -c qslinear.c -o qslinear.o
+	$(CC) $(INC) -c ddlinear.c -o ddlinear.o
+	$(CC) $(INC) -c cddlinear.c -o cddlinear.o
+	$(CC) $(INC) -c tdlinear.c -o tdlinear.o
+	$(CC) $(INC) -c qdlinear.c -o qdlinear.o
+	$(CC) $(INC) -c dslinear.c -o dslinear.o
+	$(CC) $(INC) -c tslinear.c -o tslinear.o
+	$(CC) $(INC) -c qslinear.c -o qslinear.o
 	$(CC) $(INC) -c gtestmat.c -o gtestmat.o
-	$(CC) -DUSE_DDLINEAR $(INC) -c ddlu.c -o ddlu.o
-	$(CC) -DUSE_DDLINEAR $(INC) -c cddlu.c -o cddlu.o
+	$(CC) $(INC) -c ddlu.c -o ddlu.o
+	$(CC) $(INC) -c cddlu.c -o cddlu.o
 	$(CC) $(INC) -c mpflu.c -o mpflu.o
-	$(CC) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c ddlu_strassen.c -o ddlu_strassen.o
-	$(CC) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c ddlu_oz.c -o ddlu_oz.o
-	$(CC) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c cddlu_strassen.c -o cddlu_strassen.o
-	$(CC) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c cddlu_oz.c -o cddlu_oz.o
-	$(CC) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c tdlu_strassen.c -o tdlu_strassen.o
-	$(CC) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c tdlu_oz.c -o tdlu_oz.o
-	$(CC) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c qdlu_strassen.c -o qdlu_strassen.o
-	$(CC) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c qdlu_oz.c -o qdlu_oz.o
-	$(CC) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c cqdlu_strassen.c -o cqdlu_strassen.o
-	$(CC) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c cqdlu_oz.c -o cqdlu_oz.o
-	$(CC) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c mpflu_strassen.c -o mpflu_strassen.o
-	$(CC) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c mpflu_oz.c -o mpflu_oz.o
-	$(CC) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c cmpflu_strassen.c -o cmpflu_strassen.o
-	$(CC) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c cmpflu_oz.c -o cmpflu_oz.o
-	$(CC) -DUSE_DDLINEAR $(INC) -c gtestmat_dd.c -o gtestmat_dd.o
-	$(CC) -DUSE_TDLINEAR $(INC) -c gtestmat_td.c -o gtestmat_td.o
-	$(CC) -DUSE_QDLINEAR $(INC) -c gtestmat_qd.c -o gtestmat_qd.o
-	$(CC) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c benchmark_tools_dd.c -o benchmark_tools_dd.o
-	$(CC) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c fread_write.c -o fread_write.o 
-# 	$(CC) -DUSE_DDLINEAR $(INC) -c mpfr_dtq_sd.c -o mpfr_dtq_sd.o
-	$(CC) -DUSE_DDLINEAR -DUSE_DSLINEAR $(INC) -c mpfr_dtq_sd.c -o mpfr_dtq_sd.o
+	$(CC) $(INC) -c ddlu_strassen.c -o ddlu_strassen.o
+	$(CC) $(INC) -c ddlu_oz.c -o ddlu_oz.o
+	$(CC) $(INC) -c cddlu_strassen.c -o cddlu_strassen.o
+	$(CC) $(INC) -c cddlu_oz.c -o cddlu_oz.o
+	$(CC) $(INC) -c tdlu_strassen.c -o tdlu_strassen.o
+	$(CC) $(INC) -c tdlu_oz.c -o tdlu_oz.o
+	$(CC) $(INC) -c qdlu_strassen.c -o qdlu_strassen.o
+	$(CC) $(INC) -c qdlu_oz.c -o qdlu_oz.o
+	$(CC) $(INC) -c cqdlu_strassen.c -o cqdlu_strassen.o
+	$(CC) $(INC) -c cqdlu_oz.c -o cqdlu_oz.o
+	$(CC) $(INC) -c mpflu_strassen.c -o mpflu_strassen.o
+	$(CC) $(INC) -c mpflu_oz.c -o mpflu_oz.o
+	$(CC) $(INC) -c cmpflu_strassen.c -o cmpflu_strassen.o
+	$(CC) $(INC) -c cmpflu_oz.c -o cmpflu_oz.o
+	$(CC) $(INC) -c gtestmat_dd.c -o gtestmat_dd.o
+	$(CC) $(INC) -c gtestmat_td.c -o gtestmat_td.o
+	$(CC) $(INC) -c gtestmat_qd.c -o gtestmat_qd.o
+	$(CC) $(INC) -c benchmark_tools_dd.c -o benchmark_tools_dd.o
+	$(CC) $(INC) -c fread_write.c -o fread_write.o 
+# 	$(CC) $(INC) -c mpfr_dtq_sd.c -o mpfr_dtq_sd.o
+	$(CC) $(INC) -c mpfr_dtq_sd.c -o mpfr_dtq_sd.o
 	$(CC) $(INC) -c benchmark_tools.c -o benchmark_tools.o
-	$(CC) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c oz_scheme.c -o oz_scheme.o
-	$(CC) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c dd_oz_scheme.c -o dd_oz_scheme.o
-	$(CC) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c td_oz_scheme.c -o td_oz_scheme.o
-	$(CC) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c qd_oz_scheme.c -o qd_oz_scheme.o
-	$(CC) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c mpf_oz_scheme.c -o mpf_oz_scheme.o
+	$(CC) $(INC) -c oz_scheme.c -o oz_scheme.o
+	$(CC) $(INC) -c dd_oz_scheme.c -o dd_oz_scheme.o
+	$(CC) $(INC) -c td_oz_scheme.c -o td_oz_scheme.o
+	$(CC) $(INC) -c qd_oz_scheme.c -o qd_oz_scheme.o
+	$(CC) $(INC) -c mpf_oz_scheme.c -o mpf_oz_scheme.o
 	$(AR) $(BNCMATMUL_LIBNAME) bnc_common_func.o
 #	$(AR) $(BNCMATMUL_LIBNAME) complex.o
 	$(AR) $(BNCMATMUL_LIBNAME) clinear.o
@@ -164,10 +164,10 @@ matmul_strassen_lib:
 	$(CC_DLL) $(INC) -c clinear.c -o clinear.o
 	$(CC_DLL) $(INC) -c clu.c -o clu.o
 	$(CC_DLL) $(INC) -c matmul_strassen_general.c -o matmul_strassen_general.o
-	$(CC_DLL) -DUSE_DDLINEAR $(INC) -c matmul_strassen_general_dd.c -o matmul_strassen_general_dd.o
-	$(CC_DLL) -DUSE_DDLINEAR $(INC) -c matmul_strassen_general_cdd.c -o matmul_strassen_general_cdd.o
-	$(CC_DLL) -DUSE_DDLINEAR -DUSE_TDLINEAR $(INC) -c matmul_strassen_general_td.c -o matmul_strassen_general_td.o
-	$(CC_DLL) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c matmul_strassen_general_qd.c -o matmul_strassen_general_qd.o
+	$(CC_DLL) $(INC) -c matmul_strassen_general_dd.c -o matmul_strassen_general_dd.o
+	$(CC_DLL) $(INC) -c matmul_strassen_general_cdd.c -o matmul_strassen_general_cdd.o
+	$(CC_DLL) $(INC) -c matmul_strassen_general_td.c -o matmul_strassen_general_td.o
+	$(CC_DLL) $(INC) -c matmul_strassen_general_qd.c -o matmul_strassen_general_qd.o
 	$(CC_DLL) $(INC) -c matmul_strassen_general_mpf.c -o matmul_strassen_general_mpf.o
 	$(CC_DLL) $(INC) -c matmul_strassen_general_mpc.c -o matmul_strassen_general_mpc.o
 	$(CC_DLL) $(INC) -c get_sec.c -o get_sec.o
@@ -175,43 +175,43 @@ matmul_strassen_lib:
 	$(CC_DLL) $(INC) -c mpflinear.c -o mpflinear.o
 	$(CC_DLL) $(INC) -c flinear.c -o flinear.o
 	$(CC_DLL) $(INC) -c dlinear.c -o dlinear.o
-	$(CC_DLL) -DUSE_DDLINEAR $(INC) -c ddlinear.c -o ddlinear.o
-	$(CC_DLL) -DUSE_DDLINEAR $(INC) -c cddlinear.c -o cddlinear.o
-	$(CC_DLL) -DUSE_DSLINEAR $(INC) -c dslinear.c -o dslinear.o
-	$(CC_DLL) -DUSE_DDLINEAR -DUSE_TDLINEAR $(INC) -c tdlinear.c -o tdlinear.o
-	$(CC_DLL) -DUSE_DSLINEAR -DUSE_TSLINEAR $(INC) -c tslinear.c -o tslinear.o
-	$(CC_DLL) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c qdlinear.c -o qdlinear.o
-	$(CC_DLL) -DUSE_DSLINEAR -DUSE_TSLINEAR -DUSE_QSLINEAR $(INC) -c qslinear.c -o qslinear.o
+	$(CC_DLL) $(INC) -c ddlinear.c -o ddlinear.o
+	$(CC_DLL) $(INC) -c cddlinear.c -o cddlinear.o
+	$(CC_DLL) $(INC) -c dslinear.c -o dslinear.o
+	$(CC_DLL) $(INC) -c tdlinear.c -o tdlinear.o
+	$(CC_DLL) $(INC) -c tslinear.c -o tslinear.o
+	$(CC_DLL) $(INC) -c qdlinear.c -o qdlinear.o
+	$(CC_DLL) $(INC) -c qslinear.c -o qslinear.o
 	$(CC_DLL) $(INC) -c gtestmat.c -o gtestmat.o
-	$(CC_DLL) -DUSE_DDLINEAR $(INC) -c ddlu.c -o ddlu.o
-	$(CC_DLL) -DUSE_DDLINEAR $(INC) -c cddlu.c -o cddlu.o
+	$(CC_DLL) $(INC) -c ddlu.c -o ddlu.o
+	$(CC_DLL) $(INC) -c cddlu.c -o cddlu.o
 	$(CC_DLL) $(INC) -c mpflu.c -o mpflu.o
-	$(CC_DLL) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c ddlu_strassen.c -o ddlu_strassen.o
-	$(CC_DLL) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c ddlu_oz.c -o ddlu_oz.o
-	$(CC_DLL) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c cddlu_strassen.c -o cddlu_strassen.o
-	$(CC_DLL) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c cddlu_oz.c -o cddlu_oz.o
-	$(CC_DLL) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c tdlu_strassen.c -o tdlu_strassen.o
-	$(CC_DLL) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c tdlu_oz.c -o tdlu_oz.o
-	$(CC_DLL) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c qdlu_strassen.c -o qdlu_strassen.o
-	$(CC_DLL) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c qdlu_oz.c -o qdlu_oz.o
-	$(CC_DLL) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c cqdlu_strassen.c -o cqdlu_strassen.o
-	$(CC_DLL) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c cqdlu_oz.c -o cqdlu_oz.o
-	$(CC_DLL) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c mpflu_strassen.c -o mpflu_strassen.o
-	$(CC_DLL) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c cmpflu_strassen.c -o cmpflu_strassen.o
-	$(CC_DLL) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c mpflu_oz.c -o mpflu_oz.o
-	$(CC_DLL) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c cmpflu_oz.c -o cmpflu_oz.o
-	$(CC_DLL) -DUSE_DDLINEAR $(INC) -c gtestmat_dd.c -o gtestmat_dd.o
-	$(CC_DLL) -DUSE_TDLINEAR $(INC) -c gtestmat_td.c -o gtestmat_td.o
-	$(CC_DLL) -DUSE_QDLINEAR $(INC) -c gtestmat_qd.c -o gtestmat_qd.o
-	$(CC_DLL) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c benchmark_tools_dd.c -o benchmark_tools_dd.o
-	$(CC_DLL) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c fread_write.c -o fread_write.o 
-#	$(CC_DLL) -DUSE_DDLINEAR $(INC) -c mpfr_dtq_sd.c -o mpfr_dtq_sd.o
-	$(CC_DLL) -DUSE_DDLINEAR -DUSE_DSLINEAR $(INC) -c mpfr_dtq_sd.c -o mpfr_dtq_sd.o
-	$(CC_DLL) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c oz_scheme.c -o oz_scheme.o
-	$(CC_DLL) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c dd_oz_scheme.c -o dd_oz_scheme.o
-	$(CC_DLL) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c td_oz_scheme.c -o td_oz_scheme.o
-	$(CC_DLL) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c qd_oz_scheme.c -o qd_oz_scheme.o
-	$(CC_DLL) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c mpf_oz_scheme.c -o mpf_oz_scheme.o
+	$(CC_DLL) $(INC) -c ddlu_strassen.c -o ddlu_strassen.o
+	$(CC_DLL) $(INC) -c ddlu_oz.c -o ddlu_oz.o
+	$(CC_DLL) $(INC) -c cddlu_strassen.c -o cddlu_strassen.o
+	$(CC_DLL) $(INC) -c cddlu_oz.c -o cddlu_oz.o
+	$(CC_DLL) $(INC) -c tdlu_strassen.c -o tdlu_strassen.o
+	$(CC_DLL) $(INC) -c tdlu_oz.c -o tdlu_oz.o
+	$(CC_DLL) $(INC) -c qdlu_strassen.c -o qdlu_strassen.o
+	$(CC_DLL) $(INC) -c qdlu_oz.c -o qdlu_oz.o
+	$(CC_DLL) $(INC) -c cqdlu_strassen.c -o cqdlu_strassen.o
+	$(CC_DLL) $(INC) -c cqdlu_oz.c -o cqdlu_oz.o
+	$(CC_DLL) $(INC) -c mpflu_strassen.c -o mpflu_strassen.o
+	$(CC_DLL) $(INC) -c cmpflu_strassen.c -o cmpflu_strassen.o
+	$(CC_DLL) $(INC) -c mpflu_oz.c -o mpflu_oz.o
+	$(CC_DLL) $(INC) -c cmpflu_oz.c -o cmpflu_oz.o
+	$(CC_DLL) $(INC) -c gtestmat_dd.c -o gtestmat_dd.o
+	$(CC_DLL) $(INC) -c gtestmat_td.c -o gtestmat_td.o
+	$(CC_DLL) $(INC) -c gtestmat_qd.c -o gtestmat_qd.o
+	$(CC_DLL) $(INC) -c benchmark_tools_dd.c -o benchmark_tools_dd.o
+	$(CC_DLL) $(INC) -c fread_write.c -o fread_write.o 
+#	$(CC_DLL) $(INC) -c mpfr_dtq_sd.c -o mpfr_dtq_sd.o
+	$(CC_DLL) $(INC) -c mpfr_dtq_sd.c -o mpfr_dtq_sd.o
+	$(CC_DLL) $(INC) -c oz_scheme.c -o oz_scheme.o
+	$(CC_DLL) $(INC) -c dd_oz_scheme.c -o dd_oz_scheme.o
+	$(CC_DLL) $(INC) -c td_oz_scheme.c -o td_oz_scheme.o
+	$(CC_DLL) $(INC) -c qd_oz_scheme.c -o qd_oz_scheme.o
+	$(CC_DLL) $(INC) -c mpf_oz_scheme.c -o mpf_oz_scheme.o
 	$(AR_DLL) bnc_common_func.o 
 #	$(AR_DLL) complex.o
 	$(AR_DLL) clinear.o cddlinear.o clu.o matmul_strassen_general.o matmul_strassen_general_dd.o matmul_strassen_general_cdd.o matmul_strassen_general_td.o matmul_strassen_general_qd.o matmul_strassen_general_mpf.o matmul_strassen_general_mpc.o get_sec.o mpflinear.o dlinear.o ddlinear.o ddlu.o cddlu.o ddlu_strassen.o cddlu_strassen.o tdlu_strassen.o qdlu_strassen.o cqdlu_strassen.o mpflu_strassen.o cmpflu_strassen.o ddlu_oz.o cddlu_oz.o tdlu_oz.o qdlu_oz.o cqdlu_oz.o mpflu_oz.o cmpflu_oz.o tdlinear.o qdlinear.o dslinear.o tslinear.o qslinear.o mpflu.o benchmark_tools_dd.o mpfr_dtq_sd.o fread_write.o gtestmat_dd.o gtestmat_td.o gtestmat_qd.o oz_scheme.o dd_oz_scheme.o td_oz_scheme.o qd_oz_scheme.o mpf_oz_scheme.o $(COMMON_LIB)
@@ -225,10 +225,10 @@ matmul_strassen_lib_avx2:
 	$(CC_AVX2) $(INC) -c clinear.c -o clinear_avx2.o
 	$(CC_AVX2) $(INC) -c clu.c -o clu_avx2.o
 	$(CC_AVX2) $(INC) -c matmul_strassen_general.c -o matmul_strassen_general_avx2.o
-	$(CC_AVX2) -DUSE_DDLINEAR $(INC) -c matmul_strassen_general_dd.c -o matmul_strassen_general_dd_avx2.o
-	$(CC_AVX2) -DUSE_DDLINEAR $(INC) -c matmul_strassen_general_cdd.c -o matmul_strassen_general_cdd_avx2.o
-	$(CC_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR $(INC) -c matmul_strassen_general_td.c -o matmul_strassen_general_td_avx2.o
-	$(CC_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c matmul_strassen_general_qd.c -o matmul_strassen_general_qd_avx2.o
+	$(CC_AVX2) $(INC) -c matmul_strassen_general_dd.c -o matmul_strassen_general_dd_avx2.o
+	$(CC_AVX2) $(INC) -c matmul_strassen_general_cdd.c -o matmul_strassen_general_cdd_avx2.o
+	$(CC_AVX2) $(INC) -c matmul_strassen_general_td.c -o matmul_strassen_general_td_avx2.o
+	$(CC_AVX2) $(INC) -c matmul_strassen_general_qd.c -o matmul_strassen_general_qd_avx2.o
 	$(CC_AVX2) $(INC) -c matmul_strassen_general_mpf.c -o matmul_strassen_general_mpf_avx2.o
 	$(CC_AVX2) $(INC) -c matmul_strassen_general_mpc.c -o matmul_strassen_general_mpc_avx2.o
 	$(CC_AVX2) $(INC) -c get_sec.c -o get_sec_avx2.o
@@ -236,39 +236,39 @@ matmul_strassen_lib_avx2:
 	$(CC_AVX2) $(INC) -c mpflinear.c -o mpflinear_avx2.o
 	$(CC_AVX2) $(INC) -c dlinear.c -o dlinear_avx2.o
 	$(CC_AVX2) $(INC) -c flinear.c -o flinear_avx2.o
-	$(CC_AVX2) -DUSE_DDLINEAR $(INC) -c ddlinear.c -o ddlinear_avx2.o
-	$(CC_AVX2) -DUSE_DDLINEAR $(INC) -c cddlinear.c -o cddlinear_avx2.o
-	$(CC_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR $(INC) -c tdlinear.c -o tdlinear_avx2.o
-	$(CC_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c qdlinear.c -o qdlinear_avx2.o
-	$(CC_AVX2) -DUSE_DSLINEAR $(INC) -c dslinear.c -o dslinear_avx2.o
-	$(CC_AVX2) -DUSE_DSLINEAR -DUSE_TSLINEAR $(INC) -c tslinear.c -o tslinear_avx2.o
-	$(CC_AVX2) -DUSE_DSLINEAR -DUSE_TSLINEAR -DUSE_QSLINEAR $(INC) -c qslinear.c -o qslinear_avx2.o
+	$(CC_AVX2) $(INC) -c ddlinear.c -o ddlinear_avx2.o
+	$(CC_AVX2) $(INC) -c cddlinear.c -o cddlinear_avx2.o
+	$(CC_AVX2) $(INC) -c tdlinear.c -o tdlinear_avx2.o
+	$(CC_AVX2) $(INC) -c qdlinear.c -o qdlinear_avx2.o
+	$(CC_AVX2) $(INC) -c dslinear.c -o dslinear_avx2.o
+	$(CC_AVX2) $(INC) -c tslinear.c -o tslinear_avx2.o
+	$(CC_AVX2) $(INC) -c qslinear.c -o qslinear_avx2.o
 	$(CC_AVX2) $(INC) -c gtestmat.c -o gtestmat_avx2.o
 	$(CC_AVX2) $(INC) -c mpflu.c -o mpflu_avx2.o
-	$(CC_AVX2) -DUSE_DDLINEAR $(INC) -c ddlu.c -o ddlu_avx2.o
-	$(CC_AVX2) -DUSE_DDLINEAR $(INC) -c ddlu_strassen.c -o ddlu_strassen_avx2.o
-	$(CC_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c tdlu_strassen.c -o tdlu_strassen_avx2.o
-	$(CC_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c qdlu_strassen.c -o qdlu_strassen_avx2.o
-	$(CC_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c mpflu_strassen.c -o mpflu_strassen_avx2.o
-	$(CC_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c cmpflu_strassen.c -o cmpflu_strassen_avx2.o
-	$(CC_AVX2) -DUSE_DDLINEAR $(INC) -c ddlu_oz.c -o ddlu_oz_avx2.o
-	$(CC_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c tdlu_oz.c -o tdlu_oz_avx2.o
-	$(CC_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c qdlu_oz.c -o qdlu_oz_avx2.o
-	$(CC_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c mpflu_oz.c -o mpflu_oz_avx2.o
-	$(CC_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c cmpflu_oz.c -o cmpflu_oz_avx2.o
-	$(CC_AVX2) -DUSE_DDLINEAR $(INC) -c gtestmat_dd.c -o gtestmat_dd_avx2.o
-	$(CC_AVX2) -DUSE_TDLINEAR $(INC) -c gtestmat_td.c -o gtestmat_td_avx2.o
-	$(CC_AVX2) -DUSE_QDLINEAR $(INC) -c gtestmat_qd.c -o gtestmat_qd_avx2.o
-	$(CC_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c benchmark_tools_dd.c -o benchmark_tools_dd_avx2.o
-	$(CC_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c fread_write.c -o fread_write_avx2.o 
-#	$(CC_AVX2) -DUSE_DDLINEAR $(INC) -c mpfr_dtq_sd.c -o mpfr_dtq_sd_avx2.o
-	$(CC_AVX2) -DUSE_DDLINEAR $(INC) -c mpfr_dtq_sd.c -o mpfr_dtq_sd_avx2.o
+	$(CC_AVX2) $(INC) -c ddlu.c -o ddlu_avx2.o
+	$(CC_AVX2) $(INC) -c ddlu_strassen.c -o ddlu_strassen_avx2.o
+	$(CC_AVX2) $(INC) -c tdlu_strassen.c -o tdlu_strassen_avx2.o
+	$(CC_AVX2) $(INC) -c qdlu_strassen.c -o qdlu_strassen_avx2.o
+	$(CC_AVX2) $(INC) -c mpflu_strassen.c -o mpflu_strassen_avx2.o
+	$(CC_AVX2) $(INC) -c cmpflu_strassen.c -o cmpflu_strassen_avx2.o
+	$(CC_AVX2) $(INC) -c ddlu_oz.c -o ddlu_oz_avx2.o
+	$(CC_AVX2) $(INC) -c tdlu_oz.c -o tdlu_oz_avx2.o
+	$(CC_AVX2) $(INC) -c qdlu_oz.c -o qdlu_oz_avx2.o
+	$(CC_AVX2) $(INC) -c mpflu_oz.c -o mpflu_oz_avx2.o
+	$(CC_AVX2) $(INC) -c cmpflu_oz.c -o cmpflu_oz_avx2.o
+	$(CC_AVX2) $(INC) -c gtestmat_dd.c -o gtestmat_dd_avx2.o
+	$(CC_AVX2) $(INC) -c gtestmat_td.c -o gtestmat_td_avx2.o
+	$(CC_AVX2) $(INC) -c gtestmat_qd.c -o gtestmat_qd_avx2.o
+	$(CC_AVX2) $(INC) -c benchmark_tools_dd.c -o benchmark_tools_dd_avx2.o
+	$(CC_AVX2) $(INC) -c fread_write.c -o fread_write_avx2.o 
+#	$(CC_AVX2) $(INC) -c mpfr_dtq_sd.c -o mpfr_dtq_sd_avx2.o
+	$(CC_AVX2) $(INC) -c mpfr_dtq_sd.c -o mpfr_dtq_sd_avx2.o
 	$(CC_AVX2) $(INC) -c benchmark_tools.c -o benchmark_tools_avx2.o
-	$(CC_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c oz_scheme.c -o oz_scheme_avx2.o
-	$(CC_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c dd_oz_scheme.c -o dd_oz_scheme_avx2.o
-	$(CC_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c td_oz_scheme.c -o td_oz_scheme_avx2.o
-	$(CC_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c qd_oz_scheme.c -o qd_oz_scheme_avx2.o
-	$(CC_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c mpf_oz_scheme.c -o mpf_oz_scheme_avx2.o
+	$(CC_AVX2) $(INC) -c oz_scheme.c -o oz_scheme_avx2.o
+	$(CC_AVX2) $(INC) -c dd_oz_scheme.c -o dd_oz_scheme_avx2.o
+	$(CC_AVX2) $(INC) -c td_oz_scheme.c -o td_oz_scheme_avx2.o
+	$(CC_AVX2) $(INC) -c qd_oz_scheme.c -o qd_oz_scheme_avx2.o
+	$(CC_AVX2) $(INC) -c mpf_oz_scheme.c -o mpf_oz_scheme_avx2.o
 	$(AR) $(BNCMATMUL_LIBNAME_AVX2) bnc_common_func_avx2.o
 	$(AR) $(BNCMATMUL_LIBNAME_AVX2) complex_avx2.o
 	$(AR) $(BNCMATMUL_LIBNAME_AVX2) clinear_avx2.o
@@ -323,10 +323,10 @@ matmul_strassen_lib_avx2:
 	$(CC_DLL_AVX2) $(INC) -c clinear.c -o clinear_avx2.o
 	$(CC_DLL_AVX2) $(INC) -c clu.c -o clu_avx2.o
 	$(CC_DLL_AVX2) $(INC) -c matmul_strassen_general.c -o matmul_strassen_general_avx2.o
-	$(CC_DLL_AVX2) -DUSE_DDLINEAR $(INC) -c matmul_strassen_general_dd.c -o matmul_strassen_general_dd_avx2.o
-	$(CC_DLL_AVX2) -DUSE_DDLINEAR $(INC) -c matmul_strassen_general_cdd.c -o matmul_strassen_general_cdd_avx2.o
-	$(CC_DLL_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR $(INC) -c matmul_strassen_general_td.c -o matmul_strassen_general_td_avx2.o
-	$(CC_DLL_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c matmul_strassen_general_qd.c -o matmul_strassen_general_qd_avx2.o
+	$(CC_DLL_AVX2) $(INC) -c matmul_strassen_general_dd.c -o matmul_strassen_general_dd_avx2.o
+	$(CC_DLL_AVX2) $(INC) -c matmul_strassen_general_cdd.c -o matmul_strassen_general_cdd_avx2.o
+	$(CC_DLL_AVX2) $(INC) -c matmul_strassen_general_td.c -o matmul_strassen_general_td_avx2.o
+	$(CC_DLL_AVX2) $(INC) -c matmul_strassen_general_qd.c -o matmul_strassen_general_qd_avx2.o
 	$(CC_DLL_AVX2) $(INC) -c matmul_strassen_general_mpf.c -o matmul_strassen_general_mpf_avx2.o
 	$(CC_DLL_AVX2) $(INC) -c matmul_strassen_general_mpc.c -o matmul_strassen_general_mpc_avx2.o
 	$(CC_DLL_AVX2) $(INC) -c get_sec.c -o get_sec_avx2.o
@@ -334,36 +334,36 @@ matmul_strassen_lib_avx2:
 	$(CC_DLL_AVX2) $(INC) -c mpflinear.c -o mpflinear_avx2.o
 	$(CC_DLL_AVX2) $(INC) -c flinear.c -o flinear_avx2.o
 	$(CC_DLL_AVX2) $(INC) -c dlinear.c -o dlinear_avx2.o
-	$(CC_DLL_AVX2) -DUSE_DDLINEAR $(INC) -c ddlinear.c -o ddlinear_avx2.o
-	$(CC_DLL_AVX2) -DUSE_DDLINEAR $(INC) -c cddlinear.c -o cddlinear_avx2.o
-	$(CC_DLL_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR $(INC) -c tdlinear.c -o tdlinear_avx2.o
-	$(CC_DLL_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c qdlinear.c -o qdlinear_avx2.o
-	$(CC_DLL_AVX2) -DUSE_DSLINEAR -DUSE_TSLINEAR -DUSE_QSLINEAR $(INC) -c qslinear.c -o qslinear_avx2.o
-	$(CC_DLL_AVX2) -DUSE_DSLINEAR $(INC) -c dslinear.c -o dslinear_avx2.o
-	$(CC_DLL_AVX2) -DUSE_DSLINEAR -DUSE_TSLINEAR $(INC) -c tslinear.c -o tslinear_avx2.o
+	$(CC_DLL_AVX2) $(INC) -c ddlinear.c -o ddlinear_avx2.o
+	$(CC_DLL_AVX2) $(INC) -c cddlinear.c -o cddlinear_avx2.o
+	$(CC_DLL_AVX2) $(INC) -c tdlinear.c -o tdlinear_avx2.o
+	$(CC_DLL_AVX2) $(INC) -c qdlinear.c -o qdlinear_avx2.o
+	$(CC_DLL_AVX2) $(INC) -c qslinear.c -o qslinear_avx2.o
+	$(CC_DLL_AVX2) $(INC) -c dslinear.c -o dslinear_avx2.o
+	$(CC_DLL_AVX2) $(INC) -c tslinear.c -o tslinear_avx2.o
 	$(CC_DLL_AVX2) $(INC) -c gtestmat.c -o gtestmat_avx2.o
 	$(CC_DLL_AVX2) $(INC) -c mpflu.c -o mpflu_avx2.o
-	$(CC_DLL_AVX2) -DUSE_DDLINEAR $(INC) -c ddlu.c -o ddlu_avx2.o
-	$(CC_DLL_AVX2) -DUSE_DDLINEAR $(INC) -c ddlu_strassen.c -o ddlu_strassen_avx2.o
-	$(CC_DLL_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c tdlu_strassen.c -o tdlu_strassen_avx2.o
-	$(CC_DLL_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c qdlu_strassen.c -o qdlu_strassen_avx2.o
-	$(CC_DLL_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c mpflu_strassen.c -o mpflu_strassen_avx2.o
-	$(CC_DLL_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c cmpflu_strassen.c -o cmpflu_strassen_avx2.o
-	$(CC_DLL_AVX2) -DUSE_DDLINEAR $(INC) -c ddlu_oz.c -o ddlu_oz_avx2.o
-	$(CC_DLL_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c tdlu_oz.c -o tdlu_oz_avx2.o
-	$(CC_DLL_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c qdlu_oz.c -o qdlu_oz_avx2.o
-	$(CC_DLL_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c mpflu_oz.c -o mpflu_oz_avx2.o
-	$(CC_DLL_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c cmpflu_oz.c -o cmpflu_oz_avx2.o
-	$(CC_DLL_AVX2) -DUSE_DDLINEAR $(INC) -c gtestmat_dd.c -o gtestmat_dd_avx2.o
-	$(CC_DLL_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c benchmark_tools_dd.c -o benchmark_tools_dd_avx2.o
-	$(CC_DLL_AVX2) -DUSE_DDLINEAR $(INC) -c mpfr_dtq_sd.c -o mpfr_dtq_sd_avx2.o
+	$(CC_DLL_AVX2) $(INC) -c ddlu.c -o ddlu_avx2.o
+	$(CC_DLL_AVX2) $(INC) -c ddlu_strassen.c -o ddlu_strassen_avx2.o
+	$(CC_DLL_AVX2) $(INC) -c tdlu_strassen.c -o tdlu_strassen_avx2.o
+	$(CC_DLL_AVX2) $(INC) -c qdlu_strassen.c -o qdlu_strassen_avx2.o
+	$(CC_DLL_AVX2) $(INC) -c mpflu_strassen.c -o mpflu_strassen_avx2.o
+	$(CC_DLL_AVX2) $(INC) -c cmpflu_strassen.c -o cmpflu_strassen_avx2.o
+	$(CC_DLL_AVX2) $(INC) -c ddlu_oz.c -o ddlu_oz_avx2.o
+	$(CC_DLL_AVX2) $(INC) -c tdlu_oz.c -o tdlu_oz_avx2.o
+	$(CC_DLL_AVX2) $(INC) -c qdlu_oz.c -o qdlu_oz_avx2.o
+	$(CC_DLL_AVX2) $(INC) -c mpflu_oz.c -o mpflu_oz_avx2.o
+	$(CC_DLL_AVX2) $(INC) -c cmpflu_oz.c -o cmpflu_oz_avx2.o
+	$(CC_DLL_AVX2) $(INC) -c gtestmat_dd.c -o gtestmat_dd_avx2.o
+	$(CC_DLL_AVX2) $(INC) -c benchmark_tools_dd.c -o benchmark_tools_dd_avx2.o
+	$(CC_DLL_AVX2) $(INC) -c mpfr_dtq_sd.c -o mpfr_dtq_sd_avx2.o
 	$(CC_DLL_AVX2) $(INC) -c benchmark_tools.c -o benchmark_tools_avx2.o
-	$(CC_DLL_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c fread_write.c -o fread_write_avx2.o
-	$(CC_DLL_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c oz_scheme.c -o oz_scheme_avx2.o
-	$(CC_DLL_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c dd_oz_scheme.c -o dd_oz_scheme_avx2.o
-	$(CC_DLL_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c td_oz_scheme.c -o td_oz_scheme_avx2.o
-	$(CC_DLL_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c qd_oz_scheme.c -o qd_oz_scheme_avx2.o
-	$(CC_DLL_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c mpf_oz_scheme.c -o mpf_oz_scheme_avx2.o
+	$(CC_DLL_AVX2) $(INC) -c fread_write.c -o fread_write_avx2.o
+	$(CC_DLL_AVX2) $(INC) -c oz_scheme.c -o oz_scheme_avx2.o
+	$(CC_DLL_AVX2) $(INC) -c dd_oz_scheme.c -o dd_oz_scheme_avx2.o
+	$(CC_DLL_AVX2) $(INC) -c td_oz_scheme.c -o td_oz_scheme_avx2.o
+	$(CC_DLL_AVX2) $(INC) -c qd_oz_scheme.c -o qd_oz_scheme_avx2.o
+	$(CC_DLL_AVX2) $(INC) -c mpf_oz_scheme.c -o mpf_oz_scheme_avx2.o
 	$(AR_DLL) bnc_common_func_avx2.o complex_avx2.o clinear_avx2.o cddlinear_avx2.o clu_avx2.o matmul_strassen_general_avx2.o matmul_strassen_general_mpf_avx2.o matmul_strassen_general_dd_avx2.o matmul_strassen_general_cdd_avx2.o matmul_strassen_general_td_avx2.o matmul_strassen_general_qd_avx2.o matmul_strassen_general_mpc_avx2.o mpflinear_avx2.o flinear_avx2.o dlinear_avx2.o ddlinear_avx2.o ddlu_avx2.o ddlu_strassen_avx2.o tdlu_strassen_avx2.o qdlu_strassen_avx2.o mpflu_strassen_avx2.o cmpflu_strassen_avx2.o ddlu_oz_avx2.o tdlu_oz_avx2.o qdlu_oz_avx2.o mpflu_oz_avx2.o cmpflu_oz_avx2.o tdlinear_avx2.o qdlinear_avx2.o dslinear_avx2.o tslinear_avx2.o qslinear_avx2.o mpflu_avx2.o mpfr_dtq_sd_avx2.o benchmark_tools_dd_avx2.o benchmark_tools_avx2.o get_sec_avx2.o fread_write_avx2.o oz_scheme_avx2.o dd_oz_scheme_avx2.o td_oz_scheme_avx2.o qd_oz_scheme_avx2.o mpf_oz_scheme_avx2.o $(COMMON_LIB) -o $(BNCMATMUL_DLLNAME_AVX2)
 
 # ---------------
@@ -375,10 +375,10 @@ matmul_strassen_lib_avx512:
 	$(CC_AVX512) $(INC) -c clinear.c -o clinear_avx512.o
 	$(CC_AVX512) $(INC) -c clu.c -o clu_avx512.o
 	$(CC_AVX512) $(INC) -c matmul_strassen_general.c -o matmul_strassen_general_avx512.o
-	$(CC_AVX512) -DUSE_DDLINEAR $(INC) -c matmul_strassen_general_dd.c -o matmul_strassen_general_dd_avx512.o
-	$(CC_AVX512) -DUSE_DDLINEAR $(INC) -c matmul_strassen_general_cdd.c -o matmul_strassen_general_cdd_avx512.o
-	$(CC_AVX512) -DUSE_DDLINEAR -DUSE_TDLINEAR $(INC) -c matmul_strassen_general_td.c -o matmul_strassen_general_td_avx512.o
-	$(CC_AVX512) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c matmul_strassen_general_qd.c -o matmul_strassen_general_qd_avx512.o
+	$(CC_AVX512) $(INC) -c matmul_strassen_general_dd.c -o matmul_strassen_general_dd_avx512.o
+	$(CC_AVX512) $(INC) -c matmul_strassen_general_cdd.c -o matmul_strassen_general_cdd_avx512.o
+	$(CC_AVX512) $(INC) -c matmul_strassen_general_td.c -o matmul_strassen_general_td_avx512.o
+	$(CC_AVX512) $(INC) -c matmul_strassen_general_qd.c -o matmul_strassen_general_qd_avx512.o
 	$(CC_AVX512) $(INC) -c matmul_strassen_general_mpf.c -o matmul_strassen_general_mpf_avx512.o
 	$(CC_AVX512) $(INC) -c matmul_strassen_general_mpc.c -o matmul_strassen_general_mpc_avx512.o
 	$(CC_AVX512) $(INC) -c get_sec.c -o get_sec_avx512.o
@@ -386,31 +386,31 @@ matmul_strassen_lib_avx512:
 	$(CC_AVX512) $(INC) -c mpflinear.c -o mpflinear_avx512.o
 	$(CC_AVX512) $(INC) -c dlinear.c -o dlinear_avx512.o
 #	$(CC_AVX512) $(INC) -c flinear.c -o flinear_avx512.o
-	$(CC_AVX512) -DUSE_DDLINEAR $(INC) -c ddlinear.c -o ddlinear_avx512.o
-	$(CC_AVX512) -DUSE_DDLINEAR $(INC) -c cddlinear.c -o cddlinear_avx512.o
-	$(CC_AVX512) -DUSE_DDLINEAR -DUSE_TDLINEAR $(INC) -c tdlinear.c -o tdlinear_avx512.o
-	$(CC_AVX512) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c qdlinear.c -o qdlinear_avx512.o
-#	$(CC_AVX512) -DUSE_DSLINEAR $(INC) -c dslinear.c -o dslinear_avx512.o
-#	$(CC_AVX512) -DUSE_DSLINEAR -DUSE_TSLINEAR $(INC) -c tslinear.c -o tslinear_avx512.o
-#	$(CC_AVX512) -DUSE_DSLINEAR -DUSE_TSLINEAR -DUSE_QSLINEAR $(INC) -c qslinear.c -o qslinear_avx512.o
+	$(CC_AVX512) $(INC) -c ddlinear.c -o ddlinear_avx512.o
+	$(CC_AVX512) $(INC) -c cddlinear.c -o cddlinear_avx512.o
+	$(CC_AVX512) $(INC) -c tdlinear.c -o tdlinear_avx512.o
+	$(CC_AVX512) $(INC) -c qdlinear.c -o qdlinear_avx512.o
+#	$(CC_AVX512) $(INC) -c dslinear.c -o dslinear_avx512.o
+#	$(CC_AVX512) $(INC) -c tslinear.c -o tslinear_avx512.o
+#	$(CC_AVX512) $(INC) -c qslinear.c -o qslinear_avx512.o
 	$(CC_AVX512) $(INC) -c gtestmat.c -o gtestmat_avx512.o
 	$(CC_AVX512) $(INC) -c mpflu.c -o mpflu_avx512.o
-	$(CC_AVX512) -DUSE_DDLINEAR $(INC) -c ddlu.c -o ddlu_avx512.o
-	$(CC_AVX512) -DUSE_DDLINEAR $(INC) -c ddlu_strassen.c -o ddlu_strassen_avx512.o
-	$(CC_AVX512) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c tdlu_strassen.c -o tdlu_strassen_avx512.o
-	$(CC_AVX512) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c qdlu_strassen.c -o qdlu_strassen_avx512.o
-	$(CC_AVX512) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c mpflu_strassen.c -o mpflu_strassen_avx512.o
-	$(CC_AVX512) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c cmpflu_strassen.c -o cmpflu_strassen_avx512.o
-	$(CC_AVX512) -DUSE_DDLINEAR $(INC) -c gtestmat_dd.c -o gtestmat_dd_avx512.o
-	$(CC_AVX512) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c benchmark_tools_dd.c -o benchmark_tools_dd_avx512.o
-	$(CC_AVX512) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c fread_write.c -o fread_write_avx512.o
-	$(CC_AVX512) -DUSE_DDLINEAR $(INC) -c mpfr_dtq_sd.c -o mpfr_dtq_sd_avx512.o
+	$(CC_AVX512) $(INC) -c ddlu.c -o ddlu_avx512.o
+	$(CC_AVX512) $(INC) -c ddlu_strassen.c -o ddlu_strassen_avx512.o
+	$(CC_AVX512) $(INC) -c tdlu_strassen.c -o tdlu_strassen_avx512.o
+	$(CC_AVX512) $(INC) -c qdlu_strassen.c -o qdlu_strassen_avx512.o
+	$(CC_AVX512) $(INC) -c mpflu_strassen.c -o mpflu_strassen_avx512.o
+	$(CC_AVX512) $(INC) -c cmpflu_strassen.c -o cmpflu_strassen_avx512.o
+	$(CC_AVX512) $(INC) -c gtestmat_dd.c -o gtestmat_dd_avx512.o
+	$(CC_AVX512) $(INC) -c benchmark_tools_dd.c -o benchmark_tools_dd_avx512.o
+	$(CC_AVX512) $(INC) -c fread_write.c -o fread_write_avx512.o
+	$(CC_AVX512) $(INC) -c mpfr_dtq_sd.c -o mpfr_dtq_sd_avx512.o
 	$(CC_AVX512) $(INC) -c benchmark_tools.c -o benchmark_tools_avx512.o
-	$(CC_AVX512) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c oz_scheme.c -o oz_scheme_avx512.o
-	$(CC_AVX512) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c dd_oz_scheme.c -o dd_oz_scheme_avx512.o
-	$(CC_AVX512) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c td_oz_scheme.c -o td_oz_scheme_avx512.o
-	$(CC_AVX512) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c qd_oz_scheme.c -o qd_oz_scheme_avx512.o
-	$(CC_AVX512) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c mpf_oz_scheme.c -o mpf_oz_scheme_avx512.o
+	$(CC_AVX512) $(INC) -c oz_scheme.c -o oz_scheme_avx512.o
+	$(CC_AVX512) $(INC) -c dd_oz_scheme.c -o dd_oz_scheme_avx512.o
+	$(CC_AVX512) $(INC) -c td_oz_scheme.c -o td_oz_scheme_avx512.o
+	$(CC_AVX512) $(INC) -c qd_oz_scheme.c -o qd_oz_scheme_avx512.o
+	$(CC_AVX512) $(INC) -c mpf_oz_scheme.c -o mpf_oz_scheme_avx512.o
 	$(AR) $(BNCMATMUL_LIBNAME_AVX512) bnc_common_func_avx512.o
 	$(AR) $(BNCMATMUL_LIBNAME_AVX512) complex_avx512.o
 	$(AR) $(BNCMATMUL_LIBNAME_AVX512) clinear_avx512.o
@@ -459,16 +459,16 @@ matmul_strassen_lib_avx512:
 # OpenMP
 # -------------
 matmul_strassen_lib_omp: 
-	$(CC) $(OPENMP) -DUSE_DDLINEAR $(INC) -c matmul_strassen_general_dd_omp.c -o matmul_strassen_general_dd_omp.o
-	$(CC) $(OPENMP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c matmul_strassen_general_td_omp.c -o matmul_strassen_general_td_omp.o
-	$(CC) $(OPENMP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c matmul_strassen_general_qd_omp.c -o matmul_strassen_general_qd_omp.o
-	$(CC) $(OPENMP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c bncomp_linear.c -o bncomp_linear.o
-#	$(CC) $(OPENMP) -DUSE_DDLINEAR $(INC) -c bncomp_block_linear.c -o bncomp_block_linear.o
-	$(CC) $(OPENMP) -DUSE_DDLINEAR $(INC) -c ddlu_strassen.c -o ddlu_strassen_omp.o
-	$(CC) $(OPENMP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c tdlu_strassen.c -o tdlu_strassen_omp.o
-	$(CC) $(OPENMP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c qdlu_strassen.c -o qdlu_strassen_omp.o
-	$(CC) $(OPENMP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c mpflu_strassen.c -o mpflu_strassen_omp.o
-	$(CC) $(OPENMP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c cmpflu_strassen.c -o cmpflu_strassen_omp.o
+	$(CC) $(OPENMP) $(INC) -c matmul_strassen_general_dd_omp.c -o matmul_strassen_general_dd_omp.o
+	$(CC) $(OPENMP) $(INC) -c matmul_strassen_general_td_omp.c -o matmul_strassen_general_td_omp.o
+	$(CC) $(OPENMP) $(INC) -c matmul_strassen_general_qd_omp.c -o matmul_strassen_general_qd_omp.o
+	$(CC) $(OPENMP) $(INC) -c bncomp_linear.c -o bncomp_linear.o
+#	$(CC) $(OPENMP) $(INC) -c bncomp_block_linear.c -o bncomp_block_linear.o
+	$(CC) $(OPENMP) $(INC) -c ddlu_strassen.c -o ddlu_strassen_omp.o
+	$(CC) $(OPENMP) $(INC) -c tdlu_strassen.c -o tdlu_strassen_omp.o
+	$(CC) $(OPENMP) $(INC) -c qdlu_strassen.c -o qdlu_strassen_omp.o
+	$(CC) $(OPENMP) $(INC) -c mpflu_strassen.c -o mpflu_strassen_omp.o
+	$(CC) $(OPENMP) $(INC) -c cmpflu_strassen.c -o cmpflu_strassen_omp.o
 	$(CC) $(OPENMP) $(INC) -c matmul_strassen_general_mpf_omp.c -o matmul_strassen_general_mpf_omp.o
 	$(AR) $(BNCMATMUL_LIBNAME_OMP) bncomp_linear.o
 #	$(AR) $(BNCMATMUL_LIBNAME_OMP) bncomp_block_linear.o
@@ -481,16 +481,16 @@ matmul_strassen_lib_omp:
 	$(AR) $(BNCMATMUL_LIBNAME_OMP) matmul_strassen_general_dd_omp.o
 	$(AR) $(BNCMATMUL_LIBNAME_OMP) matmul_strassen_general_td_omp.o
 	$(AR) $(BNCMATMUL_LIBNAME_OMP) matmul_strassen_general_qd_omp.o
-	$(CC_DLL) $(OPENMP) -DUSE_DDLINEAR $(INC) -c matmul_strassen_general_dd_omp.c -o matmul_strassen_general_dd_omp.o
-	$(CC_DLL) $(OPENMP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c matmul_strassen_general_td_omp.c -o matmul_strassen_general_td_omp.o
-	$(CC_DLL) $(OPENMP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c matmul_strassen_general_qd_omp.c -o matmul_strassen_general_qd_omp.o
-	$(CC_DLL) $(OPENMP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c bncomp_linear.c -o bncomp_linear.o
-#	$(CC_DLL) $(OPENMP) -DUSE_DDLINEAR $(INC) -c bncomp_block_linear.c -o bncomp_block_linear.o
-	$(CC_DLL) $(OPENMP) -DUSE_DDLINEAR $(INC) -c ddlu_strassen.c -o ddlu_strassen_omp.o
-	$(CC_DLL) $(OPENMP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c tdlu_strassen.c -o tdlu_strassen_omp.o
-	$(CC_DLL) $(OPENMP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c qdlu_strassen.c -o qdlu_strassen_omp.o
-	$(CC_DLL) $(OPENMP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c mpflu_strassen.c -o mpflu_strassen_omp.o
-	$(CC_DLL) $(OPENMP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c cmpflu_strassen.c -o cmpflu_strassen_omp.o
+	$(CC_DLL) $(OPENMP) $(INC) -c matmul_strassen_general_dd_omp.c -o matmul_strassen_general_dd_omp.o
+	$(CC_DLL) $(OPENMP) $(INC) -c matmul_strassen_general_td_omp.c -o matmul_strassen_general_td_omp.o
+	$(CC_DLL) $(OPENMP) $(INC) -c matmul_strassen_general_qd_omp.c -o matmul_strassen_general_qd_omp.o
+	$(CC_DLL) $(OPENMP) $(INC) -c bncomp_linear.c -o bncomp_linear.o
+#	$(CC_DLL) $(OPENMP) $(INC) -c bncomp_block_linear.c -o bncomp_block_linear.o
+	$(CC_DLL) $(OPENMP) $(INC) -c ddlu_strassen.c -o ddlu_strassen_omp.o
+	$(CC_DLL) $(OPENMP) $(INC) -c tdlu_strassen.c -o tdlu_strassen_omp.o
+	$(CC_DLL) $(OPENMP) $(INC) -c qdlu_strassen.c -o qdlu_strassen_omp.o
+	$(CC_DLL) $(OPENMP) $(INC) -c mpflu_strassen.c -o mpflu_strassen_omp.o
+	$(CC_DLL) $(OPENMP) $(INC) -c cmpflu_strassen.c -o cmpflu_strassen_omp.o
 	$(CC_DLL) $(OPENMP) $(INC) -c matmul_strassen_general_mpf_omp.c -o matmul_strassen_general_mpf_omp.o
 	$(AR_DLL) bncomp_linear.o matmul_strassen_general_mpf_omp.o matmul_strassen_general_dd_omp.o matmul_strassen_general_td_omp.o ddlu_strassen_omp.o tdlu_strassen_omp.o qdlu_strassen_omp.o mpflu_strassen_omp.o cmpflu_strassen_omp.o matmul_strassen_general_qd_omp.o $(COMMON_LIB) -o $(BNCMATMUL_DLLNAME_OMP)
 
@@ -498,16 +498,16 @@ matmul_strassen_lib_omp:
 # OpenMP + AVX2
 # ---------------
 matmul_strassen_lib_omp_avx2:
-	$(CC_AVX2) $(OPENMP) -DUSE_DDLINEAR $(INC) -c matmul_strassen_general_dd_omp.c -o matmul_strassen_general_dd_omp_avx2.o
-	$(CC_AVX2) $(OPENMP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c matmul_strassen_general_td_omp.c -o matmul_strassen_general_td_omp_avx2.o
-	$(CC_AVX2) $(OPENMP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c matmul_strassen_general_qd_omp.c -o matmul_strassen_general_qd_omp_avx2.o
-	$(CC_AVX2) $(OPENMP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c bncomp_linear.c -o bncomp_linear_avx2.o
-#	$(CC_AVX2) $(OPENMP) -DUSE_DDLINEAR $(INC) -c bncomp_block_linear.c -o bncomp_block_linear_avx2.o
-	$(CC_AVX2) $(OPENMP) -DUSE_DDLINEAR $(INC) -c ddlu_strassen.c -o ddlu_strassen_omp_avx2.o
-	$(CC_AVX2) $(OPENMP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c tdlu_strassen.c -o tdlu_strassen_omp_avx2.o
-	$(CC_AVX2) $(OPENMP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c qdlu_strassen.c -o qdlu_strassen_omp_avx2.o
-	$(CC_AVX2) $(OPENMP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c mpflu_strassen.c -o mpflu_strassen_omp_avx2.o
-	$(CC_AVX2) $(OPENMP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c cmpflu_strassen.c -o cmpflu_strassen_omp_avx2.o
+	$(CC_AVX2) $(OPENMP) $(INC) -c matmul_strassen_general_dd_omp.c -o matmul_strassen_general_dd_omp_avx2.o
+	$(CC_AVX2) $(OPENMP) $(INC) -c matmul_strassen_general_td_omp.c -o matmul_strassen_general_td_omp_avx2.o
+	$(CC_AVX2) $(OPENMP) $(INC) -c matmul_strassen_general_qd_omp.c -o matmul_strassen_general_qd_omp_avx2.o
+	$(CC_AVX2) $(OPENMP) $(INC) -c bncomp_linear.c -o bncomp_linear_avx2.o
+#	$(CC_AVX2) $(OPENMP) $(INC) -c bncomp_block_linear.c -o bncomp_block_linear_avx2.o
+	$(CC_AVX2) $(OPENMP) $(INC) -c ddlu_strassen.c -o ddlu_strassen_omp_avx2.o
+	$(CC_AVX2) $(OPENMP) $(INC) -c tdlu_strassen.c -o tdlu_strassen_omp_avx2.o
+	$(CC_AVX2) $(OPENMP) $(INC) -c qdlu_strassen.c -o qdlu_strassen_omp_avx2.o
+	$(CC_AVX2) $(OPENMP) $(INC) -c mpflu_strassen.c -o mpflu_strassen_omp_avx2.o
+	$(CC_AVX2) $(OPENMP) $(INC) -c cmpflu_strassen.c -o cmpflu_strassen_omp_avx2.o
 	$(CC_AVX2) $(OPENMP) $(INC) -c matmul_strassen_general_mpf_omp.c -o matmul_strassen_general_mpf_omp_avx2.o
 	$(AR) $(BNCMATMUL_LIBNAME_OMP_AVX2) bncomp_linear_avx2.o
 #	$(AR) $(BNCMATMUL_LIBNAME_OMP_AVX2) bncomp_block_linear_avx2.o
@@ -520,16 +520,16 @@ matmul_strassen_lib_omp_avx2:
 	$(AR) $(BNCMATMUL_LIBNAME_OMP_AVX2) matmul_strassen_general_dd_omp_avx2.o
 	$(AR) $(BNCMATMUL_LIBNAME_OMP_AVX2) matmul_strassen_general_td_omp_avx2.o
 	$(AR) $(BNCMATMUL_LIBNAME_OMP_AVX2) matmul_strassen_general_qd_omp_avx2.o
-	$(CC_DLL_AVX2) $(OPENMP) -DUSE_DDLINEAR $(INC) -c matmul_strassen_general_dd_omp.c -o matmul_strassen_general_dd_omp_avx2.o
-	$(CC_DLL_AVX2) $(OPENMP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c matmul_strassen_general_td_omp.c -o matmul_strassen_general_td_omp_avx2.o
-	$(CC_DLL_AVX2) $(OPENMP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c matmul_strassen_general_qd_omp.c -o matmul_strassen_general_qd_omp_avx2.o
-	$(CC_DLL_AVX2) $(OPENMP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c bncomp_linear.c -o bncomp_linear_avx2.o
-#	$(CC_DLL_AVX2) $(OPENMP) -DUSE_DDLINEAR $(INC) -c bncomp_block_linear.c -o bncomp_block_linear_avx2.o
-	$(CC_DLL_AVX2) $(OPENMP) -DUSE_DDLINEAR $(INC) -c ddlu_strassen.c -o ddlu_strassen_omp_avx2.o
-	$(CC_DLL_AVX2) $(OPENMP) -DUSE_DDLINEAR  -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c tdlu_strassen.c -o tdlu_strassen_omp_avx2.o
-	$(CC_DLL_AVX2) $(OPENMP) -DUSE_DDLINEAR  -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c qdlu_strassen.c -o qdlu_strassen_omp_avx2.o
-	$(CC_DLL_AVX2) $(OPENMP) -DUSE_DDLINEAR  -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c mpflu_strassen.c -o mpflu_strassen_omp_avx2.o
-	$(CC_DLL_AVX2) $(OPENMP) -DUSE_DDLINEAR  -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c cmpflu_strassen.c -o cmpflu_strassen_omp_avx2.o
+	$(CC_DLL_AVX2) $(OPENMP) $(INC) -c matmul_strassen_general_dd_omp.c -o matmul_strassen_general_dd_omp_avx2.o
+	$(CC_DLL_AVX2) $(OPENMP) $(INC) -c matmul_strassen_general_td_omp.c -o matmul_strassen_general_td_omp_avx2.o
+	$(CC_DLL_AVX2) $(OPENMP) $(INC) -c matmul_strassen_general_qd_omp.c -o matmul_strassen_general_qd_omp_avx2.o
+	$(CC_DLL_AVX2) $(OPENMP) $(INC) -c bncomp_linear.c -o bncomp_linear_avx2.o
+#	$(CC_DLL_AVX2) $(OPENMP) $(INC) -c bncomp_block_linear.c -o bncomp_block_linear_avx2.o
+	$(CC_DLL_AVX2) $(OPENMP) $(INC) -c ddlu_strassen.c -o ddlu_strassen_omp_avx2.o
+	$(CC_DLL_AVX2) $(OPENMP)  $(INC) -c tdlu_strassen.c -o tdlu_strassen_omp_avx2.o
+	$(CC_DLL_AVX2) $(OPENMP)  $(INC) -c qdlu_strassen.c -o qdlu_strassen_omp_avx2.o
+	$(CC_DLL_AVX2) $(OPENMP)  $(INC) -c mpflu_strassen.c -o mpflu_strassen_omp_avx2.o
+	$(CC_DLL_AVX2) $(OPENMP)  $(INC) -c cmpflu_strassen.c -o cmpflu_strassen_omp_avx2.o
 	$(CC_DLL_AVX2) $(OPENMP) $(INC) -c matmul_strassen_general_mpf_omp.c -o matmul_strassen_general_mpf_omp_avx2.o
 	$(AR_DLL) bncomp_linear_avx2.o matmul_strassen_general_mpf_omp_avx2.o matmul_strassen_general_dd_omp_avx2.o matmul_strassen_general_td_omp_avx2.o matmul_strassen_general_qd_omp_avx2.o ddlu_strassen_omp_avx2.o tdlu_strassen_omp_avx2.o qdlu_strassen_omp_avx2.o mpflu_strassen_omp_avx2.o cmpflu_strassen_omp_avx2.o $(COMMON_LIB) -o $(BNCMATMUL_DLLNAME_OMP_AVX2)
 
@@ -537,11 +537,11 @@ matmul_strassen_lib_omp_avx2:
 # OpenMP + AVX512
 # ---------------
 matmul_strassen_lib_omp_avx512:
-	$(CC_AVX512) $(OPENMP) -DUSE_DDLINEAR $(INC) -c matmul_strassen_general_dd_omp.c -o matmul_strassen_general_dd_omp_avx512.o
-	$(CC_AVX512) $(OPENMP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c matmul_strassen_general_td_omp.c -o matmul_strassen_general_td_omp_avx512.o
-	$(CC_AVX512) $(OPENMP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c matmul_strassen_general_qd_omp.c -o matmul_strassen_general_qd_omp_avx512.o
-	$(CC_AVX512) $(OPENMP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c bncomp_linear.c -o bncomp_linear_avx512.o
-#	$(CC) $(OPENMP) -DUSE_DDLINEAR $(INC) -c bncomp_block_linear.c -o bncomp_block_linear_avx512.o
+	$(CC_AVX512) $(OPENMP) $(INC) -c matmul_strassen_general_dd_omp.c -o matmul_strassen_general_dd_omp_avx512.o
+	$(CC_AVX512) $(OPENMP) $(INC) -c matmul_strassen_general_td_omp.c -o matmul_strassen_general_td_omp_avx512.o
+	$(CC_AVX512) $(OPENMP) $(INC) -c matmul_strassen_general_qd_omp.c -o matmul_strassen_general_qd_omp_avx512.o
+	$(CC_AVX512) $(OPENMP) $(INC) -c bncomp_linear.c -o bncomp_linear_avx512.o
+#	$(CC) $(OPENMP) $(INC) -c bncomp_block_linear.c -o bncomp_block_linear_avx512.o
 	$(CC_AVX512) $(OPENMP) $(INC) -c matmul_strassen_general_mpf_omp.c -o matmul_strassen_general_mpf_omp_avx512.o
 	$(AR) $(BNCMATMUL_LIBNAME_OMP_AVX512) bncomp_linear_avx512.o
 #	$(AR) $(BNCMATMUL_LIBNAME_OMP_AVX512) bncomp_block_linear_avx512.o
@@ -549,11 +549,11 @@ matmul_strassen_lib_omp_avx512:
 	$(AR) $(BNCMATMUL_LIBNAME_OMP_AVX512) matmul_strassen_general_dd_omp_avx512.o
 	$(AR) $(BNCMATMUL_LIBNAME_OMP_AVX512) matmul_strassen_general_td_omp_avx512.o
 	$(AR) $(BNCMATMUL_LIBNAME_OMP_AVX512) matmul_strassen_general_qd_omp_avx512.o
-	$(CC_DLL_AVX512) $(OPENMP) -DUSE_DDLINEAR $(INC) -c matmul_strassen_general_dd_omp.c -o matmul_strassen_general_dd_omp_avx512.o
-	$(CC_DLL_AVX512) $(OPENMP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c matmul_strassen_general_td_omp.c -o matmul_strassen_general_td_omp_avx512.o
-	$(CC_DLL_AVX512) $(OPENMP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c matmul_strassen_general_qd_omp.c -o matmul_strassen_general_qd_omp_avx512.o
-	$(CC_DLL_AVX512) $(OPENMP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR $(INC) -c bncomp_linear.c -o bncomp_linear_avx512.o
-#	$(CC) $(OPENMP) -DUSE_DDLINEAR $(INC) -c bncomp_block_linear.c -o bncomp_block_linear_avx512.o
+	$(CC_DLL_AVX512) $(OPENMP) $(INC) -c matmul_strassen_general_dd_omp.c -o matmul_strassen_general_dd_omp_avx512.o
+	$(CC_DLL_AVX512) $(OPENMP) $(INC) -c matmul_strassen_general_td_omp.c -o matmul_strassen_general_td_omp_avx512.o
+	$(CC_DLL_AVX512) $(OPENMP) $(INC) -c matmul_strassen_general_qd_omp.c -o matmul_strassen_general_qd_omp_avx512.o
+	$(CC_DLL_AVX512) $(OPENMP) $(INC) -c bncomp_linear.c -o bncomp_linear_avx512.o
+#	$(CC) $(OPENMP) $(INC) -c bncomp_block_linear.c -o bncomp_block_linear_avx512.o
 	$(CC_DLL_AVX512) $(OPENMP) $(INC) -c matmul_strassen_general_mpf_omp.c -o matmul_strassen_general_mpf_omp_avx512.o
 	$(AR_DLL) bncomp_linear_avx512.o matmul_strassen_general_mpf_omp_avx512.o matmul_strassen_general_dd_omp_avx512.o matmul_strassen_general_td_omp_avx512.o matmul_strassen_general_qd_omp_avx512.o $(COMMON_LIB) -o $(BNCMATMUL_DLLNAME_OMP_AVX512)
 
@@ -565,23 +565,23 @@ matmul_winograd_lib:
 	$(CC) $(INC) -c complex.c -o complex_$(WINOGRAD).o
 	$(CC) $(INC) -c clinear.c -o clinear_$(WINOGRAD).o
 	$(CC) $(INC) -c clu.c -o clu_$(WINOGRAD).o
-	$(CC) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_dd.c -o matmul_strassen_general_dd_$(WINOGRAD).o
-	$(CC) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_cdd.c -o matmul_strassen_general_cdd_$(WINOGRAD).o
-	$(CC) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_td.c -o matmul_strassen_general_td_$(WINOGRAD).o
-	$(CC) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_qd.c -o matmul_strassen_general_qd_$(WINOGRAD).o
+	$(CC) -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_dd.c -o matmul_strassen_general_dd_$(WINOGRAD).o
+	$(CC) -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_cdd.c -o matmul_strassen_general_cdd_$(WINOGRAD).o
+	$(CC) -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_td.c -o matmul_strassen_general_td_$(WINOGRAD).o
+	$(CC) -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_qd.c -o matmul_strassen_general_qd_$(WINOGRAD).o
 	$(CC) -DUSE_WINOGRAD $(INC) -c flinear.c -o flinear_$(WINOGRAD).o
 	$(CC) -DUSE_WINOGRAD $(INC) -c dlinear.c -o dlinear_$(WINOGRAD).o
-	$(CC) -DUSE_DDLINEAR -DUSE_WINOGRAD $(INC) -c cddlinear.c -o cddlinear_$(WINOGRAD).o
-	$(CC) -DUSE_DDLINEAR -DUSE_WINOGRAD $(INC) -c ddlinear.c -o ddlinear_$(WINOGRAD).o
-	$(CC) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_WINOGRAD $(INC) -c tdlinear.c -o tdlinear_$(WINOGRAD).o
-	$(CC) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_WINOGRAD $(INC) -c qdlinear.c -o qdlinear_$(WINOGRAD).o
+	$(CC) -DUSE_WINOGRAD $(INC) -c cddlinear.c -o cddlinear_$(WINOGRAD).o
+	$(CC) -DUSE_WINOGRAD $(INC) -c ddlinear.c -o ddlinear_$(WINOGRAD).o
+	$(CC) -DUSE_WINOGRAD $(INC) -c tdlinear.c -o tdlinear_$(WINOGRAD).o
+	$(CC) -DUSE_WINOGRAD $(INC) -c qdlinear.c -o qdlinear_$(WINOGRAD).o
 	$(CC) $(INC) -c mpflinear.c -o mpflinear_$(WINOGRAD).o
-	$(CC) -DUSE_DDLINEAR -DUSE_WINOGRAD $(INC) -c ddlu.c -o ddlu_$(WINOGRAD).o
-	$(CC) -DUSE_DDLINEAR -DUSE_WINOGRAD $(INC) -c gtestmat_dd.c -o gtestmat_dd_$(WINOGRAD).o
+	$(CC) -DUSE_WINOGRAD $(INC) -c ddlu.c -o ddlu_$(WINOGRAD).o
+	$(CC) -DUSE_WINOGRAD $(INC) -c gtestmat_dd.c -o gtestmat_dd_$(WINOGRAD).o
 	$(CC) $(INC) -c get_sec.c -o get_sec_$(WINOGRAD).o
-	$(CC) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_WINOGRAD $(INC) -c benchmark_tools_dd.c -o benchmark_tools_dd_$(WINOGRAD).o
-	$(CC) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_WINOGRAD $(INC) -c fread_write.c -o fread_write_$(WINOGRAD).o
-	$(CC) -DUSE_DDLINEAR -DUSE_WINOGRAD $(INC) -c mpfr_dtq_sd.c -o mpfr_dtq_sd_$(WINOGRAD).o
+	$(CC) -DUSE_WINOGRAD $(INC) -c benchmark_tools_dd.c -o benchmark_tools_dd_$(WINOGRAD).o
+	$(CC) -DUSE_WINOGRAD $(INC) -c fread_write.c -o fread_write_$(WINOGRAD).o
+	$(CC) -DUSE_WINOGRAD $(INC) -c mpfr_dtq_sd.c -o mpfr_dtq_sd_$(WINOGRAD).o
 	$(CC) $(INC) -c get_sec.c -o get_sec_$(WINOGRAD).o
 	$(CC) $(INC) -DUSE_WINOGRAD -c benchmark_tools.c -o benchmark_tools_$(WINOGRAD).o
 	$(CC) $(INC) -DUSE_WINOGRAD -c matmul_strassen_general.c -o matmul_strassen_general_$(WINOGRAD).o
@@ -615,23 +615,23 @@ matmul_winograd_lib:
 	$(CC_DLL) $(INC) -c complex.c -o complex_$(WINOGRAD).o
 	$(CC_DLL) $(INC) -c clinear.c -o clinear_$(WINOGRAD).o
 	$(CC_DLL) $(INC) -c clu.c -o clu_$(WINOGRAD).o
-	$(CC_DLL) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_dd.c -o matmul_strassen_general_dd_$(WINOGRAD).o
-	$(CC_DLL) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_cdd.c -o matmul_strassen_general_cdd_$(WINOGRAD).o
-	$(CC_DLL) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_td.c -o matmul_strassen_general_td_$(WINOGRAD).o
-	$(CC_DLL) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_qd.c -o matmul_strassen_general_qd_$(WINOGRAD).o
-	$(CC_DLL) -DUSE_DDLINEAR -DUSE_WINOGRAD $(INC) -c ddlinear.c -o ddlinear_$(WINOGRAD).o
-	$(CC_DLL) -DUSE_DDLINEAR -DUSE_WINOGRAD $(INC) -c cddlinear.c -o cddlinear_$(WINOGRAD).o
-	$(CC_DLL) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_WINOGRAD $(INC) -c tdlinear.c -o tdlinear_$(WINOGRAD).o
-	$(CC_DLL) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_WINOGRAD $(INC) -c qdlinear.c -o qdlinear_$(WINOGRAD).o
+	$(CC_DLL) -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_dd.c -o matmul_strassen_general_dd_$(WINOGRAD).o
+	$(CC_DLL) -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_cdd.c -o matmul_strassen_general_cdd_$(WINOGRAD).o
+	$(CC_DLL) -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_td.c -o matmul_strassen_general_td_$(WINOGRAD).o
+	$(CC_DLL) -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_qd.c -o matmul_strassen_general_qd_$(WINOGRAD).o
+	$(CC_DLL) -DUSE_WINOGRAD $(INC) -c ddlinear.c -o ddlinear_$(WINOGRAD).o
+	$(CC_DLL) -DUSE_WINOGRAD $(INC) -c cddlinear.c -o cddlinear_$(WINOGRAD).o
+	$(CC_DLL) -DUSE_WINOGRAD $(INC) -c tdlinear.c -o tdlinear_$(WINOGRAD).o
+	$(CC_DLL) -DUSE_WINOGRAD $(INC) -c qdlinear.c -o qdlinear_$(WINOGRAD).o
 	$(CC_DLL) $(INC) -c mpflinear.c -o mpflinear_$(WINOGRAD).o
-	$(CC_DLL) -DUSE_DDLINEAR -DUSE_WINOGRAD $(INC) -c ddlu.c -o ddlu_$(WINOGRAD).o
-	$(CC_DLL) -DUSE_DDLINEAR -DUSE_WINOGRAD $(INC) -c gtestmat_dd.c -o gtestmat_dd_$(WINOGRAD).o
+	$(CC_DLL) -DUSE_WINOGRAD $(INC) -c ddlu.c -o ddlu_$(WINOGRAD).o
+	$(CC_DLL) -DUSE_WINOGRAD $(INC) -c gtestmat_dd.c -o gtestmat_dd_$(WINOGRAD).o
 	$(CC_DLL) $(INC) -c get_sec.c -o get_sec_$(WINOGRAD).o
-	$(CC_DLL) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_WINOGRAD $(INC) -c benchmark_tools_dd.c -o benchmark_tools_dd_$(WINOGRAD).o
-	$(CC_DLL) -DUSE_DDLINEAR -DUSE_WINOGRAD $(INC) -c mpfr_dtq_sd.c -o mpfr_dtq_sd_$(WINOGRAD).o
+	$(CC_DLL) -DUSE_WINOGRAD $(INC) -c benchmark_tools_dd.c -o benchmark_tools_dd_$(WINOGRAD).o
+	$(CC_DLL) -DUSE_WINOGRAD $(INC) -c mpfr_dtq_sd.c -o mpfr_dtq_sd_$(WINOGRAD).o
 	$(CC_DLL) $(INC) -c get_sec.c -o get_sec_$(WINOGRAD).o
 	$(CC_DLL) $(INC) -DUSE_WINOGRAD -c benchmark_tools.c -o benchmark_tools_$(WINOGRAD).o
-	$(CC_DLL) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_WINOGRAD $(INC) -c fread_write.c -o fread_write_$(WINOGRAD).o
+	$(CC_DLL) -DUSE_WINOGRAD $(INC) -c fread_write.c -o fread_write_$(WINOGRAD).o
 	$(CC_DLL) $(INC) -DUSE_WINOGRAD -c matmul_strassen_general.c -o matmul_strassen_general_$(WINOGRAD).o
 	$(CC_DLL) $(INC) -DUSE_WINOGRAD -c matmul_strassen_general_mpf.c -o matmul_strassen_general_mpf_$(WINOGRAD).o
 	$(CC_DLL) $(INC) -DUSE_WINOGRAD -c matmul_strassen_general_mpc.c -o matmul_strassen_general_mpc_$(WINOGRAD).o
@@ -645,20 +645,20 @@ matmul_winograd_lib_avx2:
 	$(CC_AVX2) $(INC) -c complex.c -o complex_$(WINOGRAD)_avx2.o
 	$(CC_AVX2) $(INC) -c clinear.c -o clinear_$(WINOGRAD)_avx2.o
 	$(CC_AVX2) $(INC) -c clu.c -o clu_$(WINOGRAD)_avx2.o
-	$(CC_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_dd.c -o matmul_strassen_general_dd_$(WINOGRAD)_avx2.o
-	$(CC_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_dd.c -o matmul_strassen_general_cdd_$(WINOGRAD)_avx2.o
-	$(CC_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_td.c -o matmul_strassen_general_td_$(WINOGRAD)_avx2.o
-	$(CC_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_qd.c -o matmul_strassen_general_qd_$(WINOGRAD)_avx2.o
+	$(CC_AVX2) -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_dd.c -o matmul_strassen_general_dd_$(WINOGRAD)_avx2.o
+	$(CC_AVX2) -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_dd.c -o matmul_strassen_general_cdd_$(WINOGRAD)_avx2.o
+	$(CC_AVX2) -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_td.c -o matmul_strassen_general_td_$(WINOGRAD)_avx2.o
+	$(CC_AVX2) -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_qd.c -o matmul_strassen_general_qd_$(WINOGRAD)_avx2.o
 	$(CC_AVX2) $(INC) -c dlinear.c -o dlinear_$(WINOGRAD)_avx2.o
-	$(CC_AVX2) -DUSE_DDLINEAR -DUSE_WINOGRAD $(INC) -c ddlinear.c -o ddlinear_$(WINOGRAD)_avx2.o
-	$(CC_AVX2) -DUSE_DDLINEAR -DUSE_WINOGRAD $(INC) -c cddlinear.c -o cddlinear_$(WINOGRAD)_avx2.o
-	$(CC_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_WINOGRAD $(INC) -c tdlinear.c -o tdlinear_$(WINOGRAD)_avx2.o
-	$(CC_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_WINOGRAD $(INC) -c qdlinear.c -o qdlinear_$(WINOGRAD)_avx2.o
+	$(CC_AVX2) -DUSE_WINOGRAD $(INC) -c ddlinear.c -o ddlinear_$(WINOGRAD)_avx2.o
+	$(CC_AVX2) -DUSE_WINOGRAD $(INC) -c cddlinear.c -o cddlinear_$(WINOGRAD)_avx2.o
+	$(CC_AVX2) -DUSE_WINOGRAD $(INC) -c tdlinear.c -o tdlinear_$(WINOGRAD)_avx2.o
+	$(CC_AVX2) -DUSE_WINOGRAD $(INC) -c qdlinear.c -o qdlinear_$(WINOGRAD)_avx2.o
 	$(CC_AVX2) $(INC) -c mpflinear.c -o mpflinear_$(WINOGRAD)_avx2.o
-	$(CC_AVX2) -DUSE_DDLINEAR -DUSE_WINOGRAD $(INC) -c ddlu.c -o ddlu_$(WINOGRAD)_avx2.o
-	$(CC_AVX2) -DUSE_DDLINEAR -DUSE_WINOGRAD $(INC) -c gtestmat_dd.c -o gtestmat_dd_$(WINOGRAD)_avx2.o
-	$(CC_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_WINOGRAD $(INC) -c benchmark_tools_dd.c -o benchmark_tools_dd_$(WINOGRAD)_avx2.o
-	$(CC_AVX2) -DUSE_DDLINEAR -DUSE_WINOGRAD $(INC) -c mpfr_dtq_sd.c -o mpfr_dtq_sd_$(WINOGRAD)_avx2.o
+	$(CC_AVX2) -DUSE_WINOGRAD $(INC) -c ddlu.c -o ddlu_$(WINOGRAD)_avx2.o
+	$(CC_AVX2) -DUSE_WINOGRAD $(INC) -c gtestmat_dd.c -o gtestmat_dd_$(WINOGRAD)_avx2.o
+	$(CC_AVX2) -DUSE_WINOGRAD $(INC) -c benchmark_tools_dd.c -o benchmark_tools_dd_$(WINOGRAD)_avx2.o
+	$(CC_AVX2) -DUSE_WINOGRAD $(INC) -c mpfr_dtq_sd.c -o mpfr_dtq_sd_$(WINOGRAD)_avx2.o
 	$(CC_AVX2) $(INC) -c get_sec.c -o get_sec_$(WINOGRAD)_avx2.o
 	$(CC_AVX2) $(INC) -DUSE_WINOGRAD -c benchmark_tools.c -o benchmark_tools_$(WINOGRAD)_avx2.o
 	$(CC_AVX2) $(INC) -DUSE_WINOGRAD -c matmul_strassen_general.c -o matmul_strassen_general_$(WINOGRAD)_avx2.o
@@ -692,19 +692,19 @@ matmul_winograd_lib_avx2:
 	$(CC_DLL_AVX2) $(INC) -c clinear.c -o clinear_$(WINOGRAD)_avx2.o
 	$(CC_DLL_AVX2) $(INC) -c cddlinear.c -o cddlinear_$(WINOGRAD)_avx2.o
 	$(CC_DLL_AVX2) $(INC) -c clu.c -o clu_$(WINOGRAD)_avx2.o
-	$(CC_DLL_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_dd.c -o matmul_strassen_general_dd_$(WINOGRAD)_avx2.o
-	$(CC_DLL_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_cdd.c -o matmul_strassen_general_cdd_$(WINOGRAD)_avx2.o
-	$(CC_DLL_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_td.c -o matmul_strassen_general_td_$(WINOGRAD)_avx2.o
-	$(CC_DLL_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_qd.c -o matmul_strassen_general_qd_$(WINOGRAD)_avx2.o
+	$(CC_DLL_AVX2) -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_dd.c -o matmul_strassen_general_dd_$(WINOGRAD)_avx2.o
+	$(CC_DLL_AVX2) -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_cdd.c -o matmul_strassen_general_cdd_$(WINOGRAD)_avx2.o
+	$(CC_DLL_AVX2) -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_td.c -o matmul_strassen_general_td_$(WINOGRAD)_avx2.o
+	$(CC_DLL_AVX2) -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_qd.c -o matmul_strassen_general_qd_$(WINOGRAD)_avx2.o
 	$(CC_DLL_AVX2) $(INC) -c dlinear.c -o dlinear_$(WINOGRAD)_avx2.o
-	$(CC_DLL_AVX2) -DUSE_DDLINEAR -DUSE_WINOGRAD $(INC) -c ddlinear.c -o ddlinear_$(WINOGRAD)_avx2.o
-	$(CC_DLL_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_WINOGRAD $(INC) -c tdlinear.c -o tdlinear_$(WINOGRAD)_avx2.o
-	$(CC_DLL_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_WINOGRAD $(INC) -c qdlinear.c -o qdlinear_$(WINOGRAD)_avx2.o
+	$(CC_DLL_AVX2) -DUSE_WINOGRAD $(INC) -c ddlinear.c -o ddlinear_$(WINOGRAD)_avx2.o
+	$(CC_DLL_AVX2) -DUSE_WINOGRAD $(INC) -c tdlinear.c -o tdlinear_$(WINOGRAD)_avx2.o
+	$(CC_DLL_AVX2) -DUSE_WINOGRAD $(INC) -c qdlinear.c -o qdlinear_$(WINOGRAD)_avx2.o
 	$(CC_DLL_AVX2) $(INC) -c mpflinear.c -o mpflinear_$(WINOGRAD)_avx2.o
-	$(CC_DLL_AVX2) -DUSE_DDLINEAR -DUSE_WINOGRAD $(INC) -c ddlu.c -o ddlu_$(WINOGRAD)_avx2.o
-	$(CC_DLL_AVX2) -DUSE_DDLINEAR -DUSE_WINOGRAD $(INC) -c gtestmat_dd.c -o gtestmat_dd_$(WINOGRAD)_avx2.o
-	$(CC_DLL_AVX2) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_WINOGRAD $(INC) -c benchmark_tools_dd.c -o benchmark_tools_dd_$(WINOGRAD)_avx2.o
-	$(CC_DLL_AVX2) -DUSE_DDLINEAR -DUSE_WINOGRAD $(INC) -c mpfr_dtq_sd.c -o mpfr_dtq_sd_$(WINOGRAD)_avx2.o
+	$(CC_DLL_AVX2) -DUSE_WINOGRAD $(INC) -c ddlu.c -o ddlu_$(WINOGRAD)_avx2.o
+	$(CC_DLL_AVX2) -DUSE_WINOGRAD $(INC) -c gtestmat_dd.c -o gtestmat_dd_$(WINOGRAD)_avx2.o
+	$(CC_DLL_AVX2) -DUSE_WINOGRAD $(INC) -c benchmark_tools_dd.c -o benchmark_tools_dd_$(WINOGRAD)_avx2.o
+	$(CC_DLL_AVX2) -DUSE_WINOGRAD $(INC) -c mpfr_dtq_sd.c -o mpfr_dtq_sd_$(WINOGRAD)_avx2.o
 	$(CC_DLL_AVX2) $(INC) -c get_sec.c -o get_sec_$(WINOGRAD)_avx2.o
 	$(CC_DLL_AVX2) $(INC) -DUSE_WINOGRAD -c benchmark_tools.c -o benchmark_tools_$(WINOGRAD)_avx2.o
 	$(CC_DLL_AVX2) $(INC) -DUSE_WINOGRAD -c matmul_strassen_general.c -o matmul_strassen_general_$(WINOGRAD)_avx2.o
@@ -720,20 +720,20 @@ matmul_winograd_lib_avx512:
 	$(CC_AVX512) $(INC) -c complex.c -o complex_$(WINOGRAD)_avx512.o
 	$(CC_AVX512) $(INC) -c clinear.c -o clinear_$(WINOGRAD)_avx512.o
 	$(CC_AVX512) $(INC) -c clu.c -o clu_$(WINOGRAD)_avx512.o
-	$(CC_AVX512) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_dd.c -o matmul_strassen_general_dd_$(WINOGRAD)_avx512.o
-	$(CC_AVX512) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_cdd.c -o matmul_strassen_general_cdd_$(WINOGRAD)_avx512.o
-	$(CC_AVX512) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_td.c -o matmul_strassen_general_td_$(WINOGRAD)_avx512.o
-	$(CC_AVX512) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_qd.c -o matmul_strassen_general_qd_$(WINOGRAD)_avx512.o
+	$(CC_AVX512) -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_dd.c -o matmul_strassen_general_dd_$(WINOGRAD)_avx512.o
+	$(CC_AVX512) -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_cdd.c -o matmul_strassen_general_cdd_$(WINOGRAD)_avx512.o
+	$(CC_AVX512) -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_td.c -o matmul_strassen_general_td_$(WINOGRAD)_avx512.o
+	$(CC_AVX512) -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_qd.c -o matmul_strassen_general_qd_$(WINOGRAD)_avx512.o
 	$(CC_AVX512) $(INC) -c dlinear.c -o dlinear_$(WINOGRAD)_avx512.o
-	$(CC_AVX512) -DUSE_DDLINEAR -DUSE_WINOGRAD $(INC) -c ddlinear.c -o ddlinear_$(WINOGRAD)_avx512.o
-	$(CC_AVX512) -DUSE_DDLINEAR -DUSE_WINOGRAD $(INC) -c cddlinear.c -o cddlinear_$(WINOGRAD)_avx512.o
-	$(CC_AVX512) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_WINOGRAD $(INC) -c tdlinear.c -o tdlinear_$(WINOGRAD)_avx512.o
-	$(CC_AVX512) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_WINOGRAD $(INC) -c qdlinear.c -o qdlinear_$(WINOGRAD)_avx512.o
+	$(CC_AVX512) -DUSE_WINOGRAD $(INC) -c ddlinear.c -o ddlinear_$(WINOGRAD)_avx512.o
+	$(CC_AVX512) -DUSE_WINOGRAD $(INC) -c cddlinear.c -o cddlinear_$(WINOGRAD)_avx512.o
+	$(CC_AVX512) -DUSE_WINOGRAD $(INC) -c tdlinear.c -o tdlinear_$(WINOGRAD)_avx512.o
+	$(CC_AVX512) -DUSE_WINOGRAD $(INC) -c qdlinear.c -o qdlinear_$(WINOGRAD)_avx512.o
 	$(CC_AVX512) $(INC) -c mpflinear.c -o mpflinear_$(WINOGRAD)_avx512.o
-	$(CC_AVX512) -DUSE_DDLINEAR -DUSE_WINOGRAD $(INC) -c ddlu.c -o ddlu_$(WINOGRAD)_avx512.o
-	$(CC_AVX512) -DUSE_DDLINEAR -DUSE_WINOGRAD $(INC) -c gtestmat_dd.c -o gtestmat_dd_$(WINOGRAD)_avx512.o
-	$(CC_AVX512) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_WINOGRAD $(INC) -c benchmark_tools_dd.c -o benchmark_tools_dd_$(WINOGRAD)_avx512.o
-	$(CC_AVX512) -DUSE_DDLINEAR -DUSE_WINOGRAD $(INC) -c mpfr_dtq_sd.c -o mpfr_dtq_sd_$(WINOGRAD)_avx512.o
+	$(CC_AVX512) -DUSE_WINOGRAD $(INC) -c ddlu.c -o ddlu_$(WINOGRAD)_avx512.o
+	$(CC_AVX512) -DUSE_WINOGRAD $(INC) -c gtestmat_dd.c -o gtestmat_dd_$(WINOGRAD)_avx512.o
+	$(CC_AVX512) -DUSE_WINOGRAD $(INC) -c benchmark_tools_dd.c -o benchmark_tools_dd_$(WINOGRAD)_avx512.o
+	$(CC_AVX512) -DUSE_WINOGRAD $(INC) -c mpfr_dtq_sd.c -o mpfr_dtq_sd_$(WINOGRAD)_avx512.o
 	$(CC_AVX512) $(INC) -c get_sec.c -o get_sec_$(WINOGRAD)_avx512.o
 	$(CC_AVX512) $(INC) -DUSE_WINOGRAD -c benchmark_tools.c -o benchmark_tools_$(WINOGRAD)_avx512.o
 	$(CC_AVX512) $(INC) -DUSE_WINOGRAD -c matmul_strassen_general.c -o matmul_strassen_general_$(WINOGRAD)_avx512.o
@@ -766,20 +766,20 @@ matmul_winograd_lib_avx512:
 	$(CC_DLL_AVX512) $(INC) -c complex.c -o complex_$(WINOGRAD)_avx512.o
 	$(CC_DLL_AVX512) $(INC) -c clinear.c -o clinear_$(WINOGRAD)_avx512.o
 	$(CC_DLL_AVX512) $(INC) -c clu.c -o clu_$(WINOGRAD)_avx512.o
-	$(CC_DLL_AVX512) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_dd.c -o matmul_strassen_general_dd_$(WINOGRAD)_avx512.o
-	$(CC_DLL_AVX512) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_cdd.c -o matmul_strassen_general_cdd_$(WINOGRAD)_avx512.o
-	$(CC_DLL_AVX512) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_td.c -o matmul_strassen_general_td_$(WINOGRAD)_avx512.o
-	$(CC_DLL_AVX512) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_qd.c -o matmul_strassen_general_qd_$(WINOGRAD)_avx512.o
+	$(CC_DLL_AVX512) -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_dd.c -o matmul_strassen_general_dd_$(WINOGRAD)_avx512.o
+	$(CC_DLL_AVX512) -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_cdd.c -o matmul_strassen_general_cdd_$(WINOGRAD)_avx512.o
+	$(CC_DLL_AVX512) -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_td.c -o matmul_strassen_general_td_$(WINOGRAD)_avx512.o
+	$(CC_DLL_AVX512) -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_qd.c -o matmul_strassen_general_qd_$(WINOGRAD)_avx512.o
 	$(CC_DLL_AVX512) $(INC) -c dlinear.c -o dlinear_$(WINOGRAD)_avx512.o
-	$(CC_DLL_AVX512) -DUSE_DDLINEAR -DUSE_WINOGRAD $(INC) -c ddlinear.c -o ddlinear_$(WINOGRAD)_avx512.o
-	$(CC_DLL_AVX512) -DUSE_DDLINEAR -DUSE_WINOGRAD $(INC) -c cddlinear.c -o cddlinear_$(WINOGRAD)_avx512.o
-	$(CC_DLL_AVX512) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_WINOGRAD $(INC) -c tdlinear.c -o tdlinear_$(WINOGRAD)_avx512.o
-	$(CC_DLL_AVX512) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_WINOGRAD $(INC) -c qdlinear.c -o qdlinear_$(WINOGRAD)_avx512.o
+	$(CC_DLL_AVX512) -DUSE_WINOGRAD $(INC) -c ddlinear.c -o ddlinear_$(WINOGRAD)_avx512.o
+	$(CC_DLL_AVX512) -DUSE_WINOGRAD $(INC) -c cddlinear.c -o cddlinear_$(WINOGRAD)_avx512.o
+	$(CC_DLL_AVX512) -DUSE_WINOGRAD $(INC) -c tdlinear.c -o tdlinear_$(WINOGRAD)_avx512.o
+	$(CC_DLL_AVX512) -DUSE_WINOGRAD $(INC) -c qdlinear.c -o qdlinear_$(WINOGRAD)_avx512.o
 	$(CC_DLL_AVX512) $(INC) -c mpflinear.c -o mpflinear_$(WINOGRAD)_avx512.o
-	$(CC_DLL_AVX512) -DUSE_DDLINEAR -DUSE_WINOGRAD $(INC) -c ddlu.c -o ddlu_$(WINOGRAD)_avx512.o
-	$(CC_DLL_AVX512) -DUSE_DDLINEAR -DUSE_WINOGRAD $(INC) -c gtestmat_dd.c -o gtestmat_dd_$(WINOGRAD)_avx512.o
-	$(CC_DLL_AVX512) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_WINOGRAD $(INC) -c benchmark_tools_dd.c -o benchmark_tools_dd_$(WINOGRAD)_avx512.o
-	$(CC_DLL_AVX512) -DUSE_DDLINEAR -DUSE_WINOGRAD $(INC) -c mpfr_dtq_sd.c -o mpfr_dtq_sd_$(WINOGRAD)_avx512.o
+	$(CC_DLL_AVX512) -DUSE_WINOGRAD $(INC) -c ddlu.c -o ddlu_$(WINOGRAD)_avx512.o
+	$(CC_DLL_AVX512) -DUSE_WINOGRAD $(INC) -c gtestmat_dd.c -o gtestmat_dd_$(WINOGRAD)_avx512.o
+	$(CC_DLL_AVX512) -DUSE_WINOGRAD $(INC) -c benchmark_tools_dd.c -o benchmark_tools_dd_$(WINOGRAD)_avx512.o
+	$(CC_DLL_AVX512) -DUSE_WINOGRAD $(INC) -c mpfr_dtq_sd.c -o mpfr_dtq_sd_$(WINOGRAD)_avx512.o
 	$(CC_DLL_AVX512) $(INC) -c get_sec.c -o get_sec_$(WINOGRAD)_avx512.o
 	$(CC_DLL_AVX512) $(INC) -DUSE_WINOGRAD -c benchmark_tools.c -o benchmark_tools_$(WINOGRAD)_avx512.o
 	$(CC_DLL_AVX512) $(INC) -DUSE_WINOGRAD -c matmul_strassen_general.c -o matmul_strassen_general_$(WINOGRAD)_avx512.o
@@ -791,11 +791,11 @@ matmul_winograd_lib_avx512:
 # Winograd + OpenMP
 # -----------------
 matmul_winograd_lib_omp:
-	$(CC) $(OPENMP) -DUSE_DDLINEAR -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_dd_omp.c -o matmul_strassen_general_dd_$(WINOGRAD)_omp.o
-	$(CC) $(OPENMP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_td_omp.c -o matmul_strassen_general_td_$(WINOGRAD)_omp.o
-	$(CC) $(OPENMP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_qd_omp.c -o matmul_strassen_general_qd_$(WINOGRAD)_omp.o
-	$(CC) $(OPENMP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_WINOGRAD $(INC) -c bncomp_linear.c -o bncomp_linear_$(WINOGRAD).o
-#	$(CC) $(OPENMP) -DUSE_DDLINEAR -DUSE_WINOGRAD $(INC) -c bncomp_block_linear.c -o bncomp_block_linear_$(WINOGRAD).o
+	$(CC) $(OPENMP) -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_dd_omp.c -o matmul_strassen_general_dd_$(WINOGRAD)_omp.o
+	$(CC) $(OPENMP) -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_td_omp.c -o matmul_strassen_general_td_$(WINOGRAD)_omp.o
+	$(CC) $(OPENMP) -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_qd_omp.c -o matmul_strassen_general_qd_$(WINOGRAD)_omp.o
+	$(CC) $(OPENMP) -DUSE_WINOGRAD $(INC) -c bncomp_linear.c -o bncomp_linear_$(WINOGRAD).o
+#	$(CC) $(OPENMP) -DUSE_WINOGRAD $(INC) -c bncomp_block_linear.c -o bncomp_block_linear_$(WINOGRAD).o
 	$(CC) $(OPENMP) $(INC) -DUSE_WINOGRAD -c matmul_strassen_general_mpf_omp.c -o matmul_strassen_general_mpf_$(WINOGRAD)_omp.o
 	$(AR) $(BNCMATMUL_LIBNAME_WINOGRAD_OMP) bncomp_linear_$(WINOGRAD).o
 #	$(AR) $(BNCMATMUL_LIBNAME_WINOGRAD_OMP) bncomp_block_linear_$(WINOGRAD).o
@@ -803,11 +803,11 @@ matmul_winograd_lib_omp:
 	$(AR) $(BNCMATMUL_LIBNAME_WINOGRAD_OMP) matmul_strassen_general_dd_$(WINOGRAD)_omp.o
 	$(AR) $(BNCMATMUL_LIBNAME_WINOGRAD_OMP) matmul_strassen_general_td_$(WINOGRAD)_omp.o
 	$(AR) $(BNCMATMUL_LIBNAME_WINOGRAD_OMP) matmul_strassen_general_qd_$(WINOGRAD)_omp.o
-	$(CC_DLL) $(OPENMP) -DUSE_DDLINEAR -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_dd_omp.c -o matmul_strassen_general_dd_$(WINOGRAD)_omp.o
-	$(CC_DLL) $(OPENMP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_td_omp.c -o matmul_strassen_general_td_$(WINOGRAD)_omp.o
-	$(CC_DLL) $(OPENMP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_qd_omp.c -o matmul_strassen_general_qd_$(WINOGRAD)_omp.o
-	$(CC_DLL) $(OPENMP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_WINOGRAD $(INC) -c bncomp_linear.c -o bncomp_linear_$(WINOGRAD).o
-#	$(CC_DLL) $(OPENMP) -DUSE_DDLINEAR -DUSE_WINOGRAD $(INC) -c bncomp_block_linear.c -o bncomp_block_linear_$(WINOGRAD).o
+	$(CC_DLL) $(OPENMP) -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_dd_omp.c -o matmul_strassen_general_dd_$(WINOGRAD)_omp.o
+	$(CC_DLL) $(OPENMP) -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_td_omp.c -o matmul_strassen_general_td_$(WINOGRAD)_omp.o
+	$(CC_DLL) $(OPENMP) -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_qd_omp.c -o matmul_strassen_general_qd_$(WINOGRAD)_omp.o
+	$(CC_DLL) $(OPENMP) -DUSE_WINOGRAD $(INC) -c bncomp_linear.c -o bncomp_linear_$(WINOGRAD).o
+#	$(CC_DLL) $(OPENMP) -DUSE_WINOGRAD $(INC) -c bncomp_block_linear.c -o bncomp_block_linear_$(WINOGRAD).o
 	$(CC_DLL) $(OPENMP) $(INC) -DUSE_WINOGRAD -c matmul_strassen_general_mpf_omp.c -o matmul_strassen_general_mpf_$(WINOGRAD)_omp.o
 	$(AR_DLL) bncomp_linear_$(WINOGRAD).o matmul_strassen_general_mpf_$(WINOGRAD)_omp.o matmul_strassen_general_dd_$(WINOGRAD)_omp.o matmul_strassen_general_td_$(WINOGRAD)_omp.o matmul_strassen_general_qd_$(WINOGRAD)_omp.o $(COMMON_LIB) -o $(BNCMATMUL_DLLNAME_WINOGRAD_OMP)
 
@@ -815,11 +815,11 @@ matmul_winograd_lib_omp:
 # Winograd + OpenMP + AVX2
 # ------------------------
 matmul_winograd_lib_omp_avx2:
-	$(CC_AVX2) $(OPENMP) -DUSE_DDLINEAR -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_dd_omp.c -o matmul_strassen_general_dd_$(WINOGRAD)_omp_avx2.o
-	$(CC_AVX2) $(OPENMP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_td_omp.c -o matmul_strassen_general_td_$(WINOGRAD)_omp_avx2.o
-	$(CC_AVX2) $(OPENMP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_qd_omp.c -o matmul_strassen_general_qd_$(WINOGRAD)_omp_avx2.o
-	$(CC_AVX2) $(OPENMP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_WINOGRAD $(INC) -c bncomp_linear.c -o bncomp_linear_$(WINOGRAD)_avx2.o
-#	$(CC_AVX2) $(OPENMP) -DUSE_DDLINEAR -DUSE_WINOGRAD $(INC) -c bncomp_block_linear.c -o bncomp_block_linear_$(WINOGRAD)_avx2.o
+	$(CC_AVX2) $(OPENMP) -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_dd_omp.c -o matmul_strassen_general_dd_$(WINOGRAD)_omp_avx2.o
+	$(CC_AVX2) $(OPENMP) -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_td_omp.c -o matmul_strassen_general_td_$(WINOGRAD)_omp_avx2.o
+	$(CC_AVX2) $(OPENMP) -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_qd_omp.c -o matmul_strassen_general_qd_$(WINOGRAD)_omp_avx2.o
+	$(CC_AVX2) $(OPENMP) -DUSE_WINOGRAD $(INC) -c bncomp_linear.c -o bncomp_linear_$(WINOGRAD)_avx2.o
+#	$(CC_AVX2) $(OPENMP) -DUSE_WINOGRAD $(INC) -c bncomp_block_linear.c -o bncomp_block_linear_$(WINOGRAD)_avx2.o
 	$(CC_AVX2) $(OPENMP) $(INC) -DUSE_WINOGRAD -c matmul_strassen_general_mpf_omp.c -o matmul_strassen_general_mpf_$(WINOGRAD)_omp_avx2.o
 	$(AR) $(BNCMATMUL_LIBNAME_WINOGRAD_OMP_AVX2) bncomp_linear_$(WINOGRAD)_avx2.o
 #	$(AR) $(BNCMATMUL_LIBNAME_WINOGRAD_OMP_AVX2) bncomp_block_linear_$(WINOGRAD).o
@@ -827,11 +827,11 @@ matmul_winograd_lib_omp_avx2:
 	$(AR) $(BNCMATMUL_LIBNAME_WINOGRAD_OMP_AVX2) matmul_strassen_general_dd_$(WINOGRAD)_omp_avx2.o
 	$(AR) $(BNCMATMUL_LIBNAME_WINOGRAD_OMP_AVX2) matmul_strassen_general_td_$(WINOGRAD)_omp_avx2.o
 	$(AR) $(BNCMATMUL_LIBNAME_WINOGRAD_OMP_AVX2) matmul_strassen_general_qd_$(WINOGRAD)_omp_avx2.o
-	$(CC_DLL_AVX2) $(OPENMP) -DUSE_DDLINEAR -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_dd_omp.c -o matmul_strassen_general_dd_$(WINOGRAD)_omp_avx2.o
-	$(CC_DLL_AVX2) $(OPENMP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_td_omp.c -o matmul_strassen_general_td_$(WINOGRAD)_omp_avx2.o
-	$(CC_DLL_AVX2) $(OPENMP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_qd_omp.c -o matmul_strassen_general_qd_$(WINOGRAD)_omp_avx2.o
-	$(CC_DLL_AVX2) $(OPENMP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_WINOGRAD $(INC) -c bncomp_linear.c -o bncomp_linear_$(WINOGRAD)_avx2.o
-#	$(CC_DLL_AVX2) $(OPENMP) -DUSE_DDLINEAR -DUSE_WINOGRAD $(INC) -c bncomp_block_linear.c -o bncomp_block_linear_$(WINOGRAD)_avx2.o
+	$(CC_DLL_AVX2) $(OPENMP) -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_dd_omp.c -o matmul_strassen_general_dd_$(WINOGRAD)_omp_avx2.o
+	$(CC_DLL_AVX2) $(OPENMP) -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_td_omp.c -o matmul_strassen_general_td_$(WINOGRAD)_omp_avx2.o
+	$(CC_DLL_AVX2) $(OPENMP) -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_qd_omp.c -o matmul_strassen_general_qd_$(WINOGRAD)_omp_avx2.o
+	$(CC_DLL_AVX2) $(OPENMP) -DUSE_WINOGRAD $(INC) -c bncomp_linear.c -o bncomp_linear_$(WINOGRAD)_avx2.o
+#	$(CC_DLL_AVX2) $(OPENMP) -DUSE_WINOGRAD $(INC) -c bncomp_block_linear.c -o bncomp_block_linear_$(WINOGRAD)_avx2.o
 	$(CC_DLL_AVX2) $(OPENMP) $(INC) -DUSE_WINOGRAD -c matmul_strassen_general_mpf_omp.c -o matmul_strassen_general_mpf_$(WINOGRAD)_omp_avx2.o
 	$(AR_DLL) bncomp_linear_$(WINOGRAD)_avx2.o matmul_strassen_general_mpf_$(WINOGRAD)_omp_avx2.o matmul_strassen_general_dd_$(WINOGRAD)_omp_avx2.o matmul_strassen_general_td_$(WINOGRAD)_omp_avx2.o matmul_strassen_general_qd_$(WINOGRAD)_omp_avx2.o $(COMMON_LIB) -o $(BNCMATMUL_DLLNAME_WINOGRAD_OMP_AVX2)
 
@@ -839,11 +839,11 @@ matmul_winograd_lib_omp_avx2:
 # Winograd + OpenMP + AVX512
 # --------------------------
 matmul_winograd_lib_omp_avx512:
-	$(CC_AVX512) $(OPENMP) -DUSE_DDLINEAR -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_dd_omp.c -o matmul_strassen_general_dd_$(WINOGRAD)_omp_avx512.o
-	$(CC_AVX512) $(OPENMP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_td_omp.c -o matmul_strassen_general_td_$(WINOGRAD)_omp_avx512.o
-	$(CC_AVX512) $(OPENMP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_qd_omp.c -o matmul_strassen_general_qd_$(WINOGRAD)_omp_avx512.o
-	$(CC_AVX512) $(OPENMP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_WINOGRAD $(INC) -c bncomp_linear.c -o bncomp_linear_$(WINOGRAD)_avx512.o
-#	$(CC_AVX512) $(OPENMP) -DUSE_DDLINEAR -DUSE_WINOGRAD $(INC) -c bncomp_block_linear.c -o bncomp_block_linear_$(WINOGRAD)_avx512.o
+	$(CC_AVX512) $(OPENMP) -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_dd_omp.c -o matmul_strassen_general_dd_$(WINOGRAD)_omp_avx512.o
+	$(CC_AVX512) $(OPENMP) -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_td_omp.c -o matmul_strassen_general_td_$(WINOGRAD)_omp_avx512.o
+	$(CC_AVX512) $(OPENMP) -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_qd_omp.c -o matmul_strassen_general_qd_$(WINOGRAD)_omp_avx512.o
+	$(CC_AVX512) $(OPENMP) -DUSE_WINOGRAD $(INC) -c bncomp_linear.c -o bncomp_linear_$(WINOGRAD)_avx512.o
+#	$(CC_AVX512) $(OPENMP) -DUSE_WINOGRAD $(INC) -c bncomp_block_linear.c -o bncomp_block_linear_$(WINOGRAD)_avx512.o
 	$(CC_AVX512) $(OPENMP) $(INC) -DUSE_WINOGRAD -c matmul_strassen_general_mpf_omp.c -o matmul_strassen_general_mpf_$(WINOGRAD)_omp_avx512.o
 	$(AR) $(BNCMATMUL_LIBNAME_WINOGRAD_OMP_AVX512) bncomp_linear_$(WINOGRAD)_avx512.o
 #	$(AR) $(BNCMATMUL_LIBNAME_WINOGRAD_OMP_AVX512) bncomp_block_linear_$(WINOGRAD).o
@@ -851,11 +851,11 @@ matmul_winograd_lib_omp_avx512:
 	$(AR) $(BNCMATMUL_LIBNAME_WINOGRAD_OMP_AVX512) matmul_strassen_general_dd_$(WINOGRAD)_omp_avx512.o
 	$(AR) $(BNCMATMUL_LIBNAME_WINOGRAD_OMP_AVX512) matmul_strassen_general_td_$(WINOGRAD)_omp_avx512.o
 	$(AR) $(BNCMATMUL_LIBNAME_WINOGRAD_OMP_AVX512) matmul_strassen_general_qd_$(WINOGRAD)_omp_avx512.o
-	$(CC_DLL_AVX512) $(OPENMP) -DUSE_DDLINEAR -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_dd_omp.c -o matmul_strassen_general_dd_$(WINOGRAD)_omp_avx512.o
-	$(CC_DLL_AVX512) $(OPENMP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_td_omp.c -o matmul_strassen_general_td_$(WINOGRAD)_omp_avx512.o
-	$(CC_DLL_AVX512) $(OPENMP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_qd_omp.c -o matmul_strassen_general_qd_$(WINOGRAD)_omp_avx512.o
-	$(CC_DLL_AVX512) $(OPENMP) -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_WINOGRAD $(INC) -c bncomp_linear.c -o bncomp_linear_$(WINOGRAD)_avx512.o
-#	$(CC_DLL_AVX512) $(OPENMP) -DUSE_DDLINEAR -DUSE_WINOGRAD $(INC) -c bncomp_block_linear.c -o bncomp_block_linear_$(WINOGRAD)_avx512.o
+	$(CC_DLL_AVX512) $(OPENMP) -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_dd_omp.c -o matmul_strassen_general_dd_$(WINOGRAD)_omp_avx512.o
+	$(CC_DLL_AVX512) $(OPENMP) -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_td_omp.c -o matmul_strassen_general_td_$(WINOGRAD)_omp_avx512.o
+	$(CC_DLL_AVX512) $(OPENMP) -DUSE_WINOGRAD $(INC) -c matmul_strassen_general_qd_omp.c -o matmul_strassen_general_qd_$(WINOGRAD)_omp_avx512.o
+	$(CC_DLL_AVX512) $(OPENMP) -DUSE_WINOGRAD $(INC) -c bncomp_linear.c -o bncomp_linear_$(WINOGRAD)_avx512.o
+#	$(CC_DLL_AVX512) $(OPENMP) -DUSE_WINOGRAD $(INC) -c bncomp_block_linear.c -o bncomp_block_linear_$(WINOGRAD)_avx512.o
 	$(CC_DLL_AVX512) $(OPENMP) $(INC) -DUSE_WINOGRAD -c matmul_strassen_general_mpf_omp.c -o matmul_strassen_general_mpf_$(WINOGRAD)_omp_avx512.o
 	$(AR_DLL) bncomp_linear_$(WINOGRAD)_avx512.o matmul_strassen_general_mpf_$(WINOGRAD)_omp_avx512.o matmul_strassen_general_dd_$(WINOGRAD)_omp_avx512.o matmul_strassen_general_td_$(WINOGRAD)_omp_avx512.o matmul_strassen_general_qd_$(WINOGRAD)_omp_avx512.o $(COMMON_LIB) -o $(BNCMATMUL_DLLNAME_WINOGRAD_OMP_AVX512)
 
@@ -884,17 +884,17 @@ gqd: gddlinear.cu gddlinear_original.cu gddlinear_test.cc # libgqd
 
 strassen_general_gdd: matmul_strassen.h matmul_strassen_general_gdd.cc matmul_strassen_general_gdd.cu gddlinear_original.cu bncuda.h bncuda_linear_cublas.c
 	$(NVCC) $(INC) $(GQD_INC) -D__INCLUDE_GQD_CU__ -dc gddlinear_original.cu -o gddlinear_original.o
-	$(NVCC) -DUSE_DDLINEAR -DUSE_CUDA $(INC) $(GQD_INC) -dc matmul_strassen_general_gdd.cu -o matmul_strassen_general_gdd.o
+	$(NVCC) -DUSE_CUDA $(INC) $(GQD_INC) -dc matmul_strassen_general_gdd.cu -o matmul_strassen_general_gdd.o
 	$(NVCC) -dlink matmul_strassen_general_gdd.o gddlinear_original.o -o dlink.o
-	$(CPP) -DDEBUG -DUSE_DDLINEAR -DUSE_CUDA $(OPENMP) $(INC) $(GQD_INC) matmul_strassen_general_gdd.cc matmul_strassen_general_gdd.o gddlinear_original.o dlink.o ddlinear_original.o bncuda_linear_cublas.c $(BNCMATMUL_LIB_CC_OMP) $(LIB) $(QD_LIB) $(GQD_LIB) -o strassen_general_gdd
-	$(CPP) -DDEBUG -DUSE_DDLINEAR -DUSE_CUDA -DUSE_WINOGRAD $(OPENMP) $(INC) $(GQD_INC) matmul_strassen_general_gdd.cc matmul_strassen_general_gdd.o gddlinear_original.o dlink.o ddlinear_original.o bncuda_linear_cublas.c $(BNCMATMUL_LIB_CC_OMP) $(LIB) $(QD_LIB) $(GQD_LIB) -o strassen_general_winograd_gdd
+	$(CPP) -DDEBUG -DUSE_CUDA $(OPENMP) $(INC) $(GQD_INC) matmul_strassen_general_gdd.cc matmul_strassen_general_gdd.o gddlinear_original.o dlink.o ddlinear_original.o bncuda_linear_cublas.c $(BNCMATMUL_LIB_CC_OMP) $(LIB) $(QD_LIB) $(GQD_LIB) -o strassen_general_gdd
+	$(CPP) -DDEBUG -DUSE_CUDA -DUSE_WINOGRAD $(OPENMP) $(INC) $(GQD_INC) matmul_strassen_general_gdd.cc matmul_strassen_general_gdd.o gddlinear_original.o dlink.o ddlinear_original.o bncuda_linear_cublas.c $(BNCMATMUL_LIB_CC_OMP) $(LIB) $(QD_LIB) $(GQD_LIB) -o strassen_general_winograd_gdd
 
 strassen_general_gqd: matmul_strassen.h matmul_strassen_general_gqd.cc matmul_strassen_general_gqd.cu gddlinear_original.cu bncuda.h bncuda_linear_cublas.c
 	$(NVCC) $(INC) $(GQD_INC) -D__INCLUDE_GQD_CU__ -dc gddlinear_original.cu -o gddlinear_original.o
-	$(NVCC) -DUSE_DDLINEAR -DUSE_CUDA $(INC) $(GQD_INC) -dc matmul_strassen_general_gqd.cu -o matmul_strassen_general_gqd.o
+	$(NVCC) -DUSE_CUDA $(INC) $(GQD_INC) -dc matmul_strassen_general_gqd.cu -o matmul_strassen_general_gqd.o
 	$(NVCC) -dlink matmul_strassen_general_gqd.o gddlinear_original.o -o qlink.o
-	$(CPP) -DDEBUG -DUSE_DDLINEAR -DUSE_CUDA $(OPENMP) $(INC) $(GQD_INC) matmul_strassen_general_gqd.cc matmul_strassen_general_gqd.o gddlinear_original.o qlink.o ddlinear_original.o bncuda_linear_cublas.c $(BNCMATMUL_LIB_CC_OMP) $(LIB) $(QD_LIB) $(GQD_LIB) -o strassen_general_gqd
-	$(CPP) -DDEBUG -DUSE_DDLINEAR -DUSE_CUDA -DUSE_WINOGRAD $(OPENMP) $(INC) $(GQD_INC) matmul_strassen_general_gqd.cc matmul_strassen_general_gqd.o gddlinear_original.o qlink.o ddlinear_original.o bncuda_linear_cublas.c $(BNCMATMUL_LIB_CC_OMP) $(LIB) $(QD_LIB) $(GQD_LIB) -o strassen_general_winograd_gqd
+	$(CPP) -DDEBUG -DUSE_CUDA $(OPENMP) $(INC) $(GQD_INC) matmul_strassen_general_gqd.cc matmul_strassen_general_gqd.o gddlinear_original.o qlink.o ddlinear_original.o bncuda_linear_cublas.c $(BNCMATMUL_LIB_CC_OMP) $(LIB) $(QD_LIB) $(GQD_LIB) -o strassen_general_gqd
+	$(CPP) -DDEBUG -DUSE_CUDA -DUSE_WINOGRAD $(OPENMP) $(INC) $(GQD_INC) matmul_strassen_general_gqd.cc matmul_strassen_general_gqd.o gddlinear_original.o qlink.o ddlinear_original.o bncuda_linear_cublas.c $(BNCMATMUL_LIB_CC_OMP) $(LIB) $(QD_LIB) $(GQD_LIB) -o strassen_general_winograd_gqd
 
 #---------------------------------------%
 # librdd.so
@@ -909,24 +909,24 @@ librdd: rdd.h python/rdd.c
 #---------------------------------------%
 oz_scheme: oz_scheme.c dd_oz_scheme.c td_oz_scheme.c qd_oz_scheme.c mpf_oz_scheme.c
 	$(CC) -DDEBUG $(INC) oz_scheme.c $(BNCMATMUL_LIB) $(COMMON_LIB) -lm -o oz_scheme
-	$(CC) -DDEBUG $(INC) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_MPFLINEAR dd_oz_scheme.c $(BNCMATMUL_LIB) $(COMMON_LIB) -lm -o dd_oz_scheme
-	$(CC) -DDEBUG $(INC) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_MPFLINEAR td_oz_scheme.c $(BNCMATMUL_LIB) $(COMMON_LIB) -lm -o td_oz_scheme
-	$(CC) -DDEBUG  $(INC) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_MPFLINEAR qd_oz_scheme.c $(BNCMATMUL_LIB) $(COMMON_LIB) -lm -o qd_oz_scheme
-	$(CC) -DDEBUG  $(INC) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_MPFLINEAR mpf_oz_scheme.c $(BNCMATMUL_LIB) $(COMMON_LIB) -lm -o mpf_oz_scheme
+	$(CC) -DDEBUG $(INC) -DUSE_GMP -DUSE_MPFR dd_oz_scheme.c $(BNCMATMUL_LIB) $(COMMON_LIB) -lm -o dd_oz_scheme
+	$(CC) -DDEBUG $(INC) -DUSE_GMP -DUSE_MPFR td_oz_scheme.c $(BNCMATMUL_LIB) $(COMMON_LIB) -lm -o td_oz_scheme
+	$(CC) -DDEBUG  $(INC) -DUSE_GMP -DUSE_MPFR qd_oz_scheme.c $(BNCMATMUL_LIB) $(COMMON_LIB) -lm -o qd_oz_scheme
+	$(CC) -DDEBUG  $(INC) -DUSE_GMP -DUSE_MPFR mpf_oz_scheme.c $(BNCMATMUL_LIB) $(COMMON_LIB) -lm -o mpf_oz_scheme
 
 oz_scheme_avx2:oz_scheme.c dd_oz_scheme.c td_oz_scheme.c qd_oz_scheme.c mpf_oz_scheme.c
 #	$(CC) $(INC) oz_scheme.c $(BNCMATMUL_LIB) $(COMMON_LIB) -lm -o oz_scheme
-	$(CC_AVX2) -DDEBUG $(INC) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_MPFLINEAR dd_oz_scheme.c $(BNCMATMUL_LIB_AVX2) $(COMMON_LIB) -lm -o dd_oz_scheme_avx2
-	$(CC_AVX2) -DDEBUG $(INC) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_MPFLINEAR td_oz_scheme.c $(BNCMATMUL_LIB_AVX2) $(COMMON_LIB) -lm -o td_oz_scheme_avx2
-	$(CC_AVX2) -DDEBUG $(INC) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_MPFLINEAR qd_oz_scheme.c $(BNCMATMUL_LIB_AVX2) $(COMMON_LIB) -lm -o qd_oz_scheme_avx2
-	$(CC_AVX2) -DDEBUG $(INC) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_MPFLINEAR mpf_oz_scheme.c $(BNCMATMUL_LIB_AVX2) $(COMMON_LIB) -lm -o mpf_oz_scheme_avx2
+	$(CC_AVX2) -DDEBUG $(INC) -DUSE_GMP -DUSE_MPFR dd_oz_scheme.c $(BNCMATMUL_LIB_AVX2) $(COMMON_LIB) -lm -o dd_oz_scheme_avx2
+	$(CC_AVX2) -DDEBUG $(INC) -DUSE_GMP -DUSE_MPFR td_oz_scheme.c $(BNCMATMUL_LIB_AVX2) $(COMMON_LIB) -lm -o td_oz_scheme_avx2
+	$(CC_AVX2) -DDEBUG $(INC) -DUSE_GMP -DUSE_MPFR qd_oz_scheme.c $(BNCMATMUL_LIB_AVX2) $(COMMON_LIB) -lm -o qd_oz_scheme_avx2
+	$(CC_AVX2) -DDEBUG $(INC) -DUSE_GMP -DUSE_MPFR mpf_oz_scheme.c $(BNCMATMUL_LIB_AVX2) $(COMMON_LIB) -lm -o mpf_oz_scheme_avx2
 
 oz_scheme_imkl:oz_scheme.c dd_oz_scheme.c td_oz_scheme.c qd_oz_scheme.c mpf_oz_scheme.c
 #	$(CC) $(INC) oz_scheme.c $(BNCMATMUL_LIB) $(COMMON_LIB) -lm -o oz_scheme
-	$(CC_AVX2) -DDEBUG $(COMMON_INC) $(INC) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_MPFLINEAR dd_oz_scheme.c $(BNCMATMUL_LIB_AVX2) $(COMMON_LIB) -lm -o dd_oz_scheme_imkl
-	$(CC_AVX2) -DDEBUG $(COMMON_INC) $(INC) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_MPFLINEAR td_oz_scheme.c $(BNCMATMUL_LIB_AVX2) $(COMMON_LIB) -lm -o td_oz_scheme_imkl
-	$(CC_AVX2) -DDEBUG $(COMMON_INC) $(INC) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_MPFLINEAR qd_oz_scheme.c $(BNCMATMUL_LIB_AVX2) $(COMMON_LIB) -lm -o qd_oz_scheme_imkl
-	$(CC_AVX2) -DDEBUG $(COMMON_INC) $(INC) -DUSE_GMP -DUSE_MPFR -DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR -DUSE_MPFLINEAR mpf_oz_scheme.c $(BNCMATMUL_LIB_AVX2) $(COMMON_LIB) -lm -o mpf_oz_scheme_imkl
+	$(CC_AVX2) -DDEBUG $(COMMON_INC) $(INC) -DUSE_GMP -DUSE_MPFR dd_oz_scheme.c $(BNCMATMUL_LIB_AVX2) $(COMMON_LIB) -lm -o dd_oz_scheme_imkl
+	$(CC_AVX2) -DDEBUG $(COMMON_INC) $(INC) -DUSE_GMP -DUSE_MPFR td_oz_scheme.c $(BNCMATMUL_LIB_AVX2) $(COMMON_LIB) -lm -o td_oz_scheme_imkl
+	$(CC_AVX2) -DDEBUG $(COMMON_INC) $(INC) -DUSE_GMP -DUSE_MPFR qd_oz_scheme.c $(BNCMATMUL_LIB_AVX2) $(COMMON_LIB) -lm -o qd_oz_scheme_imkl
+	$(CC_AVX2) -DDEBUG $(COMMON_INC) $(INC) -DUSE_GMP -DUSE_MPFR mpf_oz_scheme.c $(BNCMATMUL_LIB_AVX2) $(COMMON_LIB) -lm -o mpf_oz_scheme_imkl
 
 #---------------------------------------%
 

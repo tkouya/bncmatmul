@@ -51,7 +51,6 @@ int split_dmatrix_t_dmat(DMatrix ret_mat[], int num_div, DMatrix org_mat);
 /******************/
 /* dd_oz_scheme.c */
 /******************/
-#ifdef USE_DDLINEAR
 // absmax_ddvector
 void absmax_ddvector(double ret[DDSIZE], long int *max_index, DDVector vec);
 /* c = a + (double)b */
@@ -91,12 +90,10 @@ int max_num_div_b_real, int max_num_div_b_image);
 #define mul_cddmatrix_oz mul_cddmatrix_oz_3m
 #endif // USE_4M
 
-#endif // USE_DDLINEAR
 
 /******************/
 /* td_oz_scheme.c */
 /******************/
-#ifdef USE_TDLINEAR
 // absmax_tdvector
 void absmax_tdvector(double ret[TDSIZE], long int *max_index, TDVector vec);
 /* c = a + (double)b */
@@ -132,12 +129,10 @@ void mul_ctdmatrix_oz_4m(CTDMatrix ret, CTDMatrix a, int max_num_div_a_real, int
 #define mul_ctdmatrix_oz mul_ctdmatrix_oz_3m
 #endif // USE_4M
 
-#endif // USE_TDLINEAR
 
 /******************/
 /* qd_oz_scheme.c */
 /******************/
-#ifdef USE_QDLINEAR
 // absmax_qdvector
 void absmax_qdvector(double ret[QDSIZE], long int *max_index, QDVector vec);
 /* c = a + (double)b */
@@ -183,7 +178,6 @@ void mul_cqdmatrix_oz_4m(CQDMatrix ret, CQDMatrix a, int max_num_div_a_real, int
 #define mul_cqdmatrix_oz mul_cqdmatrix_oz_3m
 #endif // USE_4M
 
-#endif // USE_QDLINEAR
 
 /******************/
 /* mpf_oz_scheme.c */

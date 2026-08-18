@@ -24,7 +24,6 @@
 //---------------------------------------
 // QD
 //---------------------------------------
-#ifdef USE_QDLINEAR
 //--------
 // Vector
 //--------
@@ -2812,4 +2811,3 @@ int _bncomp_SolveQDLSPM(QDVector answer, QDMatrix lu, QDVector b, long int ch[])
 	return 0;
 }
 
-#endif // USE_QDLINEAR

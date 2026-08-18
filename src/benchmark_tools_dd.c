@@ -13,7 +13,6 @@
 extern "C" {
 #endif // __cplusplus
 
-#ifdef USE_DDLINEAR
 
 // relative errors of vector
 void relerr3_ddvector(double max_relerr[DDSIZE], double min_relerr[DDSIZE], double norm_relerr[DDSIZE], DDVector vec, DDVector vec_true, int kind_of_norm)
@@ -465,9 +464,7 @@ void relerr3_cddvector_cmpfvec(double max_abs_relerr[DDSIZE], double min_abs_rel
 }
 
 #endif // USE_GMP
-#endif // USE_DDLINEAR
 
-#ifdef USE_TDLINEAR
 
 // relative errors of vector
 void relerr3_tdvector(double max_relerr[TDSIZE], double min_relerr[TDSIZE], double norm_relerr[TDSIZE], TDVector vec, TDVector vec_true, int kind_of_norm)
@@ -920,9 +917,7 @@ void relerr3_ctdvector_cmpfvec(double max_abs_relerr[TDSIZE], double min_abs_rel
 }
 
 #endif // USE_GMP
-#endif //USE_TDLINEAR
 
-#ifdef USE_QDLINEAR
 // relative errors of vector using higher precision value
 void relerr3_tdvector_qdvec(double max_relerr[TDSIZE], double min_relerr[TDSIZE], double norm_relerr[TDSIZE], TDVector vec, QDVector vec_true, int kind_of_norm)
 {
@@ -1441,7 +1436,6 @@ void relerr3_cqdvector_cmpfvec(double max_abs_relerr[QDSIZE], double min_abs_rel
 
 #endif // USE_GMP
 
-#endif // USE_QDLINEAR
 #ifdef __cplusplus
 } // extern "C" {
 #endif // __cplusplus

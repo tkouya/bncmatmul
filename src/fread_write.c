@@ -673,7 +673,6 @@ void fwrite_cmpfvector_fname(const char *fname, CMPFVector vec)
 #endif // USE_GMP
 
 // DD
-#ifdef USE_DDLINEAR
 // 2021-07-15(Wed) T.Kouya
 // read problem from file
 void read_test_linear_eq_dd(DDMatrix A, DDVector true_x, DDVector b, long int dim, const char *fname_A, const char *fname_true_x, const char *fname_b)
@@ -738,9 +737,7 @@ void read_test_linear_eq_dd(DDMatrix A, DDVector true_x, DDVector b, long int di
 		fclose(fp);
 	}
 }
-#endif //def USE_DDLINEAR
 
-#ifdef USE_TDLINEAR
 // 2021-07-15(Wed) T.Kouya
 // read problem from file
 void read_test_linear_eq_td(TDMatrix A, TDVector true_x, TDVector b, long int dim, const char *fname_A, const char *fname_true_x, const char *fname_b)
@@ -805,9 +802,7 @@ void read_test_linear_eq_td(TDMatrix A, TDVector true_x, TDVector b, long int di
 		fclose(fp);
 	}
 }
-#endif // USE_TDLINEAR
 
-#ifdef USE_QDLINEAR
 // 2021-07-15(Wed) T.Kouya
 // read problem from file
 void read_test_linear_eq_qd(QDMatrix A, QDVector true_x, QDVector b, long int dim, const char *fname_A, const char *fname_true_x, const char *fname_b)
@@ -872,7 +867,6 @@ void read_test_linear_eq_qd(QDMatrix A, QDVector true_x, QDVector b, long int di
 		fclose(fp);
 	}
 }
-#endif // USE_QDLINEAR
 
 #ifdef USE_GMP
 // 2021-07-15(Wed) T.Kouya
@@ -1127,7 +1121,6 @@ void write_test_linear_eq_c(CMPFMatrix A, CMPFVector true_x, CMPFVector b, long 
 
 #endif // USE_GMP
 
-#ifdef USE_DDLINEAR
 // 2023-12-14(Thu) T.Kouya
 // read problem from file
 void read_test_linear_eq_cdd(CDDMatrix A, CDDVector true_x, CDDVector b, long int dim, const char *fname_A, const char *fname_true_x, const char *fname_b)
@@ -1235,9 +1228,7 @@ void read_test_linear_eq_cdd(CDDMatrix A, CDDVector true_x, CDDVector b, long in
 	}
 	//mpf_clear(real);mpf_clear(imag);mpc_clear(ctmp);
 }
-#endif // USE_DDLINEAR
 
-#ifdef USE_TDLINEAR
 // 2023-12-15(Fri) T.Kouya
 // read problem from file
 void read_test_linear_eq_ctd(CTDMatrix A, CTDVector true_x, CTDVector b, long int dim, const char *fname_A, const char *fname_true_x, const char *fname_b)
@@ -1345,9 +1336,7 @@ void read_test_linear_eq_ctd(CTDMatrix A, CTDVector true_x, CTDVector b, long in
 	}
 	//mpf_clear(real);mpf_clear(imag);mpc_clear(ctmp);
 }
-#endif // USE_TDLINEAR
 
-#ifdef USE_QDLINEAR
 // 2023-12-15(Fri) T.Kouya
 // read problem from file
 void read_test_linear_eq_cqd(CQDMatrix A, CQDVector true_x, CQDVector b, long int dim, const char *fname_A, const char *fname_true_x, const char *fname_b)
@@ -1455,7 +1444,6 @@ void read_test_linear_eq_cqd(CQDMatrix A, CQDVector true_x, CQDVector b, long in
 	}
 	//mpf_clear(real);mpf_clear(imag);mpc_clear(ctmp);
 }
-#endif // USE_QDLINEAR
 
 
 #ifdef DEBUG

@@ -45,42 +45,22 @@
 	#include "mkl_cblas.h" // for Intel Math Kernel Library
 #endif // USE_IMKL
 
-#ifdef USE_DDLINEAR
 	#include "ddlinear.h" // double-double and quadratic double precision
 	#include "cddlinear.h" // Complex DD precision
-#endif // USE_DDLINEAR
-#ifdef USE_TDLINEAR
 	#include "tdlinear.h"
 	#include "ctdlinear.h"
-#endif // USE_TDLINEAR
-#ifdef USE_QDLINEAR
 	#include "qdlinear.h"
 	#include "cqdlinear.h"
-#endif // USE_QDLINEAR
-#ifdef USE_DSLINEAR
 	#include "dslinear.h" // double-single precision
-#endif // USE_DSLINEAR
-#ifdef USE_TSLINEAR
 	#include "tslinear.h" // triple-single precision
-#endif // USE_TSLINEAR
-#ifdef USE_QSLINEAR
 	#include "qslinear.h" // quad-single precision
-#endif // USE_QSLINEAR
 
 #ifdef USE_CUDA
 	#include "gddlinear.h"
-	#ifdef USE_TDLINEAR
 		#include "gtdlinear.h"   // GTDMatrix / GTDVector for the GTD CUDA prototypes below
-	#endif
-	#ifdef USE_DSLINEAR
 		#include "gdslinear.h"   // GDSMatrix / GQSMatrix for the GDS/GQS CUDA prototypes below
-	#endif
-	#ifdef USE_TSLINEAR
 		#include "gtslinear.h"   // GTSMatrix for the GTS CUDA prototypes below
-	#endif
-	#ifdef USE_QSLINEAR
 		#include "gqslinear.h"   // (forwards to gdslinear.h)
-	#endif
 #endif // USE_CUDA
 //#endif // USE_DDLINEAR
 
@@ -493,7 +473,6 @@ void inv_cmpfmatrix_strassen_even(CMPFMatrix ret, CMPFMatrix mat_a, long int min
 /*********************/
 /* DD and QD         */
 /*********************/
-#ifdef USE_DDLINEAR
 
 ///////////////
 ///// DD //////
@@ -833,12 +812,10 @@ void _bncuda_mul_gddmatrix_strassen_even_psec(GDDMatrix ret, GDDMatrix mat_a, GD
 void _bncuda_mul_gddmatrix_winograd_even_psec(GDDMatrix ret, GDDMatrix mat_a, GDDMatrix mat_b, long int min_dim, int num_blocks_per_grid, int num_threads_per_block);
 
 #endif // USE_CUDA
-#endif // USE_DDLINEAR
 
 ///////////////
 ///// QD //////
 ///////////////
-#ifdef USE_QDLINEAR
 #define mul_cqdmatrix_simple(c, a, b) mul_cqdmatrix_3m(c, a, b)
 
 // partial add
@@ -1098,12 +1075,10 @@ void _bncomp_mul_cqdmatrix_strassen_4m(CQDMatrix ret, CQDMatrix mat_a, CQDMatrix
 #endif // USE_4M
 
 
-#endif // USE_QDLINEAR
 
 ///////////////
 ///// TD //////
 ///////////////
-#ifdef USE_TDLINEAR
 
 // partial add
 // *_index[0] = start_row_index
@@ -1419,7 +1394,6 @@ void _bncuda_mul_gtdmatrix_winograd_even_psec(GTDMatrix ret, GTDMatrix mat_a, GT
 
 #endif // USE_CUDA
 
-#endif // USE_TDLINEAR
 
 //==================================================
 // float-based DS / TS / QS Strassen prototypes
@@ -1428,7 +1402,6 @@ void _bncuda_mul_gtdmatrix_winograd_even_psec(GTDMatrix ret, GTDMatrix mat_a, GT
 ///////////////
 ///// DS //////
 ///////////////
-#ifdef USE_DSLINEAR
 
 // count the number of computations
 #ifndef __NUM_ADDSUB_MUL_DSMATRIX_STRASSEN
@@ -1528,13 +1501,11 @@ void _bncomp_mul_dsmatrix(DSMatrix ret, DSMatrix a, DSMatrix b);
 void _bncomp_mul_dsmatrix_dsvec(DSVector v, DSMatrix a, DSVector vb);
 void _bncomp_mul_dsmatrixt_dsvec(DSVector v, DSMatrix a, DSVector vb);
 
-#endif // USE_DSLINEAR
 
 
 ///////////////
 ///// TS //////
 ///////////////
-#ifdef USE_TSLINEAR
 
 // count the number of computations
 #ifndef __NUM_ADDSUB_MUL_TSMATRIX_STRASSEN
@@ -1634,13 +1605,11 @@ void _bncomp_mul_tsmatrix(TSMatrix ret, TSMatrix a, TSMatrix b);
 void _bncomp_mul_tsmatrix_tsvec(TSVector v, TSMatrix a, TSVector vb);
 void _bncomp_mul_tsmatrixt_tsvec(TSVector v, TSMatrix a, TSVector vb);
 
-#endif // USE_TSLINEAR
 
 
 ///////////////
 ///// QS //////
 ///////////////
-#ifdef USE_QSLINEAR
 
 // count the number of computations
 #ifndef __NUM_ADDSUB_MUL_QSMATRIX_STRASSEN
@@ -1740,7 +1709,6 @@ void _bncomp_mul_qsmatrix(QSMatrix ret, QSMatrix a, QSMatrix b);
 void _bncomp_mul_qsmatrix_qsvec(QSVector v, QSMatrix a, QSVector vb);
 void _bncomp_mul_qsmatrixt_qsvec(QSVector v, QSMatrix a, QSVector vb);
 
-#endif // USE_QSLINEAR
 
 
 //--------------------------------------
@@ -1818,7 +1786,7 @@ void _bncuda_mul_gqdmatrix_winograd_even_psec(GQDMatrix ret, GQDMatrix mat_a, GQ
 //--------------------------------------
 // CUDA (GDS: double-single on GPU, gdtq-0.0.2)
 //--------------------------------------
-#if defined(USE_CUDA) && defined(USE_DSLINEAR)
+#ifdef USE_CUDA
 
 #define mul_gdsmatrix_simple(c, a, b, num_blocks, num_threads) mul_gdsmatrix_dev((c), (a), (b), (num_blocks), (num_threads))
 #define _bncuda_mul_gdsmatrix_simple(c, a, b, num_blocks, num_threads) mul_gdsmatrix_dev((c), (a), (b), (num_blocks), (num_threads))
@@ -1845,7 +1813,7 @@ void _bncuda_mul_gdsmatrix_winograd_even_psec(GDSMatrix ret, GDSMatrix mat_a, GD
 //--------------------------------------
 // CUDA (GTS: triple-single on GPU, gdtq-0.0.2)
 //--------------------------------------
-#if defined(USE_CUDA) && defined(USE_TSLINEAR)
+#ifdef USE_CUDA
 
 #define mul_gtsmatrix_simple(c, a, b, num_blocks, num_threads) mul_gtsmatrix_dev((c), (a), (b), (num_blocks), (num_threads))
 #define _bncuda_mul_gtsmatrix_simple(c, a, b, num_blocks, num_threads) mul_gtsmatrix_dev((c), (a), (b), (num_blocks), (num_threads))
@@ -1872,7 +1840,7 @@ void _bncuda_mul_gtsmatrix_winograd_even_psec(GTSMatrix ret, GTSMatrix mat_a, GT
 //--------------------------------------
 // CUDA (GQS: quad-single on GPU, gdtq-0.0.2)
 //--------------------------------------
-#if defined(USE_CUDA) && defined(USE_QSLINEAR)
+#ifdef USE_CUDA
 
 #define mul_gqsmatrix_simple(c, a, b, num_blocks, num_threads) mul_gqsmatrix_dev((c), (a), (b), (num_blocks), (num_threads))
 #define _bncuda_mul_gqsmatrix_simple(c, a, b, num_blocks, num_threads) mul_gqsmatrix_dev((c), (a), (b), (num_blocks), (num_threads))
