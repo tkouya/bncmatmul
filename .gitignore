@@ -49,3 +49,15 @@ bench/cuda/out/
 bench/regress/out/
 bench/*.xlsx
 *.xlsx
+
+# LaTeX intermediates (doc/)
+doc/*.aux
+doc/*.dvi
+doc/*.idx
+doc/*.log
+doc/*.toc
+doc/*.out
+doc/*.ilg
+doc/*.ind
+doc/*.fls
+doc/*.fdb_latexmk

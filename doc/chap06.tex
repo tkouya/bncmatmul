@@ -113,7 +113,7 @@ Its pointer type is \texttt{CDRSMatrix}.  Members: \texttt{DRSMatrix re} (real p
     \funcitem{void}{solve\_iLU0s\_cdrsmatrix}{\varname{CDVector}{ret}, \varname{CDRSMatrix}{ilu}, \varname{CDVector}{b}}
 \end{itemize}
 
-\subsection{\texttt{DDRSMatrix} \bi{and}{および} \texttt{CDDRSMatrix} --- \bi{double-double sparse matrices (requires \texttt{USE\_DDLINEAR})}{double-double疎行列（\texttt{USE\_DDLINEAR} が必要）}}
+\subsection{\texttt{DDRSMatrix} \bi{and}{および} \texttt{CDDRSMatrix} --- \bi{double-double sparse matrices}{double-double疎行列}}
 
 \bi{The \texttt{ddrsmatrix} structure stores a double-double sparse matrix; pointer type \texttt{DDRSMatrix}.
 Its elements are stored as \texttt{double *element[DDSIZE]}.
@@ -181,7 +181,7 @@ The complex variant \texttt{CDDRSMatrix} holds a pair of \texttt{DDRSMatrix} par
     \funcitem{void}{solve\_iLU0s\_cdrsmatrix\_cddvec}{\varname{CDDVector}{ret}, \varname{CDRSMatrix}{ilu}, \varname{CDDVector}{b}}
 \end{itemize}
 
-\subsection{\texttt{TDRSMatrix} \bi{and}{および} \texttt{CTDRSMatrix} --- \bi{triple-double sparse matrices (requires \texttt{USE\_TDLINEAR})}{triple-double疎行列（\texttt{USE\_TDLINEAR} が必要）}}
+\subsection{\texttt{TDRSMatrix} \bi{and}{および} \texttt{CTDRSMatrix} --- \bi{triple-double sparse matrices}{triple-double疎行列}}
 
 \bi{The \texttt{tdrsmatrix} structure stores a triple-double sparse matrix; pointer type \texttt{TDRSMatrix}.
 Elements are stored as \texttt{double *element[TDSIZE]}.}{\texttt{tdrsmatrix} 構造体は triple-double 疎行列を格納します。ポインタ型は \texttt{TDRSMatrix} です。
@@ -245,7 +245,7 @@ Elements are stored as \texttt{double *element[TDSIZE]}.}{\texttt{tdrsmatrix} �
     \funcitem{void}{solve\_iLU0s\_cdrsmatrix\_ctdvec}{\varname{CTDVector}{ret}, \varname{CDRSMatrix}{ilu}, \varname{CTDVector}{b}}
 \end{itemize}
 
-\subsection{\texttt{QDRSMatrix} \bi{and}{および} \texttt{CQDRSMatrix} --- \bi{quadruple-double sparse matrices (requires \texttt{USE\_QDLINEAR})}{quadruple-double疎行列（\texttt{USE\_QDLINEAR} が必要）}}
+\subsection{\texttt{QDRSMatrix} \bi{and}{および} \texttt{CQDRSMatrix} --- \bi{quadruple-double sparse matrices}{quadruple-double疎行列}}
 
 \bi{The \texttt{qdrsmatrix} structure stores a quadruple-double sparse matrix; pointer type \texttt{QDRSMatrix}.
 Elements are stored as \texttt{double *element[QDSIZE]}.}{\texttt{qdrsmatrix} 構造体は quadruple-double 疎行列を格納します。ポインタ型は \texttt{QDRSMatrix} です。
@@ -380,12 +380,12 @@ The complex variant \texttt{CMPFRSMatrix} uses \texttt{mpc\_t *element}.}{\textt
 \begin{itemize}
     \funcitem{DRSMatrix}{init\_set\_drsmatrix\_mpfrsmatrix}{\varname{MPFRSMatrix}{org}}
     \funcitem{CDRSMatrix}{init\_set\_cdrsmatrix\_cmpfrsmatrix}{\varname{CMPFRSMatrix}{org}}
-    \funcitem{DDRSMatrix}{init\_set\_ddrsmatrix\_mpfrsmatrix}{\varname{MPFRSMatrix}{org}}\ \bi{(requires \texttt{USE\_DDLINEAR})}{（\texttt{USE\_DDLINEAR} が必要）}
-    \funcitem{CDDRSMatrix}{init\_set\_cddrsmatrix\_cmpfrsmatrix}{\varname{CMPFRSMatrix}{org}}\ \bi{(requires \texttt{USE\_DDLINEAR})}{（\texttt{USE\_DDLINEAR} が必要）}
-    \funcitem{TDRSMatrix}{init\_set\_tdrsmatrix\_mpfrsmatrix}{\varname{MPFRSMatrix}{org}}\ \bi{(requires \texttt{USE\_TDLINEAR})}{（\texttt{USE\_TDLINEAR} が必要）}
-    \funcitem{CTDRSMatrix}{init\_set\_ctdrsmatrix\_cmpfrsmatrix}{\varname{CMPFRSMatrix}{org}}\ \bi{(requires \texttt{USE\_TDLINEAR})}{（\texttt{USE\_TDLINEAR} が必要）}
-    \funcitem{QDRSMatrix}{init\_set\_qdrsmatrix\_mpfrsmatrix}{\varname{MPFRSMatrix}{org}}\ \bi{(requires \texttt{USE\_QDLINEAR})}{（\texttt{USE\_QDLINEAR} が必要）}
-    \funcitem{CQDRSMatrix}{init\_set\_cqdrsmatrix\_cmpfrsmatrix}{\varname{CMPFRSMatrix}{org}}\ \bi{(requires \texttt{USE\_QDLINEAR})}{（\texttt{USE\_QDLINEAR} が必要）}
+    \funcitem{DDRSMatrix}{init\_set\_ddrsmatrix\_mpfrsmatrix}{\varname{MPFRSMatrix}{org}}
+    \funcitem{CDDRSMatrix}{init\_set\_cddrsmatrix\_cmpfrsmatrix}{\varname{CMPFRSMatrix}{org}}
+    \funcitem{TDRSMatrix}{init\_set\_tdrsmatrix\_mpfrsmatrix}{\varname{MPFRSMatrix}{org}}
+    \funcitem{CTDRSMatrix}{init\_set\_ctdrsmatrix\_cmpfrsmatrix}{\varname{CMPFRSMatrix}{org}}
+    \funcitem{QDRSMatrix}{init\_set\_qdrsmatrix\_mpfrsmatrix}{\varname{MPFRSMatrix}{org}}
+    \funcitem{CQDRSMatrix}{init\_set\_cqdrsmatrix\_cmpfrsmatrix}{\varname{CMPFRSMatrix}{org}}
 \end{itemize}
 
 %------------------------------------------------%
@@ -402,7 +402,7 @@ The complex variant \texttt{CMPFRSMatrix} uses \texttt{mpc\_t *element}.}{\textt
     \funcitem{long int}{CDCOCG}{\varname{CDVector}{ans}, \varname{CDMatrix}{a}, \varname{CDVector}{b}, \varname{double}{reps}, \varname{double}{aeps}, \varname{long int}{maxtimes}}
 \end{itemize}
 
-\noindent \bi{Double-double CG (requires \texttt{USE\_DDLINEAR}):}{double-double CG（\texttt{USE\_DDLINEAR} が必要）：}
+\noindent \bi{Double-double CG:}{double-double CG：}
 
 \begin{itemize}
     \funcitem{long int}{DDCG\_sp}{\varname{DDVector}{ans}, \varname{DDRSMatrix}{a}, \varname{DDVector}{b}, \varname{double}{reps[DDSIZE]}, \varname{double}{aeps[DDSIZE]}, \varname{long int}{maxtimes}}
@@ -413,7 +413,7 @@ The complex variant \texttt{CMPFRSMatrix} uses \texttt{mpc\_t *element}.}{\textt
     \funcitem{long int}{CDDCOCG}{\varname{CDDVector}{ans}, \varname{CDDMatrix}{a}, \varname{CDDVector}{b}, \varname{double}{reps[DDSIZE]}, \varname{double}{aeps[DDSIZE]}, \varname{long int}{maxtimes}}
 \end{itemize}
 
-\noindent \bi{Triple-double CG (requires \texttt{USE\_TDLINEAR}):}{triple-double CG（\texttt{USE\_TDLINEAR} が必要）：}
+\noindent \bi{Triple-double CG:}{triple-double CG：}
 
 \begin{itemize}
     \funcitem{long int}{TDCG\_sp}{\varname{TDVector}{ans}, \varname{TDRSMatrix}{a}, \varname{TDVector}{b}, \varname{double}{reps[TDSIZE]}, \varname{double}{aeps[TDSIZE]}, \varname{long int}{maxtimes}}
@@ -424,7 +424,7 @@ The complex variant \texttt{CMPFRSMatrix} uses \texttt{mpc\_t *element}.}{\textt
     \funcitem{long int}{CTDCOCG}{\varname{CTDVector}{ans}, \varname{CTDMatrix}{a}, \varname{CTDVector}{b}, \varname{double}{reps[TDSIZE]}, \varname{double}{aeps[TDSIZE]}, \varname{long int}{maxtimes}}
 \end{itemize}
 
-\noindent \bi{Quadruple-double CG (requires \texttt{USE\_QDLINEAR}):}{quadruple-double CG（\texttt{USE\_QDLINEAR} が必要）：}
+\noindent \bi{Quadruple-double CG:}{quadruple-double CG：}
 
 \begin{itemize}
     \funcitem{long int}{QDCG\_sp}{\varname{QDVector}{ans}, \varname{QDRSMatrix}{a}, \varname{QDVector}{b}, \varname{double}{reps[QDSIZE]}, \varname{double}{aeps[QDSIZE]}, \varname{long int}{maxtimes}}
@@ -477,7 +477,7 @@ The complex variant \texttt{CMPFRSMatrix} uses \texttt{mpc\_t *element}.}{\textt
     \funcitem{long int}{CDGPBiCG}{\varname{CDVector}{ans}, \varname{CDMatrix}{a}, \varname{CDVector}{b}, \varname{double}{reps}, \varname{double}{aeps}, \varname{long int}{maxtimes}}
 \end{itemize}
 
-\subsection{\bi{BiCG, CGS, BiCGSTAB, GPBiCG methods (double-double; requires \texttt{USE\_DDLINEAR})}{BiCG, CGS, BiCGSTAB, GPBiCG 法（double-double。\texttt{USE\_DDLINEAR} が必要）}}
+\subsection{\bi{BiCG, CGS, BiCGSTAB, GPBiCG methods (double-double)}{BiCG, CGS, BiCGSTAB, GPBiCG 法（double-double）}}
 
 \begin{itemize}
     \funcitem{long int}{DDBiCG\_sp}{\varname{DDVector}{ans}, \varname{DDRSMatrix}{a}, \varname{DDVector}{b}, \varname{double}{reps[DDSIZE]}, \varname{double}{aeps[DDSIZE]}, \varname{long int}{maxtimes}}
@@ -522,7 +522,7 @@ The complex variant \texttt{CMPFRSMatrix} uses \texttt{mpc\_t *element}.}{\textt
     \funcitem{long int}{CDDGPBiCG}{\varname{CDDVector}{ans}, \varname{CDDMatrix}{a}, \varname{CDDVector}{b}, \varname{double}{reps[DDSIZE]}, \varname{double}{aeps[DDSIZE]}, \varname{long int}{maxtimes}}
 \end{itemize}
 
-\subsection{\bi{BiCG, CGS, BiCGSTAB, GPBiCG methods (triple-double; requires \texttt{USE\_TDLINEAR})}{BiCG, CGS, BiCGSTAB, GPBiCG 法（triple-double。\texttt{USE\_TDLINEAR} が必要）}}
+\subsection{\bi{BiCG, CGS, BiCGSTAB, GPBiCG methods (triple-double)}{BiCG, CGS, BiCGSTAB, GPBiCG 法（triple-double）}}
 
 \begin{itemize}
     \funcitem{long int}{TDBiCG\_sp}{\varname{TDVector}{ans}, \varname{TDRSMatrix}{a}, \varname{TDVector}{b}, \varname{double}{reps[TDSIZE]}, \varname{double}{aeps[TDSIZE]}, \varname{long int}{maxtimes}}
@@ -567,7 +567,7 @@ The complex variant \texttt{CMPFRSMatrix} uses \texttt{mpc\_t *element}.}{\textt
     \funcitem{long int}{CTDGPBiCG}{\varname{CTDVector}{ans}, \varname{CTDMatrix}{a}, \varname{CTDVector}{b}, \varname{double}{reps[TDSIZE]}, \varname{double}{aeps[TDSIZE]}, \varname{long int}{maxtimes}}
 \end{itemize}
 
-\subsection{\bi{BiCG, CGS, BiCGSTAB, GPBiCG methods (quadruple-double; requires \texttt{USE\_QDLINEAR})}{BiCG, CGS, BiCGSTAB, GPBiCG 法（quadruple-double。\texttt{USE\_QDLINEAR} が必要）}}
+\subsection{\bi{BiCG, CGS, BiCGSTAB, GPBiCG methods (quadruple-double)}{BiCG, CGS, BiCGSTAB, GPBiCG 法（quadruple-double）}}
 
 \begin{itemize}
     \funcitem{long int}{QDBiCG\_sp}{\varname{QDVector}{ans}, \varname{QDRSMatrix}{a}, \varname{QDVector}{b}, \varname{double}{reps[QDSIZE]}, \varname{double}{aeps[QDSIZE]}, \varname{long int}{maxtimes}}

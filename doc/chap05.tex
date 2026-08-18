@@ -42,7 +42,6 @@
 \end{itemize}
 
 \subsubsection{\bi{Double-double (\texttt{DDPoly}) and complex double-double (\texttt{CDDPoly})}{double-double（\texttt{DDPoly}）と複素 double-double（\texttt{CDDPoly}）}}
-\bi{Available when \texttt{USE\_DDLINEAR} is defined.}{\texttt{USE\_DDLINEAR} が定義されているときに利用できます。}
 
 \begin{itemize}
     \item \texttt{ddpoly} --- double-double polynomial; pointer type \texttt{DDPoly}.
@@ -52,7 +51,6 @@
 \end{itemize}
 
 \subsubsection{\bi{Triple-double (\texttt{TDPoly}) and complex triple-double (\texttt{CTDPoly})}{triple-double（\texttt{TDPoly}）と複素 triple-double（\texttt{CTDPoly}）}}
-\bi{Available when \texttt{USE\_TDLINEAR} is defined.}{\texttt{USE\_TDLINEAR} が定義されているときに利用できます。}
 
 \begin{itemize}
     \item \texttt{tdpoly} --- triple-double polynomial; pointer type \texttt{TDPoly}.
@@ -62,7 +60,6 @@
 \end{itemize}
 
 \subsubsection{\bi{Quadruple-double (\texttt{QDPoly}) and complex quadruple-double (\texttt{CQDPoly})}{quadruple-double（\texttt{QDPoly}）と複素 quadruple-double（\texttt{CQDPoly}）}}
-\bi{Available when \texttt{USE\_QDLINEAR} is defined.}{\texttt{USE\_QDLINEAR} が定義されているときに利用できます。}
 
 \begin{itemize}
     \item \texttt{qdpoly} --- quadruple-double polynomial; pointer type \texttt{QDPoly}.
@@ -203,7 +200,7 @@
     \funcitem{void}{xpow\_mul\_cdpoly}{\varname{CDPoly}{ret}, \varname{long int}{n}, \varname{CDPoly}{a}}
 \end{itemize}
 
-\subsection{\bi{Double-double polynomial functions (\texttt{poly.c} --- \texttt{DDPoly}, \texttt{CDDPoly}; requires \texttt{USE\_DDLINEAR})}{double-double 多項式関数（\texttt{poly.c} --- \texttt{DDPoly}, \texttt{CDDPoly}、\texttt{USE\_DDLINEAR} が必要）}}
+\subsection{\bi{Double-double polynomial functions (\texttt{poly.c} --- \texttt{DDPoly}, \texttt{CDDPoly})}{double-double 多項式関数（\texttt{poly.c} --- \texttt{DDPoly}, \texttt{CDDPoly}）}}
 
 \begin{itemize}
     \funcitem{DDPoly}{init\_ddpoly}{\varname{long int}{max\_len}}
@@ -260,7 +257,7 @@
     \funcitem{void}{\_bncavx2\_eval\_cddpoly\_estrin}{\varname{cddfloat *}{ret}, \varname{CDDPoly}{a}, \varname{cddfloat *}{x}}\ (AVX2)
 \end{itemize}
 
-\subsection{\bi{Triple-double polynomial functions (\texttt{poly.c} --- \texttt{TDPoly}; requires \texttt{USE\_TDLINEAR})}{triple-double 多項式関数（\texttt{poly.c} --- \texttt{TDPoly}、\texttt{USE\_TDLINEAR} が必要）}}
+\subsection{\bi{Triple-double polynomial functions (\texttt{poly.c} --- \texttt{TDPoly})}{triple-double 多項式関数（\texttt{poly.c} --- \texttt{TDPoly}）}}
 
 \begin{itemize}
     \funcitem{TDPoly}{init\_tdpoly}{\varname{long int}{max\_len}}
@@ -296,7 +293,7 @@
     \funcitem{void}{\_bncavx2\_ceval\_tdpoly\_estrin}{\varname{ctdfloat *}{ret}, \varname{TDPoly}{a}, \varname{ctdfloat *}{x}}\ (AVX2)
 \end{itemize}
 
-\subsection{\bi{Quadruple-double polynomial functions (\texttt{poly.c} --- \texttt{QDPoly}; requires \texttt{USE\_QDLINEAR})}{quadruple-double 多項式関数（\texttt{poly.c} --- \texttt{QDPoly}、\texttt{USE\_QDLINEAR} が必要）}}
+\subsection{\bi{Quadruple-double polynomial functions (\texttt{poly.c} --- \texttt{QDPoly})}{quadruple-double 多項式関数（\texttt{poly.c} --- \texttt{QDPoly}）}}
 
 \begin{itemize}
     \funcitem{QDPoly}{init\_qdpoly}{\varname{long int}{max\_len}}
@@ -591,7 +588,7 @@
     \funcitem{void}{deflation\_cmpfpoly}{\varname{CMPFPoly}{ret}, \varname{CMPFPoly}{pol}, \varname{mpc\_t}{root}}\ $\cdots$ \bi{deflation $p(x)/(x-r)$}{デフレーション $p(x)/(x-r)$}
 \end{itemize}
 
-\noindent \bi{Double-double Hirano (\texttt{dd\_hirano.c}; requires \texttt{USE\_DDLINEAR}):}{double-double 平野法（\texttt{dd\_hirano.c}、\texttt{USE\_DDLINEAR} が必要）：}
+\noindent \bi{Double-double Hirano (\texttt{dd\_hirano.c}):}{double-double 平野法（\texttt{dd\_hirano.c}）：}
 
 \begin{itemize}
     \funcitem{void}{dd\_horner}{\varname{cddfloat *}{ret}, \varname{cddfloat *}{x}, \varname{DDPoly}{pol}}

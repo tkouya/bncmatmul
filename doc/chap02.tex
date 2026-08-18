@@ -8,10 +8,21 @@
 \bi{As shown in Chapter 1, all basic datatype and functions are written in ANSI C, not C++ way.}{第1章で示したとおり、すべての基本データ型と関数はC++流ではなくANSI Cで記述されています。}
 
 %------------------------------------------------%
-% rdd.h and c\_dd\_qd.h
+% rdd.h -- the c_dd_* implementation layer (formerly c_dd_qd.h)
 %------------------------------------------------%
-\section{c\_dd\_qd.h}
- 
+\section{\bi{The \texttt{c\_dd\_*} arithmetic layer (\texttt{rdd.h})}{\texttt{c\_dd\_*}算術層（\texttt{rdd.h}）}}
+
+\bi{Up to version 0.23 the macros and inline functions in this section were
+provided by a separate header, \texttt{c\_dd\_qd.h} (and \texttt{c\_ds\_qs.h}
+for the single-based family).  As of 0.24 both headers have been absorbed into
+\texttt{rdd.h} and \texttt{rds.h} respectively, which are now the single
+arithmetic headers of the multi-component families; including \texttt{rdd.h}
+provides everything listed below.}{バージョン0.23まで、本節のマクロとinline関数は
+独立したヘッダ\texttt{c\_dd\_qd.h}（単精度系は\texttt{c\_ds\_qs.h}）で提供されて
+いました。0.24からは両ヘッダはそれぞれ\texttt{rdd.h}・\texttt{rds.h}に吸収され、
+多倍長成分ファミリの算術ヘッダはこの2つに一本化されています。\texttt{rdd.h}を
+includeすれば以下のすべてが利用できます。}
+
 \begin{itemize} %  // return a * b + c
 \macroitem{DFMA}{$a$, $b$, $c$} \bi{returns $a\times b + c$ in double precision}{倍精度で $a\times b + c$ を返します}
 \macroitem{SFMA}{$a$, $b$, $c$} \bi{returns $a\times b + c$ in single precision}{単精度で $a\times b + c$ を返します}
@@ -698,7 +709,7 @@ ctypesテストドライバです。C利用者への注意: \texttt{USE\_RDD\_FU
 プロトタイプを壊すためです（ヘッダは \texttt{\#error} でこれを強制します）。}
 
 %------------------------------------------------%
-% rdd.h and c\_dd\_qd.h
+% rdd.h -- the rxx_ interface layer
 %------------------------------------------------%
 \section{rdd.h}\label{sec:rdd}
 

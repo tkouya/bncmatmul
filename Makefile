@@ -931,6 +931,7 @@ legacy-check:
 	    exit 1 ; \
 	fi
 
+serial:     legacy-check ; $(LEGACY_MAKE) matmul_strassen_lib matmul_strassen_lib_omp matmul_winograd_lib matmul_winograd_lib_omp
 omp:        legacy-check ; $(LEGACY_MAKE) matmul_strassen_lib_omp
 avx2:       legacy-check ; $(LEGACY_MAKE) avx2
 avx512:     legacy-check ; $(LEGACY_MAKE) avx512
@@ -948,7 +949,7 @@ legacy-winograd: winograd
 distclean-local:
 	-rm -f bncmatmul.inc
 
-.PHONY: legacy-check omp avx2 avx512 neon sve2 winograd \
+.PHONY: legacy-check serial omp avx2 avx512 neon sve2 winograd \
         legacy-omp legacy-avx2 legacy-avx512 legacy-neon legacy-sve2 legacy-winograd
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
