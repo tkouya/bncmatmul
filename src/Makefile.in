@@ -253,8 +253,8 @@ am__objects_1 = libbncmm_base_la-bnc_common_func.lo \
 	libbncmm_base_la-gtestmat_qd.lo libbncmm_base_la-ddlu.lo \
 	libbncmm_base_la-cddlu.lo libbncmm_base_la-tdlu.lo \
 	libbncmm_base_la-ctdlu.lo libbncmm_base_la-qdlu.lo \
-	libbncmm_base_la-cqdlu.lo libbncmm_base_la-mpflu.lo \
-	libbncmm_base_la-ddlu_strassen.lo \
+	libbncmm_base_la-cqdlu.lo libbncmm_base_la-dslu.lo \
+	libbncmm_base_la-mpflu.lo libbncmm_base_la-ddlu_strassen.lo \
 	libbncmm_base_la-cddlu_strassen.lo \
 	libbncmm_base_la-tdlu_strassen.lo \
 	libbncmm_base_la-ctdlu_strassen.lo \
@@ -909,66 +909,9 @@ OPTIONAL_SRC_FILES = \
 	cuda/test_gqd_strassen.cu \
 	cuda/test_gtd_strassen.cu \
 	\
-	benchmark_tools_dd_org.c \
-	block_linear_band.c \
-	bncavx.c \
-	bncold_dka_omp.c \
-	bncomp_block_linear.c \
-	bncomp_linear_dd_old.c \
-	bncomp_linear_org.c \
-	bncomp_linear_td_old.c \
-	bncomp_sparse_new.c \
-	bncomp_sparse_old.c \
-	c_dd.c c_qd.c \
-	cdd_poly_old.c \
-	cg_omp.c cocg_omp.c \
-	clinear.c clinear_mpfcmplx.c clinear_old.c \
-	clu.c \
-	cond_mat.c \
-	dd_hirano_org.c \
-	dd_oz_acheme.c \
-	dd_oz_scheme_org.c \
-	dd_poly_old.c \
-	dd_test.cc \
-	ddlinear.cc \
-	ddlinear_20250811.c \
-	ddlinear_avx.c ddlinear_avx2.c ddlinear_neon.c \
-	ddlinear_old.c ddlinear_org.c ddlinear_original.cc \
-	ddlu_nosimd.c \
-	ddv_addmul.c \
-	dka_omp.c dka_org.c \
-	dlu.c \
-	dtv_addmul.c \
-	fpu.c \
-	get_linear_system.c \
-	hessenberg_old.c \
-	iterative.c \
-	ivpower.c \
-	krylov_dd_omp.c krylov_omp.c krylov_qd_omp.c krylov_td_omp.c \
-	matmul_strassen_general_dd.cc \
-	matmul_strassen_general_dd_avx2.c \
-	matmul_strassen_general_dd_omp_new.c \
-	matmul_strassen_general_dd_omp_old.c \
-	matmul_strassen_general_dd_omp_old2.c \
-	matmul_strassen_general_mpc_omp_old.c \
-	matmul_strassen_general_mpfcmplx.c \
-	matmul_strassen_general_omp.c \
-	mpclu.c mpclu_strassen.c \
-	mpfr_dd_td_qd.c mpfr_get_dd.c mpfr_set_dd.c \
-	poly_old.c \
-	power.c \
-	qd_hirano_old.c qd_poly_old.c \
-	qd_sample.cc qd_test.cc \
-	qdlinear.cc qdlinear_20250811.c qdlinear_neon.c qdlinear_org.c \
-	qdlu_old.c qdv_addmul.c \
-	rdd.c rdd_org.c \
-	serial_lu_bench.c \
-	short_mmbench_dd.c short_mmbench_mpf.c short_mmbench_mpf_old.c short_mmbench_qd.c \
 	small_ddmatrix.c \
-	td_hirano_old.c td_poly_old.c \
-	tdlinear_20250811.c tdlinear_neon3.c tdlinear_org.c \
-	tdlu_old.c tdv_addmul.c \
-	test_ceval2.c test_compvec.c
+	bncold_dka_omp.c cg_omp.c clu.c cocg_omp.c dka_omp.c \
+	matmul_strassen_general_omp.c
 
 all: all-recursive
 
@@ -1283,6 +1226,9 @@ libbncmm_base_la-qdlu.lo: qdlu.c
 
 libbncmm_base_la-cqdlu.lo: cqdlu.c
 	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libbncmm_base_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libbncmm_base_la-cqdlu.lo `test -f 'cqdlu.c' || echo '$(srcdir)/'`cqdlu.c
+
+libbncmm_base_la-dslu.lo: dslu.c
+	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libbncmm_base_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libbncmm_base_la-dslu.lo `test -f 'dslu.c' || echo '$(srcdir)/'`dslu.c
 
 libbncmm_base_la-mpflu.lo: mpflu.c
 	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libbncmm_base_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libbncmm_base_la-mpflu.lo `test -f 'mpflu.c' || echo '$(srcdir)/'`mpflu.c

@@ -286,7 +286,9 @@ OPTIONAL_SRC_FILES = \
 	cuda/test_gqd_strassen.cu \
 	cuda/test_gtd_strassen.cu \
 	\
-	small_ddmatrix.c
+	small_ddmatrix.c \
+	bncold_dka_omp.c cg_omp.c clu.c cocg_omp.c dka_omp.c \
+	matmul_strassen_general_omp.c
 
 EXTRA_DIST += $(foreach src,$(OPTIONAL_SRC_FILES),$(wildcard $(srcdir)/$(src)))
 
