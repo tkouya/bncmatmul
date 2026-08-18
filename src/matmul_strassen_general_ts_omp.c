@@ -928,11 +928,11 @@ void _bncomp_mul_tsmatrix_simple_old(TSMatrix ret, TSMatrix a, TSMatrix b)
 			ret->element[i * col_dim + j] = tmp[thread_index];
 
 #else // __cplusplus
-			c_ts_copy_d((double)0.0, GET_TSMATRIX_IJ(ret, i, j));
+			rts_set_d(GET_TSMATRIX_IJ(ret, i, j), 0.0);
 			for(k = 0; k < mid_dim; k++)
 			{
-				c_ts_mul(GET_TSMATRIX_IJ(a, i, k), GET_TSMATRIX_IJ(b, k, j), tmp[thread_index]);
-				c_ts_add(tmp[thread_index], GET_TSMATRIX_IJ(ret, i, j), GET_TSMATRIX_IJ(ret, i, j));
+				rts_mul(tmp[thread_index], GET_TSMATRIX_IJ(a, i, k), GET_TSMATRIX_IJ(b, k, j));
+				rts_add(GET_TSMATRIX_IJ(ret, i, j), tmp[thread_index], GET_TSMATRIX_IJ(ret, i, j));
 			}
 #endif // __cplusplus
 		}

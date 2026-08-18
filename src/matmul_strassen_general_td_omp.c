@@ -931,11 +931,11 @@ void _bncomp_mul_tdmatrix_simple_old(TDMatrix ret, TDMatrix a, TDMatrix b)
 			ret->element[i * col_dim + j] = tmp[thread_index];
 
 #else // __cplusplus
-			c_td_copy_d((double)0.0, GET_TDMATRIX_IJ(ret, i, j));
+			rtd_set_d(GET_TDMATRIX_IJ(ret, i, j), 0.0);
 			for(k = 0; k < mid_dim; k++)
 			{
-				c_td_mul(GET_TDMATRIX_IJ(a, i, k), GET_TDMATRIX_IJ(b, k, j), tmp[thread_index]);
-				c_td_add(tmp[thread_index], GET_TDMATRIX_IJ(ret, i, j), GET_TDMATRIX_IJ(ret, i, j));
+				rtd_mul(tmp[thread_index], GET_TDMATRIX_IJ(a, i, k), GET_TDMATRIX_IJ(b, k, j));
+				rtd_add(GET_TDMATRIX_IJ(ret, i, j), tmp[thread_index], GET_TDMATRIX_IJ(ret, i, j));
 			}
 #endif // __cplusplus
 		}

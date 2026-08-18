@@ -1354,7 +1354,7 @@ void print_qdmatrix(QDMatrix mat)
 		{
 			printf("%ld, %ld: ", row_index, col_index);
 	//		c_qd_write((vec->element + index * QDSIZE));
-			c_qd_write(GET_QDMATRIX_IJ(mat, row_index, col_index));
+			RQD_OUT_STR(GET_QDMATRIX_IJ(mat, row_index, col_index));
 		}
 	}
 }

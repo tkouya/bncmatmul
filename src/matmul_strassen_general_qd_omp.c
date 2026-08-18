@@ -931,11 +931,11 @@ void _bncomp_mul_qdmatrix_simple_old(QDMatrix ret, QDMatrix a, QDMatrix b)
 			ret->element[i * col_dim + j] = tmp[thread_index];
 
 #else // __cplusplus
-			c_qd_copy_d((double)0.0, GET_QDMATRIX_IJ(ret, i, j));
+			rqd_set_d(GET_QDMATRIX_IJ(ret, i, j), 0.0);
 			for(k = 0; k < mid_dim; k++)
 			{
-				c_qd_mul(GET_QDMATRIX_IJ(a, i, k), GET_QDMATRIX_IJ(b, k, j), tmp[thread_index]);
-				c_qd_add(tmp[thread_index], GET_QDMATRIX_IJ(ret, i, j), GET_QDMATRIX_IJ(ret, i, j));
+				rqd_mul(tmp[thread_index], GET_QDMATRIX_IJ(a, i, k), GET_QDMATRIX_IJ(b, k, j));
+				rqd_add(GET_QDMATRIX_IJ(ret, i, j), tmp[thread_index], GET_QDMATRIX_IJ(ret, i, j));
 			}
 #endif // __cplusplus
 		}

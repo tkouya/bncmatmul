@@ -4973,7 +4973,7 @@ typedef struct { double val[QDSIZE]; } qdfloat; // 53 * 4 = 21
 #define RTD_DIVQ(ret, a, b) c_td_divq(a, b, ret)
 #define RTD_SQRT(ret, a) c_td_sqrt(a, ret)
 //#define RTD_OUT_STR(a) c_td_write(a)
-//#define RTD_OUT_STR(a) rtd_out_str_base(stdout, 10, 33, a)
+#define RTD_OUT_STR(a) rtd_out_str_base(stdout, 10, 33, a)
 
 //#define RTD_SET_STR(str, a) c_td_swrite(a, 33, str, 48)
 //#define RTD_GET_STR(a, str) c_td_read(str, a)
@@ -5028,7 +5028,7 @@ typedef struct { double val[QDSIZE]; } qdfloat; // 53 * 4 = 21
 #define RQD_SQRT(ret, a) c_qd_sqrt(a, ret)
 
 //#define RQD_OUT_STR(a) c_qd_write(a)
-//#define RQD_OUT_STR(a) rqd_out_str_base(stdout, 10, 64, a)
+#define RQD_OUT_STR(a) rqd_out_str_base(stdout, 10, 64, a)
 
 //#define RQD_SET_STR(str, a) c_qd_swrite(a, 66, str, 84)
 //#define RQD_GET_STR(a, str) c_qd_read(str, a)

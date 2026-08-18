@@ -525,7 +525,7 @@ void print_qsvector(QSVector vec)
 	{
 		printf("%4ld: ", index);
 		//c_ds_write((vec->element + index * QSSIZE));
-		c_qs_write(GET_QSVECTOR_I(vec, index));
+		RQS_OUT_STR(GET_QSVECTOR_I(vec, index));
 	}
 }
 
@@ -2577,7 +2577,7 @@ void print_qsmatrix(QSMatrix mat)
 		{
 			printf("%ld, %ld: ", row_index, col_index);
 	//		c_qs_write((vec->element + index * QSSIZE));
-			c_qs_write(GET_QSMATRIX_IJ(mat, row_index, col_index));
+			RQS_OUT_STR(GET_QSMATRIX_IJ(mat, row_index, col_index));
 		}
 	}
 }

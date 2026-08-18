@@ -3862,7 +3862,7 @@ typedef struct { float val[QSSIZE]; } qsfloat; // 24 * 4 = 96
 #define RTS_DIVQ(ret, a, b) c_ts_divq(a, b, ret)
 #define RTS_SQRT(ret, a) c_ts_sqrt(a, ret)
 //#define RTS_OUT_STR(a) c_ts_write(a)
-//#define RTS_OUT_STR(a) rts_out_str_base(stdout, 10, 33, a)
+#define RTS_OUT_STR(a) rts_out_str_base(stdout, 10, 33, a)
 
 //#define RTS_SET_STR(str, a) c_ts_swrite(a, 33, str, 48)
 //#define RTS_GET_STR(a, str) c_ts_read(str, a)
@@ -3906,7 +3906,7 @@ typedef struct { float val[QSSIZE]; } qsfloat; // 24 * 4 = 96
 #define RQS_DIV(ret, a, b) c_qs_div(a, b, ret)
 #define RQS_SQRT(ret, a) c_qs_sqrt(a, ret)
 //#define RQS_OUT_STR(a) c_qs_write(a)
-//#define RQS_OUT_STR(a) rqs_out_str_base(stdout, 10, 64, a)
+#define RQS_OUT_STR(a) rqs_out_str_base(stdout, 10, 64, a)
 
 //#define RQS_SET_STR(str, a) c_qs_swrite(a, 66, str, 84)
 //#define RQS_GET_STR(a, str) c_qs_read(str, a)

@@ -263,7 +263,7 @@ void print_dsvector(DSVector vec)
 	{
 		printf("%4ld: ", index);
 		//c_ds_write((vec->element + index * DSSIZE));
-		c_ds_write(GET_DSVECTOR_I(vec, index));
+		RDS_OUT_STR(GET_DSVECTOR_I(vec, index));
 	}
 }
 
@@ -2124,7 +2124,7 @@ void print_dsmatrix(DSMatrix mat)
 		{
 			printf("%ld, %ld: ", row_index, col_index);
 	//		c_ds_write((vec->element + index * DSSIZE));
-			c_ds_write(GET_DSMATRIX_IJ(mat, row_index, col_index));
+			RDS_OUT_STR(GET_DSMATRIX_IJ(mat, row_index, col_index));
 		}
 	}
 }

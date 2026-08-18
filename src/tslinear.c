@@ -485,7 +485,7 @@ void print_tsvector(TSVector vec)
 	{
 		printf("%4ld: ", index);
 		//c_dd_write((vec->element + index * TSSIZE));
-		c_ts_write(GET_TSVECTOR_I(vec, index));
+		RTS_OUT_STR(GET_TSVECTOR_I(vec, index));
 	}
 }
 
@@ -2364,7 +2364,7 @@ void print_tsmatrix(TSMatrix mat)
 		{
 			printf("%ld, %ld: ", row_index, col_index);
 	//		c_dd_write((vec->element + index * TSSIZE));
-			c_ts_write(GET_TSMATRIX_IJ(mat, row_index, col_index));
+			RTS_OUT_STR(GET_TSMATRIX_IJ(mat, row_index, col_index));
 		}
 	}
 }

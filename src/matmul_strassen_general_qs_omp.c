@@ -928,11 +928,11 @@ void _bncomp_mul_qsmatrix_simple_old(QSMatrix ret, QSMatrix a, QSMatrix b)
 			ret->element[i * col_dim + j] = tmp[thread_index];
 
 #else // __cplusplus
-			c_qs_copy_d((double)0.0, GET_QSMATRIX_IJ(ret, i, j));
+			rqs_set_d(GET_QSMATRIX_IJ(ret, i, j), 0.0);
 			for(k = 0; k < mid_dim; k++)
 			{
-				c_qs_mul(GET_QSMATRIX_IJ(a, i, k), GET_QSMATRIX_IJ(b, k, j), tmp[thread_index]);
-				c_qs_add(tmp[thread_index], GET_QSMATRIX_IJ(ret, i, j), GET_QSMATRIX_IJ(ret, i, j));
+				rqs_mul(tmp[thread_index], GET_QSMATRIX_IJ(a, i, k), GET_QSMATRIX_IJ(b, k, j));
+				rqs_add(GET_QSMATRIX_IJ(ret, i, j), tmp[thread_index], GET_QSMATRIX_IJ(ret, i, j));
 			}
 #endif // __cplusplus
 		}
