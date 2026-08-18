@@ -30,7 +30,7 @@ MPC_LIB      =  -lmpc $(MPFR_LIB) -lm
 #---------------------------------------
 # Bailey's QD (detected by configure)
 #---------------------------------------
-QD_INC =  -DUSE_DD -DUSE_QD
+QD_INC = 
 QD_LIB =  -lqd
 
 #---------------------------------------

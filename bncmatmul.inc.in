@@ -30,7 +30,7 @@ MPC_LIB      = @MPC_LDFLAGS@ @MPC_LIBS@ $(MPFR_LIB) -lm
 #---------------------------------------
 # Bailey's QD (detected by configure)
 #---------------------------------------
-QD_INC = @QD_CPPFLAGS@ -DUSE_DD -DUSE_QD
+QD_INC = @QD_CPPFLAGS@
 QD_LIB = @QD_LDFLAGS@ @QD_LIBS@
 
 #---------------------------------------

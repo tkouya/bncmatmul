@@ -21,7 +21,7 @@ mkdir -p "$(dirname "$OUTCSV")" bench/regress/out
 
 CF="-O3 -ffp-contract=off -Iinclude"
 LK="-lmpc -lmpfr -lgmp -lpthread -lqd -lstdc++ -lm"
-DEFS="-DUSE_DD -DUSE_QD -DUSE_GMP -DUSE_MPFR -DUSE_MPC"
+DEFS="-DUSE_GMP -DUSE_MPFR "
 MMDIM=128
 LUDIM=128
 MCDIM=96

@@ -8,7 +8,7 @@ ROOT=$(pwd)
 # leaves BNCmatmul headers under that same prefix, and those stale copies
 # would otherwise shadow the in-tree include/ that the .a files were built
 # from (mismatched struct layouts, missing new declarations).
-INC="-Iinclude -I/home/tkouya/local/include -DUSE_DD -DUSE_QD -DUSE_TD_BF -DUSE_QD_BF -DUSE_TS_BF -DUSE_QS_BF -DUSE_GMP -DUSE_MPFR"
+INC="-Iinclude -I/home/tkouya/local/include -DUSE_TD_BF -DUSE_QD_BF -DUSE_TS_BF -DUSE_QS_BF -DUSE_GMP -DUSE_MPFR"
 LK="-lmpc -lmpfr -lgmp -lpthread -L/home/tkouya/local/lib -lqd -lstdc++ -lm"
 OPT="-std=c++17 -O3 -ffp-contract=off"
 SRC=bench/mds/mds_bench.cc

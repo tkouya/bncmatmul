@@ -649,7 +649,7 @@ AM_CPPFLAGS = \
 	-I$(top_srcdir)/include \
 	-DUSE_TD_BF -DUSE_QD_BF \
 	-DUSE_TS_BF -DUSE_QS_BF \
-	-DUSE_GMP -DUSE_MPFR -DUSE_DD -DUSE_QD \
+	-DUSE_GMP -DUSE_MPFR \
 	   
 
 AM_CFLAGS = $(BNCMM_OPT_CFLAGS) $(am__append_1)

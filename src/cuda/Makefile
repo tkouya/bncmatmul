@@ -40,11 +40,8 @@ MPC_CUDA_CPPFLAGS = -I/home/tkouya/na/cuda/mpc_cuda-0.0.1/include
 # USE_GMP guard, and bncomp.h / matmul_strassen.h pull in CPU container
 # types whose prototypes assume these macros.
 BNC_DEFINES = \
-	-DUSE_DDLINEAR -DUSE_TDLINEAR -DUSE_QDLINEAR \
-	-DUSE_DSLINEAR -DUSE_TSLINEAR -DUSE_QSLINEAR \
-	-DUSE_MPFLINEAR \
 	-DUSE_TD_BF -DUSE_QD_BF \
-	-DUSE_GMP -DUSE_MPFR -DUSE_DD -DUSE_QD \
+	-DUSE_GMP -DUSE_MPFR \
 	-DUSE_CUDA
 
 # ---- Paths ---------------------------------------------------------
