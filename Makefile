@@ -404,8 +404,7 @@ EXTRA_DIST = \
 	mmbench.sh \
 	mmbench_dd.sh \
 	mmbench_qd.sh \
-	README.md \
-	mds_gpu_01.xlsx
+	README.md
 
 
 #---------------------------------------
