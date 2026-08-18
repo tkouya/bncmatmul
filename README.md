@@ -82,6 +82,22 @@ compiled and declared (the former `USE_*LINEAR` gates were removed in
 0.24).  Only external-dependency and kernel-selection macros remain
 (`USE_GMP`, `USE_MPFR`, `BNC_USE_NEW_FMA`, `USE_*_BF`, ...).
 
+To install the variant libraries without any compilation, use the
+copy-only target after building them:
+
+```sh
+make serial neon sve2            # build the variants you need
+sudo make install-libs           # copy all libbncmatmul-X.Y*.a/.so + headers
+sudo make uninstall-libs         # remove exactly what install-libs copied
+```
+
+`install-libs` copies every variant archive from the top directory and
+every shared object from `python/` into `$libdir`, and the full header
+set into `$includedir` (same layout as the Automake install); nothing is
+compiled or relinked.  The regular `make install` installs the generic
+Automake-built library only, and since 0.24 it no longer builds the
+benchmark programs (`bench/` builds on `make check`, like `test/`).
+
 ## Distribution and documentation
 
 Standard Automake targets (`make dist`, `make distcheck`, `make uninstall`,

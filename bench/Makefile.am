@@ -32,14 +32,14 @@ LDADD = \
 # Variants whose source files are not present in the dist tree
 # (lu_bench_dd.c etc.) are built only via Makefile.legacy.)
 #---------------------------------------
-noinst_PROGRAMS = \
+check_PROGRAMS = \
 	lu_bench \
 	clu_bench
 
 lu_bench_SOURCES     = lu_bench.c
 clu_bench_SOURCES    = clu_bench.c
 
-$(noinst_PROGRAMS): $(BNCMATMUL_LA)
+$(check_PROGRAMS): $(BNCMATMUL_LA)
 
 #---------------------------------------
 # Distribute every other benchmark source for reference

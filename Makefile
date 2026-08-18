@@ -945,11 +945,40 @@ legacy-neon:     neon
 legacy-sve2:     sve2
 legacy-winograd: winograd
 
+#---------------------------------------
+# install-libs / uninstall-libs: fast install that only COPIES what is
+# already built -- no dependency on `all`, nothing is compiled or relinked.
+# Copies every variant archive found in the top directory
+# (libbncmatmul-X.Y[_simd].a, libbncmatmul-X.Y-omp[_simd].a), every shared
+# object found in python/, and the full header set (include/ + avx2/ neon/
+# sve2/, same layout as the Automake install).  Build the variants first
+# with `make serial neon sve2 ...`.
+#---------------------------------------
+install-libs:
+	$(MKDIR_P) "$(DESTDIR)$(libdir)" "$(DESTDIR)$(includedir)/avx2" \
+	           "$(DESTDIR)$(includedir)/neon" "$(DESTDIR)$(includedir)/sve2"
+	-cp -p $(top_builddir)/libbncmatmul-$(PACKAGE_VERSION)*.a "$(DESTDIR)$(libdir)/" 2>/dev/null || true
+	-cp -p $(top_builddir)/python/libbncmatmul-$(PACKAGE_VERSION)*.so "$(DESTDIR)$(libdir)/" 2>/dev/null || true
+	cp -p $(top_srcdir)/include/*.h "$(DESTDIR)$(includedir)/"
+	cp -p $(top_srcdir)/include/avx2/*.h "$(DESTDIR)$(includedir)/avx2/"
+	cp -p $(top_srcdir)/include/neon/*.h "$(DESTDIR)$(includedir)/neon/"
+	cp -p $(top_srcdir)/include/sve2/*.h "$(DESTDIR)$(includedir)/sve2/"
+	@echo "install-libs: libraries -> $(DESTDIR)$(libdir), headers -> $(DESTDIR)$(includedir)"
+
+uninstall-libs:
+	-rm -f "$(DESTDIR)$(libdir)"/libbncmatmul-$(PACKAGE_VERSION)*.a \
+	       "$(DESTDIR)$(libdir)"/libbncmatmul-$(PACKAGE_VERSION)*.so
+	-for h in $(top_srcdir)/include/*.h; do rm -f "$(DESTDIR)$(includedir)/$$(basename $$h)"; done
+	-for d in avx2 neon sve2; do \
+	   for h in $(top_srcdir)/include/$$d/*.h; do rm -f "$(DESTDIR)$(includedir)/$$d/$$(basename $$h)"; done; \
+	 done
+
 distclean-local:
 	-rm -f bncmatmul.inc
 
 .PHONY: legacy-check serial omp avx2 avx512 neon sve2 winograd \
-        legacy-omp legacy-avx2 legacy-avx512 legacy-neon legacy-sve2 legacy-winograd
+        legacy-omp legacy-avx2 legacy-avx512 legacy-neon legacy-sve2 legacy-winograd \
+        install-libs uninstall-libs
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
