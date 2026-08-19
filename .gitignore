@@ -61,3 +61,12 @@ doc/*.ilg
 doc/*.ind
 doc/*.fls
 doc/*.fdb_latexmk
+# Compiled shared objects and benchmark executables (build products; rebuilt by
+# 'make serial|neon|sve2|avx2|avx512' and the bench build scripts).  Only the
+# sources belong in the repository.
+python/*.so
+python/*.so.*
+bench/fma/poly_bench_*
+bench/fma/test_fma_*
+bench/mds/mds_bench_*
+bench/mds/axpy_bench_*
