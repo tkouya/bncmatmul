@@ -650,7 +650,13 @@ void _bncomp_mul_dsmatrix_dsvec(DSVector v, DSMatrix a, DSVector vb);
 /* v := a^T * vb */
 void _bncomp_mul_dsmatrixt_dsvec(DSVector v, DSMatrix a, DSVector vb);
 
+/* Ozaki-scheme matmul is not implemented for the float (ds/ts/qs) layer:
+ * it needs split_dsmatrix_dmat / split_dsmatrix_t_dmat / add_dsmatrix_dmat,
+ * which would live in ds_oz_scheme.c.  The definition in
+ * bncomp_linear_ds.c is #if 0'd out for the same reason. */
+#if 0
 void _bncomp_mul_dsmatrix_oz(DSMatrix ret, DSMatrix a, int max_num_div_a, DSMatrix b, int max_num_div_b);
+#endif // 0
 
 
 /******/
@@ -702,7 +708,13 @@ void _bncomp_mul_tsmatrix_tsvec(TSVector v, TSMatrix a, TSVector vb);
 /* v := a^T * vb */
 void _bncomp_mul_tsmatrixt_tsvec(TSVector v, TSMatrix a, TSVector vb);
 
+/* Ozaki-scheme matmul is not implemented for the float (ds/ts/qs) layer:
+ * it needs split_tsmatrix_dmat / split_tsmatrix_t_dmat / add_tsmatrix_dmat,
+ * which would live in ts_oz_scheme.c.  The definition in
+ * bncomp_linear_ts.c is #if 0'd out for the same reason. */
+#if 0
 void _bncomp_mul_tsmatrix_oz(TSMatrix ret, TSMatrix a, int max_num_div_a, TSMatrix b, int max_num_div_b);
+#endif // 0
 
 
 /******/
@@ -754,7 +766,13 @@ void _bncomp_mul_qsmatrix_qsvec(QSVector v, QSMatrix a, QSVector vb);
 /* v := a^T * vb */
 void _bncomp_mul_qsmatrixt_qsvec(QSVector v, QSMatrix a, QSVector vb);
 
+/* Ozaki-scheme matmul is not implemented for the float (ds/ts/qs) layer:
+ * it needs split_qsmatrix_dmat / split_qsmatrix_t_dmat / add_qsmatrix_dmat,
+ * which would live in qs_oz_scheme.c.  The definition in
+ * bncomp_linear_qs.c is #if 0'd out for the same reason. */
+#if 0
 void _bncomp_mul_qsmatrix_oz(QSMatrix ret, QSMatrix a, int max_num_div_a, QSMatrix b, int max_num_div_b);
+#endif // 0
 
 
 /*******/

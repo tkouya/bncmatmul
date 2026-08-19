@@ -689,7 +689,7 @@ void mul_cdmatrix(CDMatrix c, CDMatrix a, CDMatrix b)
 	double _Complex tmp;
 
 	/* dimension check */
-	if((c->row_dim != a->row_dim) || (c->col_dim != b->row_dim) || (a->col_dim != b->row_dim))
+	if((c->row_dim != a->row_dim) || (c->col_dim != b->col_dim) || (a->col_dim != b->row_dim))
 	{
 		fprintf(stderr, "ERROR: mul_cdmatrix\n");
 		return;

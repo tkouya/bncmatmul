@@ -18,22 +18,22 @@
 .SUFFIXES:
 
 # ---- Tools / flags injected by configure ---------------------------
-NVCC       = /usr/local/cuda/bin/nvcc
-NVCC_FLAGS = -fmad=false -D__NV_NO_VECTOR_DEPRECATION_DIAG -O3 
-CUDA_ARCH  = sm_121
+NVCC       = 
+NVCC_FLAGS = 
+CUDA_ARCH  = 
 AR         = ar
 RANLIB     = ranlib
 RM         = rm -f
 
-CUDA_CPPFLAGS = -I/usr/local/cuda/include
-GDTQ_CPPFLAGS = -I/usr/local/include/gdtq
+CUDA_CPPFLAGS = 
+GDTQ_CPPFLAGS = 
 QD_CPPFLAGS   = 
 GMP_CPPFLAGS  = 
 MPFR_CPPFLAGS = 
 MPC_CPPFLAGS  = 
 # Header-only mpc_cuda include (cu_freal.cuh / cu_fcomplex.cuh) used by
 # mpflinear_cu.cu / cmpflinear_cu.cu.  No library link is required.
-MPC_CUDA_CPPFLAGS = -I/home/tkouya/na/cuda/mpc_cuda-0.0.1/include
+MPC_CUDA_CPPFLAGS = 
 
 # Mirror the -D flags the CPU build uses (see src/Makefile.am AM_CPPFLAGS).
 # Required because bnc.h declares MPQMatrix using mpq_t outside its
@@ -235,7 +235,7 @@ bncuda_linear_cublas_c.o: bncuda_linear_cublas.c
 # Run with:    ./test_gdd_strassen [N_naive] [N_strassen] [cutoff]
 #              (defaults: 32, 64, 16)
 QD_LIBS        =  -lqd
-CUDA_LIBS_LINK = -L/usr/local/cuda/lib64 -lcudart -lcublas
+CUDA_LIBS_LINK = -L -lcudart -lcublas
 
 # CPU-side bncmatmul — required by the bench program, which calls
 # mul_ddmatrix_strassen / mul_qdmatrix_strassen.  Built at the top

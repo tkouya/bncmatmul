@@ -343,6 +343,12 @@ The complex variant \texttt{CMPFRSMatrix} uses \texttt{mpc\_t *element}.}{\textt
     \funcitem{void}{solve\_iLU0t\_mpfrsmatrix}{\varname{MPFVector}{ret}, \varname{MPFRSMatrix}{ilu}, \varname{MPFVector}{b}}
     \funcitem{void}{solve\_iLU0\_drsmatrix\_mpfvec}{\varname{MPFVector}{ret}, \varname{DRSMatrix}{ilu}, \varname{MPFVector}{b}}
     \funcitem{void}{solve\_iLU0t\_drsmatrix\_mpfvec}{\varname{MPFVector}{ret}, \varname{DRSMatrix}{ilu}, \varname{MPFVector}{b}}
+    \funcitem{int}{split\_mpfrsmatrix\_drsmat}{\varname{DRSMatrix}{ret\_mat[]}, \varname{int}{num\_div}, \varname{MPFRSMatrix}{org\_mat}} $\cdots$ \bi{SplitMat\_A for the Ozaki scheme}{尾崎スキームの SplitMat\_A です。}
+    \funcitem{int}{split\_mpfrsmatrix\_drsmat\_ex}{\varname{DRSMatrix}{ret\_mat[]}, \varname{long int}{row\_shift[]}, \varname{int}{num\_div}, \varname{MPFRSMatrix}{org\_mat}}
+    \funcitem{int}{split\_mpfrsmatrix\_t\_drsmat}{\varname{DRSMatrix}{ret\_mat[]}, \varname{int}{num\_div}, \varname{MPFRSMatrix}{org\_mat}} $\cdots$ \bi{SplitMat\_B}{SplitMat\_B です。}
+    \funcitem{int}{split\_mpfrsmatrix\_t\_drsmat\_ex}{\varname{DRSMatrix}{ret\_mat[]}, \varname{long int}{col\_shift[]}, \varname{int}{num\_div}, \varname{MPFRSMatrix}{org\_mat}}
+    \funcitem{void}{mul\_mpfrsmatrix\_mpfvec\_oz}{\varname{MPFVector}{ret}, \varname{MPFRSMatrix}{a}, \varname{int}{max\_num\_div\_a}, \varname{MPFVector}{vb}, \varname{int}{max\_num\_div\_vb}} $\cdots$ \bi{Matrix-Vector multiplication based on Ozaki scheme}{尾崎スキームに基づく行列ベクトル乗算です。}
+    \funcitem{void}{mul\_mpfrsmatrixt\_mpfvec\_oz}{\varname{MPFVector}{ret}, \varname{MPFRSMatrix}{a}, \varname{int}{max\_num\_div\_a}, \varname{MPFVector}{vb}, \varname{int}{max\_num\_div\_vb}} $\cdots$ \bi{transposed, Ozaki scheme}{転置、尾崎スキームです。}
 \end{itemize}
 
 \noindent \bi{Complex MPF sparse matrix (\texttt{CMPFRSMatrix}):}{複素MPF疎行列（\texttt{CMPFRSMatrix}）：}
@@ -656,6 +662,29 @@ The complex variant \texttt{CMPFRSMatrix} uses \texttt{mpc\_t *element}.}{\textt
     \funcitem{long int}{CMPFBiCGSTAB}{\varname{CMPFVector}{ans}, \varname{CMPFMatrix}{a}, \varname{CMPFVector}{b}, \varname{mpf\_t}{reps}, \varname{mpf\_t}{aeps}, \varname{long int}{maxtimes}}
     \funcitem{long int}{CMPFGPBiCG}{\varname{CMPFVector}{ans}, \varname{CMPFMatrix}{a}, \varname{CMPFVector}{b}, \varname{mpf\_t}{reps}, \varname{mpf\_t}{aeps}, \varname{long int}{maxtimes}}
 \end{itemize}
+
+
+\section{\bi{Ozaki scheme for sparse matrices}{疎行列に対する尾崎スキーム}}
+
+\bi{The sparse Ozaki-scheme routines follow the dense ones described in Section \ref{chap:basiclinear}: the operand is peeled into plain \texttt{double} slices whose products are error free, the slices are multiplied in double precision and the results accumulated back in the working precision. They are parallelized with OpenMP and obey the same \texttt{BNC\_OZ\_*} settings, and each row (for \texttt{SplitMat\_A}) or column (for \texttt{SplitMat\_B}) is scaled by a power of two before it is split, so the operands may use the whole exponent range of their type. The \texttt{\_ex} forms hand those exponents back; the names without \texttt{\_ex} forward with a \texttt{NULL} array.}{疎行列版の尾崎スキーム関数は、\ref{chap:basiclinear}章で述べた密行列版と同じ構成です。オペランドを、積が誤差なしとなる通常の \texttt{double} スライスに分解し、倍精度で乗算した結果を作業精度で再集約します。OpenMPで並列化されており、同じ \texttt{BNC\_OZ\_*} 設定に従います。また分割前に各行（\texttt{SplitMat\_A}）または各列（\texttt{SplitMat\_B}）を2の冪でスケーリングするため、オペランドはその型の指数範囲全体を使用できます。\texttt{\_ex} 版はその指数を返し、\texttt{\_ex} の付かない名前は \texttt{NULL} 配列を渡して転送します。}
+
+\bi{Two points are specific to the sparse case. A \texttt{DRSMatrix} keeps no row-offset array, so the routines build one once (\texttt{bnc\_oz\_sp\_row\_start()}); that is what makes a single pass over the non-zeros possible and what lets the rows go to different threads. And an \texttt{MPFRSMatrix} carries no per-row SIMD padding, so its values are indexed by the running sum of \texttt{nzero\_col\_dim[]} while the \texttt{double} slices use \texttt{real\_nzero\_col\_dim[]}.}{疎行列版に固有の点が2つあります。\texttt{DRSMatrix} は行オフセット配列を保持しないため、これらの関数は一度だけそれを構築します（\texttt{bnc\_oz\_sp\_row\_start()}）。これにより非零要素を1パスで走査でき、行を異なるスレッドへ配ることが可能になります。また \texttt{MPFRSMatrix} は行ごとのSIMDパディングを持たないため、その値は \texttt{nzero\_col\_dim[]} の累積和で、\texttt{double} スライスは \texttt{real\_nzero\_col\_dim[]} の累積和で添字付けされます。}
+
+\bi{The transposed product scatters into the result, so each thread accumulates into its own column vector and the partial vectors are reduced afterwards. The partial sums are exact --- the split is what makes every slice product exact in \texttt{double}, whatever the summation order --- so the reduction costs nothing in accuracy and the result stays independent of the thread count.}{転置積は結果に対して散乱書き込みとなるため、各スレッドが自分の列ベクトルに集約し、後で部分ベクトルを還元します。部分和はすべて厳密です（分割がスライス積を \texttt{double} で厳密にする以上、加算順序に依存しません）。したがって還元は精度に影響せず、結果はスレッド数に依存しません。}
+
+\subsection{\bi{Sparse matrix times dense matrix}{疎行列と密行列の乗算}}
+
+\bi{$C := A B$ with $A$ sparse and $B$, $C$ dense. $A$ is split by rows and $B$ by columns, so the row exponent of $A$ and the column exponent of $B$ factor out of the inner product. Like the dense matrix multiplication --- and unlike the matrix-vector routines above --- these skip slice pairs whose combined index reaches \texttt{real\_num\_div\_b}, since their contribution falls below the accuracy the split was asked for.}{$A$ が疎、$B$ と $C$ が密である $C := A B$ です。$A$ は行方向、$B$ は列方向に分割されるため、$A$ の行指数と $B$ の列指数は内積の外に括り出されます。密行列乗算と同様に（上記の行列ベクトル乗算とは異なり）、添字の和が \texttt{real\_num\_div\_b} に達するスライス対は、その寄与が分割に要求された精度を下回るため省略されます。}
+
+\begin{itemize}
+    \funcitem{void}{mul\_drsmatrix\_dmat\_oz}{\varname{DMatrix}{ret}, \varname{DRSMatrix}{a}, \varname{int}{max\_num\_div\_a}, \varname{DMatrix}{b}, \varname{int}{max\_num\_div\_b}}
+    \funcitem{void}{mul\_ddrsmatrix\_ddmat\_oz}{\varname{DDMatrix}{ret}, \varname{DDRSMatrix}{a}, \varname{int}{max\_num\_div\_a}, \varname{DDMatrix}{b}, \varname{int}{max\_num\_div\_b}}
+    \funcitem{void}{mul\_tdrsmatrix\_tdmat\_oz}{\varname{TDMatrix}{ret}, \varname{TDRSMatrix}{a}, \varname{int}{max\_num\_div\_a}, \varname{TDMatrix}{b}, \varname{int}{max\_num\_div\_b}}
+    \funcitem{void}{mul\_qdrsmatrix\_qdmat\_oz}{\varname{QDMatrix}{ret}, \varname{QDRSMatrix}{a}, \varname{int}{max\_num\_div\_a}, \varname{QDMatrix}{b}, \varname{int}{max\_num\_div\_b}}
+    \funcitem{void}{mul\_mpfrsmatrix\_mpfmat\_oz}{\varname{MPFMatrix}{ret}, \varname{MPFRSMatrix}{a}, \varname{int}{max\_num\_div\_a}, \varname{MPFMatrix}{b}, \varname{int}{max\_num\_div\_b}}
+\end{itemize}
+
+\bi{There is no sparse BLAS in OpenBLAS --- it ships dense BLAS and LAPACK only --- so the products above use the library's own CSR kernels rather than a vendor routine.}{OpenBLASには疎行列BLASがありません（密BLASとLAPACKのみを提供します）。したがって上記の乗算はベンダ提供のルーチンではなく、本ライブラリ自身のCSRカーネルを使用します。}
 
 %------------------------------------------------%
 % End of document

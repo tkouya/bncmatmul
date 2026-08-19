@@ -40,9 +40,28 @@
 //#ifdef USE_DDLINEAR
 #include "dlinear.h"
 
+/*--------------------------------------------------------------------------*/
+/* Optional CBLAS backend.                                                  */
+/*                                                                          */
+/*   -DUSE_IMKL     : Intel Math Kernel Library (as before)                 */
+/*   -DUSE_OPENBLAS : OpenBLAS (configure adds the -I that makes <cblas.h>  */
+/*                    resolve; see --with-openblas)                         */
+/*                                                                          */
+/* Either one defines BNC_USE_CBLAS, which is what the Ozaki-scheme kernels */
+/* in the *_oz_scheme.c sources test.  MKL wins when both are given, so     */
+/* -DUSE_IMKL builds are unaffected.                                        */
+/*--------------------------------------------------------------------------*/
 #ifdef USE_IMKL
 	#include "mkl.h"
 	#include "mkl_cblas.h" // for Intel Math Kernel Library
+	#ifndef BNC_USE_CBLAS
+		#define BNC_USE_CBLAS
+	#endif // BNC_USE_CBLAS
+#elif defined(USE_OPENBLAS) // USE_IMKL
+	#include <cblas.h> // for OpenBLAS
+	#ifndef BNC_USE_CBLAS
+		#define BNC_USE_CBLAS
+	#endif // BNC_USE_CBLAS
 #endif // USE_IMKL
 
 	#include "ddlinear.h" // double-double and quadratic double precision

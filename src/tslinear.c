@@ -4521,7 +4521,7 @@ void subst_fmatrix_tsmat(FMatrix c, TSMatrix a)
 	{
 		for(j = 0; j < a->col_dim; j++)
 		{
-			ij_index = i * (c->col_dim) + j;
+			ij_index = i * (c->real_col_dim) + j;
 			c->element[ij_index] = rts_get_f(get_tsmatrix_ij(a, i, j));
 		}
 	}

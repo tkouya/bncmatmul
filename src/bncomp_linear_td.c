@@ -2004,134 +2004,21 @@ void _bncomp_mul_tdmatrixt_tdvec(TDVector v, TDMatrix a, TDVector vb)
 }
 
 // Matrix multiplication based on Ozaki scheme
-void _bncomp_mul_tdmatrix_oz(TDMatrix ret, TDMatrix a, int max_num_div_a, TDMatrix b, int max_num_div_b) //, int num_digits)
+/*------------------------------------------------------------------------------*/
+/* Matrix  multiplication based on Ozaki scheme                          */
+/*                                                                               */
+/* mul_tdmatrix_oz() is OpenMP-parallel itself: it cuts the rows of   */
+/* ret into blocks and gives one block at a time to a thread, which runs every   */
+/* slice product for it with a single-threaded BLAS call and accumulates in      */
+/* TD on the spot.  That parallelizes the splitting and the accumulation as   */
+/* well, whereas the code that used to stand here parallelized only the outer    */
+/* slice loop and pushed every accumulation through an omp critical -- which     */
+/* serialized the expensive half and made the sum order depend on the thread     */
+/* interleaving.  Delegating is both faster and reproducible.                    */
+/*------------------------------------------------------------------------------*/
+void _bncomp_mul_tdmatrix_oz(TDMatrix ret, TDMatrix a, int max_num_div_a, TDMatrix b, int max_num_div_b)
 {
-    int i, j;
-    int real_num_div_a, real_num_div_b;
-    long int row_dim = ret->row_dim, col_dim = ret->col_dim, mid_dim = a->col_dim;
-    DMatrix *div_a, *div_b, *div_ret;//div_ret[BNCOMP_MAX_NUM_THREADS];
-	int thread_index, thread_num;
-
-    if(mid_dim != b->row_dim)
-    {
-        fprintf(stderr, "ERROR: mul_tdmatrix_oz mid_dim(a, b) = (%ld, %ld)!\n", mid_dim, b->row_dim);
-        return;
-    }
-
-	thread_num = omp_get_num_threads();
-
-    div_a = (DMatrix *)calloc(max_num_div_a, sizeof(DMatrix));
-    div_b = (DMatrix *)calloc(max_num_div_b, sizeof(DMatrix));
-    div_ret = (DMatrix *)calloc(max_num_div_a, sizeof(DMatrix));
-    //div_ret = (DMatrix *)calloc(max_num_div_b, sizeof(DMatrix));
-    //div_ret = (DMatrix *)calloc(thread_num, sizeof(DMatrix));
-
-	#pragma omp parallel for
-    for(i = 0; i < max_num_div_a; i++)
-	{
-        div_a[i] = init_dmatrix(row_dim, mid_dim);
-		div_ret[i] = init_dmatrix(row_dim, col_dim);
-	}
-
-	#pragma omp parallel for
-    for(i = 0; i < max_num_div_b; i++)
-	{
-        div_b[i] = init_dmatrix(mid_dim, col_dim);
-		//div_ret[i] = init_dmatrix(row_dim, col_dim);
-	}
-
-/*/
-	#pragma omp parallel
-	{
-		thread_index = omp_get_thread_num();
-	    div_ret[thread_index] = init_dmatrix(row_dim, col_dim);
-	}
-*/
-
-	#pragma omp parallel sections
-	{
-		#pragma omp section
-		real_num_div_a = split_tdmatrix_dmat(div_a, max_num_div_a, a);
-		//printf("split_tdmatrix_dmat(%d, %d)  ->%d\n", div_a[0]->real_row_dim, div_a[0]->real_col_dim, real_num_div_a);
-
-		#pragma omp section
-		real_num_div_b = split_tdmatrix_t_dmat(div_b, max_num_div_b, b);
-		//printf("split_tdmatrix_t_dmat(%d, %d)->%d\n", div_b[0]->real_row_dim, div_b[0]->real_col_dim, real_num_div_b);
-	}
-
-    set0_tdmatrix(ret);
-	#pragma omp parallel for private(i, j) // , div_ret)
-    for(i = 0; i < real_num_div_a; i++)
-    {
-		//thread_index = omp_get_thread_num();
-		//printf("-- start -- %d th thread --\n", thread_index);
-
-        //for(j = 0; j < real_num_div_b; j++)
-        for(j = 0; j < real_num_div_b - i; j++)
-        {
-            //printf("(i, j) = (%d, %d), %d, %d\n", i, j, div_b[j]->real_row_dim, div_b[j]->real_col_dim);
-#ifdef USE_IMKL
-            //set0_dmatrix(div_ret[thread_index]);
-            //set0_dmatrix(div_ret[j]);
-			set0_dmatrix(div_ret[i]);
-            cblas_dgemm(
-                CblasRowMajor,
-                CblasNoTrans,
-                CblasNoTrans,
-                div_a[i]->real_row_dim, // m
-                div_b[j]->real_col_dim, // n
-                div_a[i]->real_col_dim, // k
-                1.0,
-                div_a[i]->element,
-                div_a[i]->real_col_dim, // k
-                div_b[j]->element,
-                div_b[j]->real_col_dim, // n
-                1.0,
-                div_ret[i]->element,
-                div_ret[i]->real_col_dim   // n
-                //div_ret[j]->element,
-                //div_ret[j]->real_col_dim   // n
-                //div_ret[thread_index]->element,
-                //div_ret[thread_index]->real_col_dim   // n
-            );
-#else // USE_IMKL
-            //mul_dmatrix(div_ret[thread_index], div_a[i], div_b[j]);
-            //mul_dmatrix(div_ret[j], div_a[i], div_b[j]);
-            mul_dmatrix(div_ret[i], div_a[i], div_b[j]);
-#endif // USE_IMKL
-            //add_tdmatrix_dmat(ret, ret, div_ret[thread_index]);	 
-            //add_tdmatrix_dmat(ret, ret, div_ret[j]);
-			#pragma omp critical
-				add_tdmatrix_dmat(ret, ret, div_ret[i]);
-    	}
-		//printf("-- end -- %d th thread --\n", thread_index);
-    }
-
-/*
-	#pragma omp parallel
-	{
-		thread_index = omp_get_thread_num();
-	    free_dmatrix(div_ret[thread_index]);
-	}
-*/
-	#pragma omp parallel for
-    for(i = 0; i < max_num_div_a; i++)
-	{
-        free_dmatrix(div_a[i]);
-		free_dmatrix(div_ret[i]);
-	}
-
-	#pragma omp parallel for
-    for(i = 0; i < max_num_div_b; i++)
-	{
-        free_dmatrix(div_b[i]);
-		//free_dmatrix(div_ret[i]);
-	}
-
-    free(div_a);
-    free(div_b);
-	free(div_ret);
-
+    mul_tdmatrix_oz(ret, a, max_num_div_a, b, max_num_div_b);
 }
 
 #if 0 

@@ -15,7 +15,8 @@ AM_CPPFLAGS = \
 	-DUSE_TD_BF -DUSE_QD_BF \
 	-DUSE_TS_BF -DUSE_QS_BF \
 	-DUSE_GMP -DUSE_MPFR \
-	@GMP_CPPFLAGS@ @MPFR_CPPFLAGS@ @MPC_CPPFLAGS@ @QD_CPPFLAGS@
+	@GMP_CPPFLAGS@ @MPFR_CPPFLAGS@ @MPC_CPPFLAGS@ @QD_CPPFLAGS@ \
+	@OPENBLAS_CPPFLAGS@
 
 AM_CFLAGS   = $(BNCMM_OPT_CFLAGS)
 AM_CXXFLAGS = $(BNCMM_OPT_CXXFLAGS)
@@ -180,6 +181,7 @@ libbncmatmul_la_LIBADD = \
 	@MPFR_LDFLAGS@ @MPFR_LIBS@ \
 	@GMP_LDFLAGS@ @GMP_LIBS@ \
 	@QD_LDFLAGS@ @QD_LIBS@ \
+	@OPENBLAS_LDFLAGS@ @OPENBLAS_LIBS@ \
 	-lpthread -lm -lstdc++
 
 if ENABLE_OMP
@@ -267,3 +269,45 @@ EXTRA_DIST += $(foreach src,$(OPTIONAL_SRC_FILES),$(wildcard $(srcdir)/$(src)))
 # CUDA build can be reconstructed.  $(wildcard) keeps it dist-safe.
 #---------------------------------------
 EXTRA_DIST += $(wildcard $(srcdir)/*.cu) $(wildcard $(srcdir)/cuda/*.cu)
+
+#---------------------------------------
+# Never compile on behalf of a user who does not own the build tree.
+#
+# Automake's stock rule is
+#
+#     install-am: all-am
+#
+# so `sudo make install` happily rebuilds whatever is out of date -- as
+# root.  Every object, every .libs/ entry and every relinked library it
+# writes then belongs to root inside the developer's build tree, and the
+# next ordinary `make` stops with "Permission denied" until someone
+# chowns the whole tree back.  src/ is the only directory that compiles
+# anything at `all` time, so the guard belongs here.
+#
+# The replacement below keeps `./configure && make install` working
+# exactly as before for whoever owns the tree, and refuses only in the
+# case that does the damage: a rebuild that would be carried out by a
+# different user.  `make -q` answers "would anything be rebuilt?"
+# without building it, and the -O test is skipped entirely for the
+# owner, so the common path costs nothing.
+#---------------------------------------
+install-am:
+	@if test ! -O . && ! $(MAKE) $(AM_MAKEFLAGS) -q all-am >/dev/null 2>&1; then \
+	  echo "" >&2; \
+	  echo "ERROR: 'make install' would have to compile, but it is running as" >&2; \
+	  echo "       `id -un`, who does not own $(abs_builddir)." >&2; \
+	  echo "       Compiling now would leave objects owned by `id -un` behind and" >&2; \
+	  echo "       break the next plain 'make' with 'Permission denied'." >&2; \
+	  echo "" >&2; \
+	  echo "       Build first, then install:" >&2; \
+	  echo "" >&2; \
+	  echo "           make                 # as the owner of the build tree" >&2; \
+	  echo "           sudo make install" >&2; \
+	  echo "" >&2; \
+	  echo "       ('make install-libs' only copies already-built libraries and" >&2; \
+	  echo "        headers; it never compiles.)" >&2; \
+	  echo "" >&2; \
+	  exit 1; \
+	fi
+	@$(MAKE) $(AM_MAKEFLAGS) all-am
+	@$(MAKE) $(AM_MAKEFLAGS) install-exec-am install-data-am

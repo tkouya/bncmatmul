@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <limits.h> // LONG_MIN, the "no exponent" marker of an all-zero row
 
 #include "bncsparse.h"
 
@@ -1387,3 +1388,796 @@ void solve_iLU0t_drsmatrix_mpfvec(MPFVector ret, DRSMatrix ilu, MPFVector b)
 	mpf_clear(dtmp);
 }
 #endif // USE_GMP
+
+/*------------------------------------------------------------------------------*/
+/* Ozaki-scheme routines for sparse mpf_t matrices                               */
+/*                                                                               */
+/* The same shape as the DD/TD/QD versions in sparse_{dd,td,qd}.c: the operand   */
+/* is peeled into plain double slices whose products are error free, the slices  */
+/* are multiplied in double and the results accumulated back in mpf_t.  Two      */
+/* things differ, both because mpf_t is not built on double:                     */
+/*                                                                               */
+/*   - an MPFRSMatrix has no per-row SIMD padding, so its values are indexed by  */
+/*     the running sum of nzero_col_dim[] while the double slices use            */
+/*     real_nzero_col_dim[]; the two row-offset arrays are not the same;         */
+/*   - nothing may be converted before it has been scaled, since mpf_t reaches   */
+/*     2^+-2^30 -- see the exponent note in oz_scheme.h.                         */
+/*------------------------------------------------------------------------------*/
+
+// SplitMat_A; row_shift holds num_div * row_dim exponents and may be NULL
+int split_mpfrsmatrix_drsmat_ex(DRSMatrix ret_mat[], long int row_shift[], int num_div, MPFRSMatrix org_mat)
+{
+	unsigned long prec = org_mat->prec;
+	long int i, j, index, row_dim, *row_start, *org_row_start;
+	long int num_digits = 53; // IEEE double prec.
+	int real_num_div, num_threads;
+	double mu_total;
+	MPFRSMatrix tmp_org_mat;
+	DRSMatrix own_ret_mat = NULL, in_ret_mat;
+	double *power2;
+	long int *shift;
+
+	row_dim = org_mat->row_dim;
+
+	power2 = (double *)calloc((size_t)row_dim, sizeof(double));
+	org_row_start = bnc_oz_sp_row_start(org_mat->nzero_col_dim, row_dim);
+	if(ret_mat == NULL)
+	{
+		own_ret_mat = init_set_drsmatrix_mpfrsmatrix(org_mat);
+		in_ret_mat = own_ret_mat;
+	}
+	else
+		in_ret_mat = ret_mat[0];
+	row_start = bnc_oz_sp_row_start(in_ret_mat->real_nzero_col_dim, row_dim);
+
+	if(power2 == NULL || org_row_start == NULL || row_start == NULL)
+	{
+		fprintf(stderr, "ERROR: split_mpfrsmatrix_drsmat: cannot allocate\n");
+		free(power2); free(org_row_start); free(row_start);
+		if(own_ret_mat != NULL) free_drsmatrix(own_ret_mat);
+		return 0;
+	}
+
+	// tmp_org_mat := org_mat; it always holds the part not split off yet
+	tmp_org_mat = init_set_mpfrsmatrix(org_mat);
+
+	num_threads = bnc_oz_get_num_threads();
+
+	real_num_div = 0;
+	for(index = 0; index < num_div; index++)
+	{
+		if(ret_mat != NULL)
+			in_ret_mat = ret_mat[index];
+		shift = (row_shift != NULL) ? (row_shift + (size_t)index * (size_t)row_dim) : NULL;
+
+		// pass 1: the scaled double image of every row and its maximum
+		mu_total = 0.0;
+
+#ifdef _OPENMP
+		#pragma omp parallel for num_threads(num_threads) schedule(dynamic, 16) private(i, j) reduction(+:mu_total)
+#endif // _OPENMP
+		for(i = 0; i < row_dim; i++)
+		{
+			long int org_base = org_row_start[i], base = row_start[i];
+			long int nzero_dim = org_mat->nzero_col_dim[i];
+			long int real_nzero_dim = in_ret_mat->real_nzero_col_dim[i];
+			double *ret_row = in_ret_mat->element + base;
+			double mu = 0.0, org_ij, abs_org_ij;
+			long int sigma = 0, row_exp = LONG_MIN, element_exp;
+
+			// the exponent of the largest entry, taken in mpf_t so that entries
+			// outside the double range still count
+			for(j = 0; j < nzero_dim; j++)
+			{
+				element_exp = bnc_oz_mpf_exp2(tmp_org_mat->element[org_base + j]);
+				if(element_exp > row_exp)
+					row_exp = element_exp;
+			}
+
+			if(shift != NULL)
+			{
+				if(row_exp != LONG_MIN)
+					sigma = row_exp;
+				shift[i] = sigma;
+			}
+
+			for(j = 0; j < nzero_dim; j++)
+			{
+				org_ij = (sigma != 0) ? bnc_oz_mpf_get_scaled_d(tmp_org_mat->element[org_base + j], sigma)
+				                      : mpf_get_d(tmp_org_mat->element[org_base + j]);
+				ret_row[j] = org_ij;
+
+				abs_org_ij = fabs(org_ij);
+				if(abs_org_ij > mu)
+					mu = abs_org_ij;
+			}
+
+			// the per-row SIMD padding is never read as data, but keep it zero
+			for(j = nzero_dim; j < real_nzero_dim; j++)
+				ret_row[j] = 0.0;
+
+			// s[i, j] = 2^t_exp, with the row's own number of non-zeros
+			power2[i] = pow(2.0, ceil(DLOG2(mu)) + ceil(((double)num_digits + DLOG2((double)(nzero_dim))) / 2.0));
+			mu_total += mu;
+		}
+
+		// nothing left to split
+		if(mu_total == 0.0) break;
+
+		// pass 2: high := (mat + s) - s, and mat := mat - 2^shift[i] * high
+#ifdef _OPENMP
+		#pragma omp parallel num_threads(num_threads) private(i, j)
+#endif // _OPENMP
+		{
+			mpf_t tmp;
+
+			mpf_init2(tmp, prec);
+
+#ifdef _OPENMP
+			#pragma omp for schedule(dynamic, 16)
+#endif // _OPENMP
+			for(i = 0; i < row_dim; i++)
+			{
+				long int org_base = org_row_start[i], base = row_start[i];
+				long int nzero_dim = org_mat->nzero_col_dim[i];
+				double *ret_row = in_ret_mat->element + base;
+				double s = power2[i], high_ij;
+				long int sigma = (shift != NULL) ? shift[i] : 0;
+
+				for(j = 0; j < nzero_dim; j++)
+				{
+					// (x + s) - s keeps the leading bits of x; valid under the IEEE
+					// semantics this library is compiled with (no -ffast-math)
+					high_ij = ret_row[j] + s;
+					high_ij = high_ij - s;
+					ret_row[j] = high_ij;
+
+					bnc_oz_mpf_set_scaled_d(tmp, high_ij, sigma);
+					mpf_sub(tmp, tmp_org_mat->element[org_base + j], tmp);
+					mpf_set(tmp_org_mat->element[org_base + j], tmp);
+				}
+			}
+
+			mpf_clear(tmp);
+		}
+
+		real_num_div = index + 1;
+	}
+
+	free(power2);
+	free(row_start);
+	free(org_row_start);
+	free_mpfrsmatrix(tmp_org_mat);
+	if(own_ret_mat != NULL)
+		free_drsmatrix(own_ret_mat);
+
+	return real_num_div;
+}
+
+// SplitMat_A without the scaling
+int split_mpfrsmatrix_drsmat(DRSMatrix ret_mat[], int num_div, MPFRSMatrix org_mat)
+{
+	return split_mpfrsmatrix_drsmat_ex(ret_mat, NULL, num_div, org_mat);
+}
+
+// SplitMat_B; col_shift holds num_div * col_dim exponents and may be NULL
+int split_mpfrsmatrix_t_drsmat_ex(DRSMatrix ret_mat[], long int col_shift[], int num_div, MPFRSMatrix org_mat)
+{
+	unsigned long prec = org_mat->prec;
+	long int i, j, index, row_dim, col_dim, *row_start, *org_row_start;
+	int real_num_div, num_digits = 53, num_threads, thread; // IEEE double prec.
+	double mu_total, tail_exp;
+	MPFRSMatrix tmp_org_mat;
+	DRSMatrix own_ret_mat = NULL, in_ret_mat;
+	double *power2, *mu_local;
+	long int *shift, *exp_local;
+
+	row_dim = org_mat->row_dim;
+	col_dim = org_mat->col_dim;
+
+	num_threads = bnc_oz_get_num_threads();
+
+	power2 = (double *)calloc((size_t)col_dim, sizeof(double));
+	mu_local = (double *)calloc((size_t)num_threads * (size_t)col_dim, sizeof(double));
+	exp_local = (long int *)calloc((size_t)num_threads * (size_t)col_dim, sizeof(long int));
+	if(mu_local == NULL || exp_local == NULL) // retry single-threaded rather than give up
+	{
+		num_threads = 1;
+		free(mu_local); free(exp_local);
+		mu_local = (double *)calloc((size_t)col_dim, sizeof(double));
+		exp_local = (long int *)calloc((size_t)col_dim, sizeof(long int));
+	}
+	org_row_start = bnc_oz_sp_row_start(org_mat->nzero_col_dim, row_dim);
+	if(ret_mat == NULL)
+	{
+		own_ret_mat = init_set_drsmatrix_mpfrsmatrix(org_mat);
+		in_ret_mat = own_ret_mat;
+	}
+	else
+		in_ret_mat = ret_mat[0];
+	row_start = bnc_oz_sp_row_start(in_ret_mat->real_nzero_col_dim, row_dim);
+
+	if(power2 == NULL || mu_local == NULL || exp_local == NULL || org_row_start == NULL || row_start == NULL)
+	{
+		fprintf(stderr, "ERROR: split_mpfrsmatrix_t_drsmat: cannot allocate\n");
+		free(power2); free(mu_local); free(exp_local); free(org_row_start); free(row_start);
+		if(own_ret_mat != NULL) free_drsmatrix(own_ret_mat);
+		return 0;
+	}
+
+	tmp_org_mat = init_set_mpfrsmatrix(org_mat);
+
+	// the column-independent half of t_exp
+	tail_exp = ceil(((double)num_digits + DLOG2((double)(row_dim + 1))) / 2.0);
+
+	real_num_div = 0;
+	for(index = 0; index < num_div; index++)
+	{
+		if(ret_mat != NULL)
+			in_ret_mat = ret_mat[index];
+		shift = (col_shift != NULL) ? (col_shift + (size_t)index * (size_t)col_dim) : NULL;
+
+		// pass 1: the column scales, as exponents so that the mpf_t range is kept
+		if(shift != NULL)
+		{
+			for(i = 0; i < (long int)num_threads * col_dim; i++)
+				exp_local[i] = LONG_MIN;
+
+#ifdef _OPENMP
+			#pragma omp parallel num_threads(num_threads) private(i, j)
+#endif // _OPENMP
+			{
+				long int *local_exp, element_exp;
+#ifdef _OPENMP
+				local_exp = exp_local + (size_t)omp_get_thread_num() * (size_t)col_dim;
+				#pragma omp for schedule(dynamic, 16)
+#else // _OPENMP
+				local_exp = exp_local;
+#endif // _OPENMP
+				for(i = 0; i < row_dim; i++)
+				{
+					long int org_base = org_row_start[i], nzero_dim = org_mat->nzero_col_dim[i];
+					const long int *index_row = org_mat->nzero_index[i];
+
+					for(j = 0; j < nzero_dim; j++)
+					{
+						element_exp = bnc_oz_mpf_exp2(tmp_org_mat->element[org_base + j]);
+						if(element_exp > local_exp[index_row[j]])
+							local_exp[index_row[j]] = element_exp;
+					}
+				}
+			}
+
+			for(j = 0; j < col_dim; j++)
+			{
+				long int column_exp = exp_local[j];
+
+				for(thread = 1; thread < num_threads; thread++)
+				{
+					if(exp_local[(size_t)thread * (size_t)col_dim + j] > column_exp)
+						column_exp = exp_local[(size_t)thread * (size_t)col_dim + j];
+				}
+
+				shift[j] = (column_exp != LONG_MIN) ? column_exp : 0;
+			}
+		}
+
+		// pass 2: the scaled double image and the column maxima
+		for(i = 0; i < (long int)num_threads * col_dim; i++)
+			mu_local[i] = 0.0;
+
+#ifdef _OPENMP
+		#pragma omp parallel num_threads(num_threads) private(i, j)
+#endif // _OPENMP
+		{
+			double *local_mu;
+#ifdef _OPENMP
+			local_mu = mu_local + (size_t)omp_get_thread_num() * (size_t)col_dim;
+			#pragma omp for schedule(dynamic, 16)
+#else // _OPENMP
+			local_mu = mu_local;
+#endif // _OPENMP
+			for(i = 0; i < row_dim; i++)
+			{
+				long int org_base = org_row_start[i], base = row_start[i];
+				long int nzero_dim = org_mat->nzero_col_dim[i];
+				long int real_nzero_dim = in_ret_mat->real_nzero_col_dim[i];
+				const long int *index_row = org_mat->nzero_index[i];
+				double *ret_row = in_ret_mat->element + base;
+				double org_ij, abs_org_ij;
+
+				for(j = 0; j < nzero_dim; j++)
+				{
+					org_ij = (shift != NULL && shift[index_row[j]] != 0)
+					         ? bnc_oz_mpf_get_scaled_d(tmp_org_mat->element[org_base + j], shift[index_row[j]])
+					         : mpf_get_d(tmp_org_mat->element[org_base + j]);
+					ret_row[j] = org_ij;
+
+					abs_org_ij = fabs(org_ij);
+					if(abs_org_ij > local_mu[index_row[j]])
+						local_mu[index_row[j]] = abs_org_ij;
+				}
+
+				for(j = nzero_dim; j < real_nzero_dim; j++)
+					ret_row[j] = 0.0;
+			}
+		}
+
+		mu_total = 0.0;
+		for(j = 0; j < col_dim; j++)
+		{
+			double mu = mu_local[j];
+
+			for(thread = 1; thread < num_threads; thread++)
+			{
+				if(mu_local[(size_t)thread * (size_t)col_dim + j] > mu)
+					mu = mu_local[(size_t)thread * (size_t)col_dim + j];
+			}
+
+			power2[j] = pow(2.0, ceil(DLOG2(mu)) + tail_exp);
+			mu_total += mu;
+		}
+
+		if(mu_total == 0.0) break;
+
+		// pass 3: high := (mat + s) - s, and mat := mat - 2^shift[j] * high
+#ifdef _OPENMP
+		#pragma omp parallel num_threads(num_threads) private(i, j)
+#endif // _OPENMP
+		{
+			mpf_t tmp;
+
+			mpf_init2(tmp, prec);
+
+#ifdef _OPENMP
+			#pragma omp for schedule(dynamic, 16)
+#endif // _OPENMP
+			for(i = 0; i < row_dim; i++)
+			{
+				long int org_base = org_row_start[i], base = row_start[i];
+				long int nzero_dim = org_mat->nzero_col_dim[i];
+				const long int *index_row = org_mat->nzero_index[i];
+				double *ret_row = in_ret_mat->element + base;
+				double s, high_ij;
+
+				for(j = 0; j < nzero_dim; j++)
+				{
+					s = power2[index_row[j]];
+					high_ij = ret_row[j] + s;
+					high_ij = high_ij - s;
+					ret_row[j] = high_ij;
+
+					bnc_oz_mpf_set_scaled_d(tmp, high_ij, (shift != NULL) ? shift[index_row[j]] : 0);
+					mpf_sub(tmp, tmp_org_mat->element[org_base + j], tmp);
+					mpf_set(tmp_org_mat->element[org_base + j], tmp);
+				}
+			}
+
+			mpf_clear(tmp);
+		}
+
+		real_num_div = index + 1;
+	}
+
+	free(power2);
+	free(mu_local);
+	free(exp_local);
+	free(row_start);
+	free(org_row_start);
+	free_mpfrsmatrix(tmp_org_mat);
+	if(own_ret_mat != NULL)
+		free_drsmatrix(own_ret_mat);
+
+	return real_num_div;
+}
+
+// SplitMat_B without the scaling
+int split_mpfrsmatrix_t_drsmat(DRSMatrix ret_mat[], int num_div, MPFRSMatrix org_mat)
+{
+	return split_mpfrsmatrix_t_drsmat_ex(ret_mat, NULL, num_div, org_mat);
+}
+
+/*------------------------------------------------------------------------------*/
+/* Matrix-Vector multiplication based on Ozaki scheme                            */
+/*                                                                               */
+/* ret = sum_{p,q} 2^(sa[p][i] + sv[q]) * (slice_a[p] * slice_v[q]).  The rows   */
+/* of ret are cut into blocks; a thread takes a block at a time and runs every   */
+/* slice pair for it, accumulating in mpf_t on the spot.                         */
+/*------------------------------------------------------------------------------*/
+void mul_mpfrsmatrix_mpfvec_oz(MPFVector ret, MPFRSMatrix a, int max_num_div_a, MPFVector vb, int max_num_div_vb)
+{
+    int i;
+    int real_num_div_a, real_num_div_vb, num_threads;
+    long int row_dim = a->row_dim, block_rows, num_blocks, *row_start;
+    long int *row_shift, *vec_shift;
+    DRSMatrix *div_a;
+    DVector *div_vb;
+    double *block_buf = NULL;
+
+    div_a = (DRSMatrix *)calloc(max_num_div_a, sizeof(DRSMatrix));
+    div_vb = (DVector *)calloc(max_num_div_vb, sizeof(DVector));
+    row_shift = (long int *)calloc((size_t)max_num_div_a * (size_t)row_dim, sizeof(long int));
+    vec_shift = (long int *)calloc((size_t)max_num_div_vb, sizeof(long int));
+    if(div_a == NULL || div_vb == NULL || row_shift == NULL || vec_shift == NULL)
+    {
+        fprintf(stderr, "ERROR: mul_mpfrsmatrix_mpfvec_oz: cannot allocate\n");
+        free(div_a); free(div_vb); free(row_shift); free(vec_shift);
+        return;
+    }
+
+    for(i = 0; i < max_num_div_a; i++)
+        div_a[i] = init_set_drsmatrix_mpfrsmatrix(a);
+    for(i = 0; i < max_num_div_vb; i++)
+        div_vb[i] = init_dvector(vb->dim);
+
+    row_start = bnc_oz_sp_row_start(div_a[0]->real_nzero_col_dim, row_dim);
+    if(row_start == NULL)
+    {
+        fprintf(stderr, "ERROR: mul_mpfrsmatrix_mpfvec_oz: cannot allocate\n");
+        return;
+    }
+
+    real_num_div_a = split_mpfrsmatrix_drsmat_ex(div_a, row_shift, max_num_div_a, a);
+    real_num_div_vb = split_mpfvector_dvec_ex(div_vb, vec_shift, max_num_div_vb, vb);
+
+    set0_mpfvector(ret);
+
+    num_threads = bnc_oz_get_num_threads();
+    block_rows = bnc_oz_block_rows_for(row_dim, num_threads);
+    num_blocks = (row_dim + block_rows - 1) / block_rows;
+
+    block_buf = (double *)malloc((size_t)num_threads * (size_t)block_rows * sizeof(double));
+    if(block_buf == NULL)
+    {
+        num_threads = 1;
+        block_rows = row_dim;
+        num_blocks = 1;
+        block_buf = (double *)malloc((size_t)row_dim * sizeof(double));
+    }
+
+    if(block_buf != NULL)
+    {
+#ifdef _OPENMP
+        #pragma omp parallel num_threads(num_threads)
+#endif // _OPENMP
+        {
+            long int blk, first_row, num_rows, ii, shift_a;
+            int div_i, div_j;
+            double *buf;
+            mpf_t tmp;
+
+            mpf_init2(tmp, ret->prec);
+
+#ifdef _OPENMP
+            buf = block_buf + (size_t)omp_get_thread_num() * (size_t)block_rows;
+            #pragma omp for schedule(dynamic, 1)
+#else // _OPENMP
+            buf = block_buf;
+#endif // _OPENMP
+            for(blk = 0; blk < num_blocks; blk++)
+            {
+                first_row = blk * block_rows;
+                num_rows = ((row_dim - first_row) < block_rows) ? (row_dim - first_row) : block_rows;
+
+                for(div_i = 0; div_i < real_num_div_a; div_i++)
+                {
+                    for(div_j = 0; div_j < real_num_div_vb; div_j++)
+                    {
+                        bnc_oz_sp_dcsr_block(buf, div_a[div_i], row_start, first_row, num_rows, div_vb[div_j]);
+
+                        for(ii = 0; ii < num_rows; ii++)
+                        {
+                            if(buf[ii] == 0.0)
+                                continue;
+
+                            shift_a = row_shift[(size_t)div_i * (size_t)row_dim + first_row + ii];
+
+                            bnc_oz_mpf_set_scaled_d(tmp, buf[ii], shift_a + vec_shift[div_j]);
+                            mpf_add(tmp, get_mpfvector_i(ret, first_row + ii), tmp);
+                            set_mpfvector_i(ret, first_row + ii, tmp);
+                        }
+                    }
+                }
+            }
+
+            mpf_clear(tmp);
+        }
+
+        free(block_buf);
+    }
+
+    for(i = 0; i < max_num_div_a; i++)
+        free_drsmatrix(div_a[i]);
+    for(i = 0; i < max_num_div_vb; i++)
+        free_dvector(div_vb[i]);
+
+    free(div_a);
+    free(div_vb);
+    free(row_shift);
+    free(vec_shift);
+    free(row_start);
+}
+
+/*------------------------------------------------------------------------------*/
+/* Transposed Matrix-Vector multiplication based on Ozaki scheme                  */
+/*                                                                               */
+/* A^T * v scatters into the result, so the rows are split over the threads and  */
+/* each thread accumulates into its own column vector, which is then reduced.    */
+/* The partial sums are exact, so the reduction changes nothing but the speed.   */
+/*------------------------------------------------------------------------------*/
+void mul_mpfrsmatrixt_mpfvec_oz(MPFVector ret, MPFRSMatrix a, int max_num_div_a, MPFVector vb, int max_num_div_vb)
+{
+    int i, j;
+    int real_num_div_a, real_num_div_vb, num_threads;
+    long int row_dim = a->row_dim, col_dim = a->col_dim, block_rows, num_blocks, *row_start;
+    long int *col_shift, *vec_shift, jj;
+    DRSMatrix *div_a;
+    DVector *div_vb;
+    double *acc_buf = NULL;
+    mpf_t tmp;
+
+    div_a = (DRSMatrix *)calloc(max_num_div_a, sizeof(DRSMatrix));
+    div_vb = (DVector *)calloc(max_num_div_vb, sizeof(DVector));
+    col_shift = (long int *)calloc((size_t)max_num_div_a * (size_t)col_dim, sizeof(long int));
+    vec_shift = (long int *)calloc((size_t)max_num_div_vb, sizeof(long int));
+    if(div_a == NULL || div_vb == NULL || col_shift == NULL || vec_shift == NULL)
+    {
+        fprintf(stderr, "ERROR: mul_mpfrsmatrixt_mpfvec_oz: cannot allocate\n");
+        free(div_a); free(div_vb); free(col_shift); free(vec_shift);
+        return;
+    }
+
+    for(i = 0; i < max_num_div_a; i++)
+        div_a[i] = init_set_drsmatrix_mpfrsmatrix(a);
+    for(i = 0; i < max_num_div_vb; i++)
+        div_vb[i] = init_dvector(vb->dim);
+
+    row_start = bnc_oz_sp_row_start(div_a[0]->real_nzero_col_dim, row_dim);
+    if(row_start == NULL)
+    {
+        fprintf(stderr, "ERROR: mul_mpfrsmatrixt_mpfvec_oz: cannot allocate\n");
+        return;
+    }
+
+    real_num_div_a = split_mpfrsmatrix_t_drsmat_ex(div_a, col_shift, max_num_div_a, a);
+    real_num_div_vb = split_mpfvector_dvec_ex(div_vb, vec_shift, max_num_div_vb, vb);
+
+    set0_mpfvector(ret);
+
+    // one accumulator per thread; fall back to fewer threads rather than ask
+    // for an unreasonable amount of memory on a very wide matrix
+    num_threads = bnc_oz_get_num_threads();
+    while(num_threads > 1 && (size_t)num_threads * (size_t)col_dim * sizeof(double) > (size_t)256 * 1024 * 1024)
+        num_threads /= 2;
+
+    acc_buf = (double *)calloc((size_t)num_threads * (size_t)col_dim, sizeof(double));
+    if(acc_buf == NULL)
+    {
+        num_threads = 1;
+        acc_buf = (double *)calloc((size_t)col_dim, sizeof(double));
+    }
+
+    block_rows = bnc_oz_block_rows_for(row_dim, num_threads);
+    num_blocks = (row_dim + block_rows - 1) / block_rows;
+
+    mpf_init2(tmp, ret->prec);
+
+    if(acc_buf != NULL)
+    {
+        for(i = 0; i < real_num_div_a; i++)
+        {
+            for(j = 0; j < real_num_div_vb; j++)
+            {
+                const long int *shift_a = col_shift + (size_t)i * (size_t)col_dim;
+
+#ifdef _OPENMP
+                #pragma omp parallel for num_threads(num_threads) schedule(static) private(jj)
+#endif // _OPENMP
+                for(jj = 0; jj < (long int)num_threads * col_dim; jj++)
+                    acc_buf[jj] = 0.0;
+
+#ifdef _OPENMP
+                #pragma omp parallel num_threads(num_threads)
+#endif // _OPENMP
+                {
+                    long int blk, first_row, num_rows;
+                    double *acc;
+
+#ifdef _OPENMP
+                    acc = acc_buf + (size_t)omp_get_thread_num() * (size_t)col_dim;
+                    #pragma omp for schedule(dynamic, 1)
+#else // _OPENMP
+                    acc = acc_buf;
+#endif // _OPENMP
+                    for(blk = 0; blk < num_blocks; blk++)
+                    {
+                        first_row = blk * block_rows;
+                        num_rows = ((row_dim - first_row) < block_rows) ? (row_dim - first_row) : block_rows;
+
+                        bnc_oz_sp_dcsrt_block(acc, div_a[i], row_start, first_row, num_rows, div_vb[j]);
+                    }
+                }
+
+                // the partial sums are exact, so reducing them in a fixed order
+                // costs nothing in accuracy; mpf_t accumulation stays serial
+                // because one mpf_t scratch per thread would have to be built
+                // and torn down for every slice pair
+                for(jj = 0; jj < col_dim; jj++)
+                {
+                    double total = acc_buf[jj];
+                    int th;
+
+                    for(th = 1; th < num_threads; th++)
+                        total += acc_buf[(size_t)th * (size_t)col_dim + jj];
+
+                    if(total == 0.0)
+                        continue;
+
+                    bnc_oz_mpf_set_scaled_d(tmp, total, shift_a[jj] + vec_shift[j]);
+                    mpf_add(tmp, get_mpfvector_i(ret, jj), tmp);
+                    set_mpfvector_i(ret, jj, tmp);
+                }
+            }
+        }
+
+        free(acc_buf);
+    }
+
+    mpf_clear(tmp);
+
+    for(i = 0; i < max_num_div_a; i++)
+        free_drsmatrix(div_a[i]);
+    for(i = 0; i < max_num_div_vb; i++)
+        free_dvector(div_vb[i]);
+
+    free(div_a);
+    free(div_vb);
+    free(col_shift);
+    free(vec_shift);
+    free(row_start);
+}
+
+/*------------------------------------------------------------------------------*/
+/* Sparse-matrix times dense-matrix multiplication based on Ozaki scheme         */
+/*                                                                               */
+/* ret = sum_{p,q} 2^(sa[p][i] + sb[q][j]) * (slice_a[p] * slice_b[q])[i][j],    */
+/* with A split by rows (SplitMat_A on the sparse operand) and B by columns      */
+/* (SplitMat_B on the dense one), exactly as in mul_mpfmatrix_oz().            */
+/*                                                                               */
+/* The rows of ret are cut into blocks and one thread takes a block at a time,   */
+/* running every slice pair for it and accumulating in mpf_t on the spot, so    */
+/* the block of ret stays hot in cache and no thread ever touches another        */
+/* thread's rows.  Slice pairs with p + q >= real_num_div_b contribute below the */
+/* accuracy the split was asked for and are skipped, as in the dense kernel.     */
+/*                                                                               */
+/* There is no sparse BLAS in OpenBLAS to hand the products to, so they use the  */
+/* library's own CSR-times-dense kernel.                                         */
+/*------------------------------------------------------------------------------*/
+void mul_mpfrsmatrix_mpfmat_oz(MPFMatrix ret, MPFRSMatrix a, int max_num_div_a, MPFMatrix b, int max_num_div_b)
+{
+    int i, j;
+    int real_num_div_a, real_num_div_b, num_threads;
+    long int row_dim = a->row_dim, col_dim = ret->col_dim, mid_dim = a->col_dim;
+    long int block_rows, num_blocks, *row_start;
+    long int *row_shift, *col_shift;
+    DRSMatrix *div_a;
+    DMatrix *div_b;
+    double *block_buf = NULL;
+
+    if(mid_dim != b->row_dim)
+    {
+        fprintf(stderr, "ERROR: mul_mpfrsmatrix_mpfmat_oz mid_dim(a, b) = (%ld, %ld)!\n", mid_dim, b->row_dim);
+        return;
+    }
+
+    div_a = (DRSMatrix *)calloc(max_num_div_a, sizeof(DRSMatrix));
+    div_b = (DMatrix *)calloc(max_num_div_b, sizeof(DMatrix));
+    row_shift = (long int *)calloc((size_t)max_num_div_a * (size_t)row_dim, sizeof(long int));
+    col_shift = (long int *)calloc((size_t)max_num_div_b * (size_t)col_dim, sizeof(long int));
+    if(div_a == NULL || div_b == NULL || row_shift == NULL || col_shift == NULL)
+    {
+        fprintf(stderr, "ERROR: mul_mpfrsmatrix_mpfmat_oz: cannot allocate\n");
+        free(div_a); free(div_b); free(row_shift); free(col_shift);
+        return;
+    }
+
+    for(i = 0; i < max_num_div_a; i++)
+        div_a[i] = init_set_drsmatrix_mpfrsmatrix(a);
+    for(i = 0; i < max_num_div_b; i++)
+        div_b[i] = init_dmatrix(mid_dim, col_dim);
+
+    row_start = bnc_oz_sp_row_start(div_a[0]->real_nzero_col_dim, row_dim);
+    if(row_start == NULL)
+    {
+        fprintf(stderr, "ERROR: mul_mpfrsmatrix_mpfmat_oz: cannot allocate\n");
+        return;
+    }
+
+    real_num_div_a = split_mpfrsmatrix_drsmat_ex(div_a, row_shift, max_num_div_a, a);
+    real_num_div_b = split_mpfmatrix_t_dmat_ex(div_b, col_shift, max_num_div_b, b);
+
+    set0_mpfmatrix(ret);
+
+    num_threads = bnc_oz_get_num_threads();
+    block_rows = bnc_oz_block_rows_for(row_dim, num_threads);
+    num_blocks = (row_dim + block_rows - 1) / block_rows;
+
+    block_buf = (double *)malloc((size_t)num_threads * (size_t)block_rows * (size_t)col_dim * sizeof(double));
+    if(block_buf == NULL)
+    {
+        num_threads = 1;
+        block_rows = bnc_oz_block_rows_for(row_dim, 1);
+        num_blocks = (row_dim + block_rows - 1) / block_rows;
+        block_buf = (double *)malloc((size_t)block_rows * (size_t)col_dim * sizeof(double));
+    }
+
+    if(block_buf != NULL)
+    {
+#ifdef _OPENMP
+        #pragma omp parallel num_threads(num_threads)
+#endif // _OPENMP
+        {
+            long int blk, first_row, num_rows, ii, jj, shift_a;
+            int div_i, div_j;
+            double *buf;
+            mpf_t tmp;
+
+            mpf_init2(tmp, ret->prec);
+
+#ifdef _OPENMP
+            buf = block_buf + (size_t)omp_get_thread_num() * (size_t)block_rows * (size_t)col_dim;
+            #pragma omp for schedule(dynamic, 1)
+#else // _OPENMP
+            buf = block_buf;
+#endif // _OPENMP
+            for(blk = 0; blk < num_blocks; blk++)
+            {
+                first_row = blk * block_rows;
+                num_rows = ((row_dim - first_row) < block_rows) ? (row_dim - first_row) : block_rows;
+
+                for(div_i = 0; div_i < real_num_div_a; div_i++)
+                {
+                    for(div_j = 0; div_j < real_num_div_b - div_i; div_j++)
+                    {
+                        const long int *shift_b = col_shift + (size_t)div_j * (size_t)col_dim;
+
+                        bnc_oz_sp_dcsr_dmat_block(buf, col_dim, div_a[div_i], row_start, first_row, num_rows, div_b[div_j]);
+
+                        for(ii = 0; ii < num_rows; ii++)
+                        {
+                            const double *buf_row = buf + ii * col_dim;
+
+                            shift_a = row_shift[(size_t)div_i * (size_t)row_dim + first_row + ii];
+
+                            for(jj = 0; jj < col_dim; jj++)
+                            {
+                                if(buf_row[jj] == 0.0)
+                                    continue;
+
+                                bnc_oz_mpf_set_scaled_d(tmp, buf_row[jj], shift_a + shift_b[jj]);
+                                mpf_add(tmp, get_mpfmatrix_ij(ret, first_row + ii, jj), tmp);
+                                set_mpfmatrix_ij(ret, first_row + ii, jj, tmp);
+                            }
+                        }
+                    }
+                }
+            }
+
+            mpf_clear(tmp);
+
+        }
+
+        free(block_buf);
+    }
+
+    for(i = 0; i < max_num_div_a; i++)
+        free_drsmatrix(div_a[i]);
+    for(i = 0; i < max_num_div_b; i++)
+        free_dmatrix(div_b[i]);
+
+    free(div_a);
+    free(div_b);
+    free(row_shift);
+    free(col_shift);
+    free(row_start);
+}

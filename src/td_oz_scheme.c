@@ -87,57 +87,106 @@ void sub_tdvector_dvec(TDVector c, TDVector a, DVector b)
 // extract vector
 // ret_vec[0] + ret_vec[1] + ... ret_vec[num_div - 1] = org_vec
 //void extract_tdvector(DVector ret_vec[], int num_div, TDVector org_vec, int num_bits)
-int split_tdvector_dvec(DVector ret_vec[], int num_div, TDVector org_vec) //, int num_bits)
+/*------------------------------------------------------------------------------*/
+/* split vector: 2^shift[index] * (ret_vec[0] + ... ) = org_vec                  */
+/*                                                                               */
+/* The vector plays the role of a single column of B, so it carries one exponent */
+/* per slice.  shift may be NULL; see oz_scheme.h.                               */
+/*------------------------------------------------------------------------------*/
+int split_tdvector_dvec_ex(DVector ret_vec[], long int shift[], int num_div, TDVector org_vec)
 {
-    long int dim = org_vec->dim;
-    int index, real_num_div, num_bits = 53; // IEEE754 binary64
-    long int i;
-    double org_vec_i, ret_high_vec_i, tmp[TDSIZE];
-    double absmax_org_vec, threshold, t_exp; 
-    TDVector tmp_org_vec;
+	long int dim = org_vec->dim, i;
+	int index, num_bits = 53, real_num_div; // IEEE754 binary64
+	double absmax_org_vec, threshold, t_exp, tail_exp, org_vec_i, high_i;
+	double org_ii[TDSIZE], high_td[TDSIZE], rest_i[TDSIZE];
+	long int sigma;
+	TDVector tmp_org_vec;
+	DVector own_ret_vec = NULL, in_ret_vec;
+	int comp;
 
-    // tmp_org_vec := org_vec
-    tmp_org_vec = init_tdvector(dim);
-    subst_tdvector(tmp_org_vec, org_vec);
+	if(ret_vec == NULL)
+	{
+		own_ret_vec = init_dvector(dim);
+		in_ret_vec = own_ret_vec;
+	}
+	else
+		in_ret_vec = ret_vec[0];
 
-    real_num_div = 0;
-    for(index = 0; index < num_div; index++)
-    {
-        subst_dvector_tdvec(ret_vec[index], tmp_org_vec);
-        absmax_org_vec = absmax_dvector(NULL, ret_vec[index]);
+	// tmp_org_vec := org_vec
+	tmp_org_vec = init_tdvector(dim);
+	subst_tdvector(tmp_org_vec, org_vec);
 
-        // ret_vec[index] == 0
-        if(absmax_org_vec == 0.0) break;
-        // t_exp = ceil(log2(mu)) + ceil(s + log2(col_dim + 1) / 2)
-        //t_exp = ceil(DLOG2(absmax_org_vec)) + ceil(((double)num_bits + DLOG2((double)(dim + 1))) / 2.0);
-        t_exp = ceil(DLOG2(absmax_org_vec)) + ceil(((double)num_bits + DLOG2((double)(dim))) / 2.0);
+	tail_exp = ceil(((double)num_bits + DLOG2((double)(dim))) / 2.0);
 
-        //rtd_pow(threshold, two, t_exp);
-        //rtd_pow_mpfr(threshold, two, t_exp);
-        threshold = pow(2.0, t_exp);
+	for(comp = 0; comp < TDSIZE; comp++)
+		high_td[comp] = 0.0;
 
-        for(i = 0; i < dim; i++)
-        {
-            // set high vector
-            //rtd_set(org_vec_i, get_tdvector_i(tmp_org_vec, i)); 
-            org_vec_i = get_dvector_i(ret_vec[index], i);   
-            ret_high_vec_i = org_vec_i + threshold;
-            //rtd_add(ret_high_vec_i, org_vec_i, threshold);
-            ret_high_vec_i -= threshold;
-            //rtd_sub(ret_high_vec_i, ret_high_vec_i, threshold);
-            set_dvector_i(ret_vec[index], i, ret_high_vec_i);
+	real_num_div = 0;
+	for(index = 0; index < num_div; index++)
+	{
+		if(ret_vec != NULL)
+			in_ret_vec = ret_vec[index];
 
-            // set low vector
-            rtd_sub_d(tmp, get_tdvector_i(tmp_org_vec, i), ret_high_vec_i);           
-            set_tdvector_i(tmp_org_vec, i, tmp);
-        }
+		absmax_org_vec = 0.0;
+		for(i = 0; i < dim; i++)
+		{
+			org_vec_i = fabs(tmp_org_vec->element[0][i]);
+			if(org_vec_i > absmax_org_vec)
+				absmax_org_vec = org_vec_i;
+		}
 
-        real_num_div = index + 1;
-    }
+		// vector is exhausted
+		if(absmax_org_vec == 0.0) break;
 
-    free_tdvector(tmp_org_vec);
+		sigma = 0;
+		if(shift != NULL)
+		{
+			sigma = bnc_oz_exp2_d(absmax_org_vec);
+			if(sigma < BNC_OZ_MIN_SCALED_EXP)
+				sigma = 0;
+			shift[index] = sigma;
 
-    return real_num_div;
+			if(sigma != 0)
+				absmax_org_vec = bnc_oz_ldexp(absmax_org_vec, -sigma);
+		}
+
+		t_exp = ceil(DLOG2(absmax_org_vec)) + tail_exp;
+		threshold = pow(2.0, t_exp);
+
+		for(i = 0; i < dim; i++)
+		{
+			org_vec_i = tmp_org_vec->element[0][i];
+			if(sigma != 0)
+				org_vec_i = bnc_oz_ldexp(org_vec_i, -sigma);
+
+			high_i = org_vec_i + threshold;
+			high_i = high_i - threshold;
+			set_dvector_i(in_ret_vec, i, high_i);
+
+			for(comp = 0; comp < TDSIZE; comp++)
+				org_ii[comp] = tmp_org_vec->element[comp][i];
+			high_td[0] = (sigma != 0) ? bnc_oz_ldexp(high_i, sigma) : high_i;
+
+			rtd_sub(rest_i, org_ii, high_td);
+
+			for(comp = 0; comp < TDSIZE; comp++)
+				tmp_org_vec->element[comp][i] = rest_i[comp];
+		}
+
+		real_num_div = index + 1;
+	}
+
+	free_tdvector(tmp_org_vec);
+	if(own_ret_vec != NULL)
+		free_dvector(own_ret_vec);
+
+	return real_num_div;
+}
+
+// split vector without the scaling
+int split_tdvector_dvec(DVector ret_vec[], int num_div, TDVector org_vec)
+{
+	return split_tdvector_dvec_ex(ret_vec, NULL, num_div, org_vec);
 }
 
 // absmax_row_tdmatrix
@@ -170,7 +219,8 @@ void absmax_row_tdmatrix(double mu[TDSIZE], long int *max_j, long int row_index,
 /* c := a + (doble)b */
 void add_tdmatrix_dmat(TDMatrix c, TDMatrix a, DMatrix b)
 {
-	long int i, j, row_dim, col_dim, real_row_dim, real_col_dim, real_total_dim, index;
+	long int i, j, row_dim, col_dim, a_stride, b_stride, c_stride;
+	int num_threads;
 
 	/* check row_dim */
 	if((a->row_dim != b->row_dim) || (b->row_dim != c->row_dim) || (c->row_dim != a->row_dim))
@@ -179,7 +229,6 @@ void add_tdmatrix_dmat(TDMatrix c, TDMatrix a, DMatrix b)
 		return;
 	}
 	row_dim = c->row_dim;
-	real_row_dim = c->real_row_dim;
 
 	/* check col_dim */
 	if((a->col_dim != b->col_dim) || (b->col_dim != c->col_dim) || (c->col_dim != a->col_dim))
@@ -188,19 +237,42 @@ void add_tdmatrix_dmat(TDMatrix c, TDMatrix a, DMatrix b)
 		return;
 	}
 	col_dim = c->col_dim;
-	real_col_dim = c->real_col_dim;
 
-	real_total_dim = real_row_dim * real_col_dim;
+	a_stride = a->real_col_dim;
+	b_stride = b->real_col_dim;
+	c_stride = c->real_col_dim;
 
-	double tmp[TDSIZE], bij[TDSIZE];
+	num_threads = bnc_oz_get_num_threads();
+
+	// row-wise: the rows are independent, so this is the whole parallelization
+#ifdef _OPENMP
+	#pragma omp parallel for num_threads(num_threads) schedule(static) private(i, j)
+#endif // _OPENMP
 	for(i = 0; i < row_dim; i++)
 	{
+		const double *a_row[TDSIZE];
+		const double *b_row = b->element + i * b_stride;
+		double *c_row[TDSIZE];
+		double a_ij[TDSIZE], b_ij[TDSIZE], c_ij[TDSIZE];
+		int comp;
+
+		for(comp = 0; comp < TDSIZE; comp++)
+		{
+			a_row[comp] = a->element[comp] + i * a_stride;
+			c_row[comp] = c->element[comp] + i * c_stride;
+			b_ij[comp] = 0.0;
+		}
+
 		for(j = 0; j < col_dim; j++)
 		{
-			//rtd_add_d(tmp, get_tdmatrix_ij(a, i, j), get_dmatrix_ij(b, i, j));
-            bij[0] = get_dmatrix_ij(b, i, j); bij[1] = 0.0, bij[2] = 0.0;
-            rtd_add(tmp, get_tdmatrix_ij(a, i, j), bij);
-			set_tdmatrix_ij(c, i, j, tmp);
+			for(comp = 0; comp < TDSIZE; comp++)
+				a_ij[comp] = a_row[comp][j];
+			b_ij[0] = b_row[j];
+
+			rtd_add(c_ij, a_ij, b_ij);
+
+			for(comp = 0; comp < TDSIZE; comp++)
+				c_row[comp][j] = c_ij[comp];
 		}
 	}
 }
@@ -208,7 +280,8 @@ void add_tdmatrix_dmat(TDMatrix c, TDMatrix a, DMatrix b)
 /* c := a - (doble)b */
 void sub_tdmatrix_dmat(TDMatrix c, TDMatrix a, DMatrix b)
 {
-	long int i, j, row_dim, col_dim, real_row_dim, real_col_dim, real_total_dim, index;
+	long int i, j, row_dim, col_dim, a_stride, b_stride, c_stride;
+	int num_threads;
 
 	/* check row_dim */
 	if((a->row_dim != b->row_dim) || (b->row_dim != c->row_dim) || (c->row_dim != a->row_dim))
@@ -217,7 +290,6 @@ void sub_tdmatrix_dmat(TDMatrix c, TDMatrix a, DMatrix b)
 		return;
 	}
 	row_dim = c->row_dim;
-	real_row_dim = c->real_row_dim;
 
 	/* check col_dim */
 	if((a->col_dim != b->col_dim) || (b->col_dim != c->col_dim) || (c->col_dim != a->col_dim))
@@ -226,19 +298,42 @@ void sub_tdmatrix_dmat(TDMatrix c, TDMatrix a, DMatrix b)
 		return;
 	}
 	col_dim = c->col_dim;
-	real_col_dim = c->real_col_dim;
 
-	real_total_dim = real_row_dim * real_col_dim;
+	a_stride = a->real_col_dim;
+	b_stride = b->real_col_dim;
+	c_stride = c->real_col_dim;
 
-	double tmp[TDSIZE], bij[TDSIZE];
+	num_threads = bnc_oz_get_num_threads();
+
+	// row-wise: the rows are independent, so this is the whole parallelization
+#ifdef _OPENMP
+	#pragma omp parallel for num_threads(num_threads) schedule(static) private(i, j)
+#endif // _OPENMP
 	for(i = 0; i < row_dim; i++)
 	{
+		const double *a_row[TDSIZE];
+		const double *b_row = b->element + i * b_stride;
+		double *c_row[TDSIZE];
+		double a_ij[TDSIZE], b_ij[TDSIZE], c_ij[TDSIZE];
+		int comp;
+
+		for(comp = 0; comp < TDSIZE; comp++)
+		{
+			a_row[comp] = a->element[comp] + i * a_stride;
+			c_row[comp] = c->element[comp] + i * c_stride;
+			b_ij[comp] = 0.0;
+		}
+
 		for(j = 0; j < col_dim; j++)
 		{
-			//rtd_sub_d(tmp, get_tdmatrix_ij(a, i, j), get_dmatrix_ij(b, i, j));
-            bij[0] = get_dmatrix_ij(b, i, j); bij[1] = 0.0, bij[2] = 0.0;
-            rtd_sub(tmp, get_tdmatrix_ij(a, i, j), bij);
-			set_tdmatrix_ij(c, i, j, tmp);
+			for(comp = 0; comp < TDSIZE; comp++)
+				a_ij[comp] = a_row[comp][j];
+			b_ij[0] = b_row[j];
+
+			rtd_sub(c_ij, a_ij, b_ij);
+
+			for(comp = 0; comp < TDSIZE; comp++)
+				c_row[comp][j] = c_ij[comp];
 		}
 	}
 }
@@ -246,111 +341,186 @@ void sub_tdmatrix_dmat(TDMatrix c, TDMatrix a, DMatrix b)
 //#define SPLIT_NUM_DIGITS 64
 
 // SplitMat_A
+/*------------------------------------------------------------------------------*/
+/* SplitMat_A: ret_mat[0] + ret_mat[1] + ... = org_mat, every ret_mat[] a plain  */
+/* double matrix whose rows multiply without rounding.                           */
+/*                                                                               */
+/* Two passes over the data per split instead of the six the straightforward     */
+/* formulation needs (copy, row maximum, fill s, mat + s, - s, mat - high), and  */
+/* both passes run row-parallel because rows never interact.  The threshold s is */
+/* constant along a row, so a vector of row thresholds replaces the full s       */
+/* matrix that used to be built and streamed for every split.                    */
+/*------------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------*/
+/* SplitMat_A: 2^row_shift[index][i] * (ret_mat[0] + ret_mat[1] + ...) = org_mat,*/
+/* every ret_mat[] a plain double matrix whose rows multiply without rounding.   */
+/*                                                                               */
+/* Two passes over the data per split instead of the six the straightforward     */
+/* formulation needs, and both run row-parallel because rows never interact.     */
+/* The threshold is constant along a row, so a vector of row thresholds replaces */
+/* the full s matrix that used to be built and streamed for every split, and the */
+/* row is normalized first so that neither the threshold nor the slice can leave */
+/* the double exponent range.  row_shift may be NULL; see oz_scheme.h.           */
+/*------------------------------------------------------------------------------*/
+int split_tdmatrix_dmat_ex(DMatrix ret_mat[], long int row_shift[], int num_div, TDMatrix org_mat)
+{
+	long int i, j, index, row_dim, col_dim, org_stride, ret_stride;
+	long int num_digits = 53; // IEEE double prec.
+	int real_num_div, num_threads;
+	double mu_total, tail_exp;
+	TDMatrix tmp_org_mat;
+	DMatrix own_ret_mat = NULL, in_ret_mat;
+	double *power2; // 2^t_exp of each row, in the scaled domain
+	long int *shift;
+
+	row_dim = org_mat->row_dim;
+	col_dim = org_mat->col_dim;
+
+	if(ret_mat != NULL)
+	{
+		if((ret_mat[0]->row_dim != row_dim) || (ret_mat[0]->col_dim != col_dim))
+		{
+			fprintf(stderr, "ERROR: split_tdmatrix_dmat\n");
+			return 0;
+		}
+	}
+
+	power2 = (double *)calloc((size_t)row_dim, sizeof(double));
+	if(power2 == NULL)
+	{
+		fprintf(stderr, "ERROR: split_tdmatrix_dmat: cannot allocate\n");
+		return 0;
+	}
+
+	if(ret_mat == NULL)
+	{
+		own_ret_mat = init_dmatrix(row_dim, col_dim);
+		in_ret_mat = own_ret_mat;
+	}
+	else
+		in_ret_mat = ret_mat[0];
+
+	// tmp_org_mat := org_mat; it always holds the part not split off yet
+	tmp_org_mat = init_tdmatrix(row_dim, col_dim);
+	subst_tdmatrix(tmp_org_mat, org_mat);
+	org_stride = tmp_org_mat->real_col_dim;
+
+	// the row-independent half of t_exp = ceil(log2(mu)) + ceil(s + log2(col_dim) / 2)
+	tail_exp = ceil(((double)num_digits + DLOG2((double)col_dim)) / 2.0);
+
+	num_threads = bnc_oz_get_num_threads();
+
+	real_num_div = 0;
+	for(index = 0; index < num_div; index++)
+	{
+		if(ret_mat != NULL)
+			in_ret_mat = ret_mat[index];
+		ret_stride = in_ret_mat->real_col_dim;
+		shift = (row_shift != NULL) ? (row_shift + (size_t)index * (size_t)row_dim) : NULL;
+
+		// pass 1: ret_mat[index] := 2^-shift[i] * tmp_org_mat, mu[i] = max_j |ret_mat[index][i][j]|
+		mu_total = 0.0;
+
+#ifdef _OPENMP
+		#pragma omp parallel for num_threads(num_threads) schedule(static) private(i, j) reduction(+:mu_total)
+#endif // _OPENMP
+		for(i = 0; i < row_dim; i++)
+		{
+			const double *org_row = tmp_org_mat->element[0] + i * org_stride;
+			double *ret_row = in_ret_mat->element + i * ret_stride;
+			double mu = 0.0, abs_org_ij;
+			long int sigma = 0;
+
+			for(j = 0; j < col_dim; j++)
+			{
+				abs_org_ij = fabs(org_row[j]); // == |rtd_get_d(org[i][j])|
+				if(abs_org_ij > mu)
+					mu = abs_org_ij;
+			}
+
+			if(shift != NULL)
+			{
+				sigma = bnc_oz_exp2_d(mu);
+				if(sigma < BNC_OZ_MIN_SCALED_EXP)
+					sigma = 0; // shifting back would not be exact down there
+				shift[i] = sigma;
+			}
+
+			if(sigma != 0)
+			{
+				for(j = 0; j < col_dim; j++)
+					ret_row[j] = bnc_oz_ldexp(org_row[j], -sigma);
+
+				mu = bnc_oz_ldexp(mu, -sigma);
+			}
+			else
+			{
+				for(j = 0; j < col_dim; j++)
+					ret_row[j] = org_row[j];
+			}
+
+			// s[i, j] = 2^t_exp
+			power2[i] = pow(2.0, ceil(DLOG2(mu)) + tail_exp);
+			mu_total += mu;
+		}
+
+		// nothing left to split
+		if(mu_total == 0.0) break;
+
+		// pass 2: high := (mat + s) - s, and mat := mat - 2^shift[i] * high
+#ifdef _OPENMP
+		#pragma omp parallel for num_threads(num_threads) schedule(static) private(i, j)
+#endif // _OPENMP
+		for(i = 0; i < row_dim; i++)
+		{
+			double *ret_row = in_ret_mat->element + i * ret_stride;
+			double *org_row[TDSIZE];
+			double s = power2[i], high_ij;
+			double org_ij[TDSIZE], high_td[TDSIZE], rest_ij[TDSIZE];
+			long int sigma = (shift != NULL) ? shift[i] : 0;
+			int comp;
+
+			for(comp = 0; comp < TDSIZE; comp++)
+			{
+				org_row[comp] = tmp_org_mat->element[comp] + i * org_stride;
+				high_td[comp] = 0.0;
+			}
+
+			for(j = 0; j < col_dim; j++)
+			{
+				// (x + s) - s keeps the leading bits of x; valid under the IEEE
+				// semantics this library is compiled with (no -ffast-math)
+				high_ij = ret_row[j] + s;
+				high_ij = high_ij - s;
+				ret_row[j] = high_ij;
+
+				// low_mat := mat - 2^shift * high_mat
+				for(comp = 0; comp < TDSIZE; comp++)
+					org_ij[comp] = org_row[comp][j];
+				high_td[0] = (sigma != 0) ? bnc_oz_ldexp(high_ij, sigma) : high_ij;
+
+				rtd_sub(rest_ij, org_ij, high_td);
+
+				for(comp = 0; comp < TDSIZE; comp++)
+					org_row[comp][j] = rest_ij[comp];
+			}
+		}
+
+		real_num_div = index + 1;
+	}
+
+	free(power2);
+	free_tdmatrix(tmp_org_mat);
+	if(own_ret_mat != NULL)
+		free_dmatrix(own_ret_mat);
+
+	return real_num_div;
+}
+
+// SplitMat_A without the scaling; kept for callers that cannot apply a scale factor
 int split_tdmatrix_dmat(DMatrix ret_mat[], int num_div, TDMatrix org_mat)
 {
-	long int i, j, index, row_dim, col_dim, real_total_dim;
-	long int num_digits = 53; // IEEE double prec.
-	//long int num_digits = SPLIT_NUM_DIGITS; // IEEE double prec.
-	//double *s;
-    int real_num_div;
-    TDMatrix tmp_org_mat;
-    DMatrix s, tmp_mat[2]; 
-	double mu, abs_aij, t_exp, power2, mu_total;
-
-    row_dim = org_mat->row_dim;
-    col_dim = org_mat->col_dim;
-
-	// threshold matrix 
-	//s = (double *)calloc(row_dim * col_dim, sizeof(double));
-    //s = init_tdmatrix(row_dim, col_dim);
-    s = init_dmatrix(row_dim, col_dim);
-
-    //tmp_mat[0] = init_tdmatrix(row_dim, col_dim);
-    //tmp_mat[1] = init_tdmatrix(row_dim, col_dim);
-    tmp_mat[0] = init_dmatrix(row_dim, col_dim);
-    tmp_mat[1] = init_dmatrix(row_dim, col_dim);
-
-    // tmp_org_mat := org_mat;
-    tmp_org_mat = init_tdmatrix(row_dim, col_dim);
-    subst_tdmatrix(tmp_org_mat, org_mat);
-
-    real_num_div = 0;
-    for(index = 0; index < num_div; index++)
-    {
-        //printf("In split_tdmatrix ... index= %d\n", index);
-        //set0_dmatrix(ret_mat[index]);
-        subst_dmatrix_tdmat(ret_mat[index], tmp_org_mat);
-
-        // mu[i] = max_j |mat[i, j]|
-        // mu_total += mu
-        mu_total = 0.0;
-        for(i = 0; i < row_dim; i++)
-        {
-            //absmax_row_tdmatrix(mu, NULL, i, tmp_org_mat);
-            mu = absmax_row_dmatrix(NULL, i, ret_mat[index]);
-            mu_total += mu;
-
-            // t_exp = ceil(log2(mu)) + ceil(s + log2(col_dim + 1) / 2)
-            //t_exp[0] = ceil(DLOG2(mu[0])) + ceil(((double)num_digits + DLOG2((double)(col_dim + 1))) / 2.0);
-            //t_exp[1] = 0.0;
-            t_exp = ceil(DLOG2(mu)) + ceil(((double)num_digits + DLOG2((double)(col_dim))) / 2.0);
-
-            // s[i, j] = 2^t_exp
-            //rtd_pow(power2, two, t_exp);
-            //rtd_pow_mpfr(power2, two, t_exp);
-            power2 = pow(2.0, t_exp);
-            //printf("index, i, power2 = %ld, %ld, %25.17e\n", index, i, power2[0]);
-            for(j = 0; j < col_dim; j++)
-            {
-                //s[i * col_dim + j] = pow(2.0, t_exp);
-                //set_tdmatrix_ij(s, i, j, power2);
-                set_dmatrix_ij(s, i, j, power2);
-            }
-        }
-
-        // ret_mat[index] == 0
-        if(mu_total == 0.0) break;
-
-        // split org_mat to ret_high_mat and ret_low_mat
-#ifdef USE_IMKL
-        real_total_dim = ret_mat[index]->real_row_dim * ret_mat[index]->real_col_dim;
-
-        // tmp_mat := mat + s
-        //blas_dcopy(real_total_dim, ret_mat[index]->element, 1, tmp_mat[0]->element, 1);
-        //cblas_daxpy(real_total_dim, 1.0, s->element, 1, tmp_mat[0]->element, 1);
-        cblas_daxpy(real_total_dim, 1.0, s->element, 1, ret_mat[index]->element, 1);
-
-        // high_mat := tmp_mat - s
-        cblas_daxpy(real_total_dim, -1.0, s->element, 1, ret_mat[index]->element, 1);
-
-        // low_mat := mat - high_mat
-        //cblas_dcopy(real_total_dim, tmp_mat[0]->element, 1, ret_mat[index]->element, 1);
-#else // USE_IMKL
-        // tmp_mat := mat + s
-        //add_tdmatrix(tmp_mat[0], tmp_org_mat, s);
-        add_dmatrix(tmp_mat[0], ret_mat[index], s);
-
-        // high_mat := tmp_mat - s
-        //sub_tdmatrix(tmp_mat[1], tmp_mat[0], s);
-        sub_dmatrix(tmp_mat[1], tmp_mat[0], s);
-        subst_dmatrix(ret_mat[index], tmp_mat[1]);
-#endif // USE_IMKL
-
-        // low_mat := mat - high_mat
-        sub_tdmatrix_dmat(tmp_org_mat, tmp_org_mat, ret_mat[index]);
-        //sub_tdmatrix_dmat(tmp_org_mat, tmp_org_mat, tmp_mat[1]);
-
-        real_num_div = index + 1;
-    }
-
-	// free s
-	//free_tdmatrix(s);
-	free_dmatrix(s);
-    free_tdmatrix(tmp_org_mat);
-    free_dmatrix(tmp_mat[0]);
-    free_dmatrix(tmp_mat[1]);
-
-    return real_num_div;
+	return split_tdmatrix_dmat_ex(ret_mat, NULL, num_div, org_mat);
 }
 
 // absmax_col_tdmatrix
@@ -378,116 +548,236 @@ void absmax_col_tdmatrix(double mu[TDSIZE], long int *max_i, long int col_index,
 }
 
 // SplitMat_B
+/*------------------------------------------------------------------------------*/
+/* SplitMat_B: same as split_tdmatrix_dmat, but the threshold of the second   */
+/* operand is taken over columns, so the maxima are reduced per column.  The     */
+/* sweep still walks the matrix row-wise -- one partial maximum vector per       */
+/* thread, combined afterwards -- because the column-wise walk the definition    */
+/* suggests would touch a new cache line on every element.                       */
+/*------------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------*/
+/* SplitMat_B: same as split_tdmatrix_dmat_ex(), but the threshold and the    */
+/* scale of the second operand are taken over columns, so the maxima are reduced */
+/* per column -- one partial maximum vector per thread, combined afterwards, so  */
+/* that the sweep can still walk the matrix row-wise.                            */
+/*------------------------------------------------------------------------------*/
+int split_tdmatrix_t_dmat_ex(DMatrix ret_mat[], long int col_shift[], int num_div, TDMatrix org_mat)
+{
+	long int i, j, index, row_dim, col_dim, org_stride, ret_stride;
+	int real_num_div, num_digits = 53, num_threads, thread; // IEEE double prec.
+	double mu_total, tail_exp;
+	TDMatrix tmp_org_mat;
+	DMatrix own_ret_mat = NULL, in_ret_mat;
+	double *power2, *mu_local; // 2^t_exp of each column, per-thread column maxima
+	long int *shift;
+
+	row_dim = org_mat->row_dim;
+	col_dim = org_mat->col_dim;
+
+	if(ret_mat != NULL)
+	{
+		if((ret_mat[0]->row_dim != row_dim) || (ret_mat[0]->col_dim != col_dim))
+		{
+			fprintf(stderr, "ERROR: split_tdmatrix_t_dmat\n");
+			return 0;
+		}
+	}
+
+	num_threads = bnc_oz_get_num_threads();
+
+	power2 = (double *)calloc((size_t)col_dim, sizeof(double));
+	mu_local = (double *)calloc((size_t)num_threads * (size_t)col_dim, sizeof(double));
+	if(mu_local == NULL) // retry single-threaded rather than give up
+	{
+		num_threads = 1;
+		mu_local = (double *)calloc((size_t)col_dim, sizeof(double));
+	}
+	if(power2 == NULL || mu_local == NULL)
+	{
+		fprintf(stderr, "ERROR: split_tdmatrix_t_dmat: cannot allocate\n");
+		free(power2);
+		free(mu_local);
+		return 0;
+	}
+
+	if(ret_mat == NULL)
+	{
+		own_ret_mat = init_dmatrix(row_dim, col_dim);
+		in_ret_mat = own_ret_mat;
+	}
+	else
+		in_ret_mat = ret_mat[0];
+
+	tmp_org_mat = init_tdmatrix(row_dim, col_dim);
+	subst_tdmatrix(tmp_org_mat, org_mat);
+	org_stride = tmp_org_mat->real_col_dim;
+
+	// the column-independent half of t_exp
+	tail_exp = ceil(((double)num_digits + DLOG2((double)(row_dim))) / 2.0);
+
+	real_num_div = 0;
+	for(index = 0; index < num_div; index++)
+	{
+		if(ret_mat != NULL)
+			in_ret_mat = ret_mat[index];
+		ret_stride = in_ret_mat->real_col_dim;
+		shift = (col_shift != NULL) ? (col_shift + (size_t)index * (size_t)col_dim) : NULL;
+
+		for(i = 0; i < (long int)num_threads * col_dim; i++)
+			mu_local[i] = 0.0;
+
+		// pass 1: the column maxima of what is left to split
+#ifdef _OPENMP
+		#pragma omp parallel num_threads(num_threads) private(i, j)
+#endif // _OPENMP
+		{
+			double *local_mu;
+#ifdef _OPENMP
+			local_mu = mu_local + (size_t)omp_get_thread_num() * (size_t)col_dim;
+			#pragma omp for schedule(static)
+#else // _OPENMP
+			local_mu = mu_local;
+#endif // _OPENMP
+			for(i = 0; i < row_dim; i++)
+			{
+				const double *org_row = tmp_org_mat->element[0] + i * org_stride;
+				double abs_org_ij;
+
+				for(j = 0; j < col_dim; j++)
+				{
+					abs_org_ij = fabs(org_row[j]);
+					if(abs_org_ij > local_mu[j])
+						local_mu[j] = abs_org_ij;
+				}
+			}
+		}
+
+		// combine the per-thread maxima, pick the column scale and the threshold
+		mu_total = 0.0;
+		for(j = 0; j < col_dim; j++)
+		{
+			double mu = mu_local[j];
+			long int sigma = 0;
+
+			for(thread = 1; thread < num_threads; thread++)
+			{
+				if(mu_local[(size_t)thread * (size_t)col_dim + j] > mu)
+					mu = mu_local[(size_t)thread * (size_t)col_dim + j];
+			}
+
+			if(shift != NULL)
+			{
+				sigma = bnc_oz_exp2_d(mu);
+				if(sigma < BNC_OZ_MIN_SCALED_EXP)
+					sigma = 0;
+				shift[j] = sigma;
+
+				if(sigma != 0)
+					mu = bnc_oz_ldexp(mu, -sigma);
+			}
+
+			power2[j] = pow(2.0, ceil(DLOG2(mu)) + tail_exp);
+			mu_total += mu;
+		}
+
+		if(mu_total == 0.0) break;
+
+		// pass 2: scale, high := (mat + s) - s, and mat := mat - 2^shift[j] * high
+#ifdef _OPENMP
+		#pragma omp parallel for num_threads(num_threads) schedule(static) private(i, j)
+#endif // _OPENMP
+		for(i = 0; i < row_dim; i++)
+		{
+			double *ret_row = in_ret_mat->element + i * ret_stride;
+			double *org_row[TDSIZE];
+			double s, high_ij, scaled_ij;
+			double org_ij[TDSIZE], high_td[TDSIZE], rest_ij[TDSIZE];
+			long int sigma;
+			int comp;
+
+			for(comp = 0; comp < TDSIZE; comp++)
+			{
+				org_row[comp] = tmp_org_mat->element[comp] + i * org_stride;
+				high_td[comp] = 0.0;
+			}
+
+			for(j = 0; j < col_dim; j++)
+			{
+				sigma = (shift != NULL) ? shift[j] : 0;
+				s = power2[j];
+
+				scaled_ij = (sigma != 0) ? bnc_oz_ldexp(org_row[0][j], -sigma) : org_row[0][j];
+
+				high_ij = scaled_ij + s;
+				high_ij = high_ij - s;
+				ret_row[j] = high_ij;
+
+				for(comp = 0; comp < TDSIZE; comp++)
+					org_ij[comp] = org_row[comp][j];
+				high_td[0] = (sigma != 0) ? bnc_oz_ldexp(high_ij, sigma) : high_ij;
+
+				rtd_sub(rest_ij, org_ij, high_td);
+
+				for(comp = 0; comp < TDSIZE; comp++)
+					org_row[comp][j] = rest_ij[comp];
+			}
+		}
+
+		real_num_div = index + 1;
+	}
+
+	free(power2);
+	free(mu_local);
+	free_tdmatrix(tmp_org_mat);
+	if(own_ret_mat != NULL)
+		free_dmatrix(own_ret_mat);
+
+	return real_num_div;
+}
+
+// SplitMat_B without the scaling; kept for callers that cannot apply a scale factor
 int split_tdmatrix_t_dmat(DMatrix ret_mat[], int num_div, TDMatrix org_mat)
 {
-	long int i, j, index, row_dim, col_dim, real_total_dim;
-	int real_num_div, num_digits = 53; // IEEE double prec.
-	//int flag_stop = 0, num_digits = SPLIT_NUM_DIGITS; // IEEE double prec.
-	//double *s;
-    TDMatrix tmp_org_mat;
-    DMatrix s, tmp_mat[2];
-	//double mu[TDSIZE], abs_aij[TDSIZE], t_exp[TDSIZE], power2[TDSIZE], two[TDSIZE] = {2.0, 0.0};
-	double mu, abs_aij, t_exp, power2, mu_total;
-
-    row_dim = org_mat->row_dim;
-    col_dim = org_mat->col_dim;
-
-	// initialize s
-	//s = (double *)calloc(row_dim * col_dim, sizeof(double));
-    //s = init_tdmatrix(row_dim, col_dim);
-    s = init_dmatrix(row_dim, col_dim);
-
-    tmp_mat[0] = init_dmatrix(row_dim, col_dim);
-    tmp_mat[1] = init_dmatrix(row_dim, col_dim);
-
-    tmp_org_mat = init_tdmatrix(row_dim, col_dim);
-    subst_tdmatrix(tmp_org_mat, org_mat);
-
-    real_num_div = 0;
-    for(index = 0; index < num_div; index++)
-    {
-        subst_dmatrix_tdmat(ret_mat[index], tmp_org_mat);
-
-        // mu[j] = max_j |mat[i, j]|
-        // mu_total += mu
-        mu_total = 0.0;
-        for(j = 0; j < col_dim; j++)
-        {
-            /* mu = fabs(mat[0 * col_dim + j]);
-            for(i = 1; i < row_dim; i++)
-            {
-                abs_aij = fabs(mat[i * col_dim + j]);
-                if(abs_aij > mu)
-                    mu = abs_aij;
-            }
-            */
-            mu = absmax_col_dmatrix(NULL, j, ret_mat[index]);
-            mu_total += mu;
-
-            // t_exp = ceil(log2(mu)) + ceil(s + log2(col_dim + 1) / 2)
-            //t_exp[0] = ceil(DLOG2(mu[0])) + ceil(((double)num_digits + DLOG2((double)(row_dim + 1))) / 2.0);
-            //t_exp[1] = 0.0;
-            t_exp = ceil(DLOG2(mu)) + ceil(((double)num_digits + DLOG2((double)(row_dim))) / 2.0);
-
-            // s[i, j] = 2^t_exp
-            //rtd_pow(power2, two, t_exp);
-            //rtd_pow_mpfr(power2, two, t_exp);
-            power2 = pow(2.0, t_exp);
-
-            //printf("index, j, power2 = %ld, %ld, %25.17e\n", index, j, power2[0]);
-            for(i = 0; i < row_dim; i++)
-                set_dmatrix_ij(s, i, j, power2);
-                //s[i * col_dim + j] = pow(2.0, t_exp);
-        }
-        // ret_mat[index] == 0
-        if(mu_total == 0.0) break;
-
-#ifdef USE_IMKL
-        real_total_dim = ret_mat[index]->real_row_dim * ret_mat[index]->real_col_dim;
-
-        // tmp_mat := mat + s
-        //blas_dcopy(real_total_dim, ret_mat[index]->element, 1, tmp_mat[0]->element, 1);
-        //cblas_daxpy(real_total_dim, 1.0, s->element, 1, tmp_mat[0]->element, 1);
-        cblas_daxpy(real_total_dim, 1.0, s->element, 1, ret_mat[index]->element, 1);
-
-        // high_mat := tmp_mat - s
-        cblas_daxpy(real_total_dim, -1.0, s->element, 1, ret_mat[index]->element, 1);
-
-        // low_mat := mat - high_mat
-        //cblas_dcopy(real_total_dim, tmp_mat[0]->element, 1, ret_mat[index]->element, 1);
-#else // USE_IMKL
-        // tmp_mat := mat + s
-        add_dmatrix(tmp_mat[0], ret_mat[index], s);
-
-        // high_mat := tmp_mat - s
-        sub_dmatrix(tmp_mat[1], tmp_mat[0], s);
-        subst_dmatrix(ret_mat[index], tmp_mat[1]);
-#endif // USE_IMKL
-
-        // low_mat := mat - high_mat
-        sub_tdmatrix_dmat(tmp_org_mat, tmp_org_mat, ret_mat[index]);
-        //sub_tdmatrix_dmat(tmp_org_mat, tmp_org_mat, tmp_mat[1]);
-
-        real_num_div = index + 1;
-    }
-
-    // free s
-	free_dmatrix(s);
-    free_dmatrix(tmp_mat[0]);
-    free_dmatrix(tmp_mat[1]);
-    free_tdmatrix(tmp_org_mat);
-
-    return real_num_div;
+	return split_tdmatrix_t_dmat_ex(ret_mat, NULL, num_div, org_mat);
 }
 
 // Matrix multiplication based on Ozaki scheme
+/*------------------------------------------------------------------------------*/
+/* Matrix multiplication based on Ozaki scheme                                   */
+/*                                                                               */
+/* ret = sum_{i,j} div_a[i] * div_b[j].  In BNC_OZ_GEMM_MODE_OWN the rows of ret */
+/* are cut into blocks and one thread takes a block at a time, running every     */
+/* slice product for it with a single-threaded DGEMM and accumulating in TD   */
+/* on the spot; the accumulation, which a threaded BLAS would leave serial, is   */
+/* thereby parallelized as well and the block of ret stays hot in cache across   */
+/* all the slice pairs.  Blocks are disjoint and each element of ret still sums  */
+/* its slice products in the original order, so the result is bit-identical to   */
+/* the serial one.  BNC_OZ_GEMM_MODE_BLAS keeps the old shape (one full DGEMM    */
+/* per slice pair, left to the BLAS to thread).                                  */
+/*------------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------*/
+/* Matrix multiplication based on Ozaki scheme                                   */
+/*                                                                               */
+/* ret = sum_{i,j} 2^(sa[i] + sb[j]) div_a[i] * div_b[j].  In                    */
+/* BNC_OZ_GEMM_MODE_OWN the rows of ret are cut into blocks and one thread takes */
+/* a block at a time, running every slice product for it with a single-threaded  */
+/* DGEMM and accumulating in TD on the spot; the accumulation, which a        */
+/* threaded BLAS would leave serial, is thereby parallelized as well and the     */
+/* block of ret stays hot in cache across all the slice pairs.  Blocks are       */
+/* disjoint and each element of ret still sums its slice products in the         */
+/* original order, so the result does not depend on the number of threads.       */
+/* BNC_OZ_GEMM_MODE_BLAS keeps the old shape (one full DGEMM per slice pair,     */
+/* left to the BLAS to thread).                                                  */
+/*------------------------------------------------------------------------------*/
 void mul_tdmatrix_oz(TDMatrix ret, TDMatrix a, int max_num_div_a, TDMatrix b, int max_num_div_b)
 {
     int i, j;
+    int real_num_div_a, real_num_div_b, num_threads, prev_blas_threads;
     long int row_dim = ret->row_dim, col_dim = ret->col_dim, mid_dim = a->col_dim;
-    int real_num_div_a, real_num_div_b;
+    long int block_rows, num_blocks;
+    long int *row_shift, *col_shift;
     DMatrix *div_a, *div_b, div_ret;
-    TDMatrix tmp_ret;
+    double *block_buf = NULL;
 
     if(mid_dim != b->row_dim)
     {
@@ -495,66 +785,144 @@ void mul_tdmatrix_oz(TDMatrix ret, TDMatrix a, int max_num_div_a, TDMatrix b, in
         return;
     }
 
-    tmp_ret = init_tdmatrix(row_dim, col_dim);
-
     div_a = (DMatrix *)calloc(max_num_div_a, sizeof(DMatrix));
     div_b = (DMatrix *)calloc(max_num_div_b, sizeof(DMatrix));
-    if(div_a == NULL) 
+    row_shift = (long int *)calloc((size_t)max_num_div_a * (size_t)row_dim, sizeof(long int));
+    col_shift = (long int *)calloc((size_t)max_num_div_b * (size_t)col_dim, sizeof(long int));
+    if(div_a == NULL || div_b == NULL || row_shift == NULL || col_shift == NULL)
     {
-        fprintf(stderr, "ERROR: div_a(max_num_div_a = %d) is null in mul_tdmatrix_oz!\n", max_num_div_a);
-        return;
-    }
-    if(div_b == NULL) 
-    {
-        fprintf(stderr, "ERROR: div_b(max_num_div_b = %d) is null in mul_tdmatrix_oz!\n", max_num_div_b);
+        fprintf(stderr, "ERROR: mul_tdmatrix_oz: cannot allocate\n");
+        free(div_a); free(div_b); free(row_shift); free(col_shift);
         return;
     }
     for(i = 0; i < max_num_div_a; i++)
         div_a[i] = init_dmatrix(row_dim, mid_dim);
     for(i = 0; i < max_num_div_b; i++)
         div_b[i] = init_dmatrix(mid_dim, col_dim);
-    div_ret = init_dmatrix(row_dim, col_dim);
 
-    real_num_div_a = split_tdmatrix_dmat(div_a, max_num_div_a, a);
-    real_num_div_b = split_tdmatrix_t_dmat(div_b, max_num_div_b, b);
-    //printf("Split done!\n");
+    real_num_div_a = split_tdmatrix_dmat_ex(div_a, row_shift, max_num_div_a, a);
+    real_num_div_b = split_tdmatrix_t_dmat_ex(div_b, col_shift, max_num_div_b, b);
 
     set0_tdmatrix(ret);
-    for(i = 0; i < real_num_div_a; i++)
+
+    num_threads = bnc_oz_get_num_threads();
+    block_rows = bnc_oz_block_rows_for(row_dim, num_threads);
+    num_blocks = (row_dim + block_rows - 1) / block_rows;
+
+    if((bnc_oz_get_gemm_mode() == BNC_OZ_GEMM_MODE_OWN) && (num_threads > 1))
+        block_buf = (double *)malloc((size_t)num_threads * (size_t)block_rows * (size_t)col_dim * sizeof(double));
+
+    if(block_buf != NULL)
     {
-        //for(j = 0; j < real_num_div_b; j++)
-        for(j = 0; j < real_num_div_b - i; j++)
+        prev_blas_threads = bnc_oz_blas_enter();
+
+#ifdef _OPENMP
+        #pragma omp parallel num_threads(num_threads)
+#endif // _OPENMP
         {
-#ifdef USE_IMKL
-            set0_dmatrix(div_ret);
-            cblas_dgemm(
-                CblasRowMajor,
-                CblasNoTrans,
-                CblasNoTrans,
-                div_a[i]->real_row_dim, // m
-                div_b[j]->real_col_dim, // n
-                div_a[i]->real_col_dim, // k
-                1.0,
-                div_a[i]->element,
-                div_a[i]->real_col_dim, // k
-                div_b[j]->element,
-                div_b[j]->real_col_dim, // n
-                1.0,
-                div_ret->element,
-                div_ret->real_col_dim   // n
-              );
-#else // USE_IMKL
-            mul_dmatrix(div_ret, div_a[i], div_b[j]);
-#endif // USE_IMKL
-            //printf("DMul done!\n");
-            //subst_tdmatrix_dmat(tmp_ret, div_ret);
-            add_tdmatrix_dmat(ret, ret, div_ret);
-            //add_tdmatrix(ret, ret, tmp_ret);
-            //printf("Add done!\n");
-       }
+            long int blk, row_start, num_rows, ii, jj, shift_a;
+            int div_i, div_j, comp;
+            double *buf;
+            double *ret_row[TDSIZE];
+            double ret_ij[TDSIZE], add_ij[TDSIZE], sum_ij[TDSIZE];
+
+            for(comp = 0; comp < TDSIZE; comp++)
+                add_ij[comp] = 0.0;
+
+#ifdef _OPENMP
+            buf = block_buf + (size_t)omp_get_thread_num() * (size_t)block_rows * (size_t)col_dim;
+            #pragma omp for schedule(dynamic, 1)
+#else // _OPENMP
+            buf = block_buf;
+#endif // _OPENMP
+            for(blk = 0; blk < num_blocks; blk++)
+            {
+                row_start = blk * block_rows;
+                num_rows = ((row_dim - row_start) < block_rows) ? (row_dim - row_start) : block_rows;
+
+                for(div_i = 0; div_i < real_num_div_a; div_i++)
+                {
+                    for(div_j = 0; div_j < real_num_div_b - div_i; div_j++)
+                    {
+                        const long int *shift_b = col_shift + (size_t)div_j * (size_t)col_dim;
+
+                        bnc_oz_dgemm_block(buf, col_dim, div_a[div_i], row_start, num_rows, div_b[div_j]);
+
+                        for(ii = 0; ii < num_rows; ii++)
+                        {
+                            const double *buf_row = buf + ii * col_dim;
+
+                            shift_a = row_shift[(size_t)div_i * (size_t)row_dim + row_start + ii];
+
+                            for(comp = 0; comp < TDSIZE; comp++)
+                                ret_row[comp] = ret->element[comp] + (row_start + ii) * ret->real_col_dim;
+
+                            for(jj = 0; jj < col_dim; jj++)
+                            {
+                                for(comp = 0; comp < TDSIZE; comp++)
+                                    ret_ij[comp] = ret_row[comp][jj];
+                                add_ij[0] = bnc_oz_ldexp(buf_row[jj], shift_a + shift_b[jj]);
+
+                                rtd_add(sum_ij, ret_ij, add_ij);
+
+                                for(comp = 0; comp < TDSIZE; comp++)
+                                    ret_row[comp][jj] = sum_ij[comp];
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        bnc_oz_blas_leave(prev_blas_threads);
+        free(block_buf);
+    }
+    else // one full-size product per slice pair, threaded by the BLAS if it can
+    {
+        long int ii, jj;
+        int comp;
+        double *ret_row[TDSIZE];
+        double ret_ij[TDSIZE], add_ij[TDSIZE], sum_ij[TDSIZE];
+
+        for(comp = 0; comp < TDSIZE; comp++)
+            add_ij[comp] = 0.0;
+
+        div_ret = init_dmatrix(row_dim, col_dim);
+
+        for(i = 0; i < real_num_div_a; i++)
+        {
+            for(j = 0; j < real_num_div_b - i; j++)
+            {
+                const long int *shift_b = col_shift + (size_t)j * (size_t)col_dim;
+
+                bnc_oz_dgemm_block(div_ret->element, div_ret->real_col_dim, div_a[i], 0, row_dim, div_b[j]);
+
+                for(ii = 0; ii < row_dim; ii++)
+                {
+                    const double *buf_row = div_ret->element + ii * div_ret->real_col_dim;
+                    long int shift_a = row_shift[(size_t)i * (size_t)row_dim + ii];
+
+                    for(comp = 0; comp < TDSIZE; comp++)
+                        ret_row[comp] = ret->element[comp] + ii * ret->real_col_dim;
+
+                    for(jj = 0; jj < col_dim; jj++)
+                    {
+                        for(comp = 0; comp < TDSIZE; comp++)
+                            ret_ij[comp] = ret_row[comp][jj];
+                        add_ij[0] = bnc_oz_ldexp(buf_row[jj], shift_a + shift_b[jj]);
+
+                        rtd_add(sum_ij, ret_ij, add_ij);
+
+                        for(comp = 0; comp < TDSIZE; comp++)
+                            ret_row[comp][jj] = sum_ij[comp];
+                    }
+                }
+            }
+        }
+
+        free_dmatrix(div_ret);
     }
 
-    free_dmatrix(div_ret);
     for(i = 0; i < max_num_div_a; i++)
         free_dmatrix(div_a[i]);
     for(i = 0; i < max_num_div_b; i++)
@@ -562,64 +930,152 @@ void mul_tdmatrix_oz(TDMatrix ret, TDMatrix a, int max_num_div_a, TDMatrix b, in
 
     free(div_a);
     free(div_b);
-
-    free_tdmatrix(tmp_ret);
-
+    free(row_shift);
+    free(col_shift);
 }
 
 // Matrix-Vector multiplication based on Ozaki scheme
-void mul_tdmatrix_tdvec_oz(TDVector ret, TDMatrix a, int max_num_div_a, TDVector vb, int max_num_div_vb) //, int num_digits)
+/*------------------------------------------------------------------------------*/
+/* Matrix-Vector multiplication based on Ozaki scheme                            */
+/*                                                                               */
+/* Same blocking as mul_tdmatrix_oz: a thread owns a range of rows of ret and */
+/* runs all slice pairs for it, so the accumulation is parallel too.             */
+/*------------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------*/
+/* Matrix-Vector multiplication based on Ozaki scheme                            */
+/*                                                                               */
+/* Same blocking and the same exponent handling as mul_tdmatrix_oz(): a       */
+/* thread owns a range of rows of ret and runs all slice pairs for it.           */
+/*------------------------------------------------------------------------------*/
+void mul_tdmatrix_tdvec_oz(TDVector ret, TDMatrix a, int max_num_div_a, TDVector vb, int max_num_div_vb)
 {
     int i, j;
-    int real_num_div_a, real_num_div_vb;
+    int real_num_div_a, real_num_div_vb, num_threads, prev_blas_threads;
     long int vec_dim = ret->dim, row_dim = a->row_dim, col_dim = a->col_dim;
+    long int block_rows, num_blocks;
+    long int *row_shift, *vec_shift;
     DMatrix *div_a;
     DVector *div_vb, div_ret;
+    double *block_buf = NULL;
 
     div_a = (DMatrix *)calloc(max_num_div_a, sizeof(DMatrix));
     div_vb = (DVector *)calloc(max_num_div_vb, sizeof(DVector));
+    row_shift = (long int *)calloc((size_t)max_num_div_a * (size_t)row_dim, sizeof(long int));
+    vec_shift = (long int *)calloc((size_t)max_num_div_vb, sizeof(long int));
+    if(div_a == NULL || div_vb == NULL || row_shift == NULL || vec_shift == NULL)
+    {
+        fprintf(stderr, "ERROR: mul_tdmatrix_tdvec_oz: cannot allocate\n");
+        free(div_a); free(div_vb); free(row_shift); free(vec_shift);
+        return;
+    }
 
     for(i = 0; i < max_num_div_a; i++)
         div_a[i] = init_dmatrix(row_dim, col_dim);
     for(i = 0; i < max_num_div_vb; i++)
-        div_vb[i] = init_dvector(vec_dim);
-    div_ret = init_dvector(vec_dim);
+        div_vb[i] = init_dvector(vb->dim); // vb->dim, not ret->dim: they differ when a is not square
 
-    real_num_div_a = split_tdmatrix_dmat(div_a, max_num_div_a, a);
-    real_num_div_vb = split_tdvector_dvec(div_vb, max_num_div_vb, vb);
+    real_num_div_a = split_tdmatrix_dmat_ex(div_a, row_shift, max_num_div_a, a);
+    real_num_div_vb = split_tdvector_dvec_ex(div_vb, vec_shift, max_num_div_vb, vb);
 
     set0_tdvector(ret);
-    for(i = 0; i < real_num_div_a; i++)
+
+    num_threads = bnc_oz_get_num_threads();
+    block_rows = bnc_oz_block_rows_for(vec_dim, num_threads);
+    num_blocks = (vec_dim + block_rows - 1) / block_rows;
+
+    if((bnc_oz_get_gemm_mode() == BNC_OZ_GEMM_MODE_OWN) && (num_threads > 1))
+        block_buf = (double *)malloc((size_t)num_threads * (size_t)block_rows * sizeof(double));
+
+    if(block_buf != NULL)
     {
-        for(j = 0; j < real_num_div_vb; j++)
+        prev_blas_threads = bnc_oz_blas_enter();
+
+#ifdef _OPENMP
+        #pragma omp parallel num_threads(num_threads)
+#endif // _OPENMP
         {
+            long int blk, row_start, num_rows, ii, shift_a;
+            int div_i, div_j, comp;
+            double *buf;
+            double ret_i[TDSIZE], add_i[TDSIZE], sum_i[TDSIZE];
 
-#ifdef USE_IMKL
-            set0_dvector(div_ret);
-            cblas_dgemv(
-                CblasRowMajor,
-                CblasNoTrans,
-                div_a[i]->real_row_dim,
-                div_a[i]->real_col_dim,
-                1.0,
-                div_a[i]->element,
-                div_a[i]->real_row_dim,
-                div_vb[j]->element,
-                1,
-                1.0,
-                div_ret->element,
-                1
-            );
-#else // USE_IMKL
-            //mul_dmatrix(div_ret, div_a[i], div_vb[j]);
-            mul_dmatrix_dvec(div_ret, div_a[i], div_vb[j]); // Fix! 2024-07-30 T.Kouya
-#endif // USE_IMKL
+            for(comp = 0; comp < TDSIZE; comp++)
+                add_i[comp] = 0.0;
 
-            add_tdvector_dvec(ret, ret, div_ret);
-       }
+#ifdef _OPENMP
+            buf = block_buf + (size_t)omp_get_thread_num() * (size_t)block_rows;
+            #pragma omp for schedule(dynamic, 1)
+#else // _OPENMP
+            buf = block_buf;
+#endif // _OPENMP
+            for(blk = 0; blk < num_blocks; blk++)
+            {
+                row_start = blk * block_rows;
+                num_rows = ((vec_dim - row_start) < block_rows) ? (vec_dim - row_start) : block_rows;
+
+                for(div_i = 0; div_i < real_num_div_a; div_i++)
+                {
+                    for(div_j = 0; div_j < real_num_div_vb; div_j++)
+                    {
+                        bnc_oz_dgemv_block(buf, div_a[div_i], row_start, num_rows, div_vb[div_j]);
+
+                        for(ii = 0; ii < num_rows; ii++)
+                        {
+                            shift_a = row_shift[(size_t)div_i * (size_t)row_dim + row_start + ii];
+
+                            for(comp = 0; comp < TDSIZE; comp++)
+                                ret_i[comp] = ret->element[comp][row_start + ii];
+                            add_i[0] = bnc_oz_ldexp(buf[ii], shift_a + vec_shift[div_j]);
+
+                            rtd_add(sum_i, ret_i, add_i);
+
+                            for(comp = 0; comp < TDSIZE; comp++)
+                                ret->element[comp][row_start + ii] = sum_i[comp];
+                        }
+                    }
+                }
+            }
+        }
+
+        bnc_oz_blas_leave(prev_blas_threads);
+        free(block_buf);
+    }
+    else
+    {
+        long int ii;
+        int comp;
+        double ret_i[TDSIZE], add_i[TDSIZE], sum_i[TDSIZE];
+
+        for(comp = 0; comp < TDSIZE; comp++)
+            add_i[comp] = 0.0;
+
+        div_ret = init_dvector(vec_dim);
+
+        for(i = 0; i < real_num_div_a; i++)
+        {
+            for(j = 0; j < real_num_div_vb; j++)
+            {
+                bnc_oz_dgemv_block(div_ret->element, div_a[i], 0, vec_dim, div_vb[j]);
+
+                for(ii = 0; ii < vec_dim; ii++)
+                {
+                    long int shift_a = row_shift[(size_t)i * (size_t)row_dim + ii];
+
+                    for(comp = 0; comp < TDSIZE; comp++)
+                        ret_i[comp] = ret->element[comp][ii];
+                    add_i[0] = bnc_oz_ldexp(div_ret->element[ii], shift_a + vec_shift[j]);
+
+                    rtd_add(sum_i, ret_i, add_i);
+
+                    for(comp = 0; comp < TDSIZE; comp++)
+                        ret->element[comp][ii] = sum_i[comp];
+                }
+            }
+        }
+
+        free_dvector(div_ret);
     }
 
-    free_dvector(div_ret);
     for(i = 0; i < max_num_div_a; i++)
         free_dmatrix(div_a[i]);
     for(i = 0; i < max_num_div_vb; i++)
@@ -627,7 +1083,8 @@ void mul_tdmatrix_tdvec_oz(TDVector ret, TDMatrix a, int max_num_div_a, TDVector
 
     free(div_a);
     free(div_vb);
-
+    free(row_shift);
+    free(vec_shift);
 }
 
 // Fit dimension to be multiple of min_dim

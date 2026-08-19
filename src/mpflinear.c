@@ -978,7 +978,7 @@ void mul_mpfmatrix(MPFMatrix c, MPFMatrix a, MPFMatrix b)
 	mpf_t tmp, tmp1;
 
 	/* dimension check */
-	if((c->row_dim != a->row_dim) || (c->col_dim != b->row_dim) || (a->col_dim != b->row_dim))
+	if((c->row_dim != a->row_dim) || (c->col_dim != b->col_dim) || (a->col_dim != b->row_dim))
 	{
 		fprintf(stderr, "ERROR: mul_mpfmatrix\n");
 		return;

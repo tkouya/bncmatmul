@@ -34,6 +34,21 @@ QD_INC = @QD_CPPFLAGS@
 QD_LIB = @QD_LDFLAGS@ @QD_LIBS@
 
 #---------------------------------------
+# OpenBLAS (optional; detected by configure via --with-openblas)
+#
+# When enabled, OPENBLAS_INC carries -DUSE_OPENBLAS (plus the -I that makes
+# <cblas.h> resolve), which switches the Ozaki-scheme routines over to
+# cblas_dgemm()/cblas_dgemv() for their inner double-precision products.
+# Both variables are empty when OpenBLAS was not requested/found.
+#---------------------------------------
+OPENBLAS_INC = @OPENBLAS_CPPFLAGS@
+OPENBLAS_LIB = @OPENBLAS_LDFLAGS@ @OPENBLAS_LIBS@
+
+# Names used by Makefile.legacy for a CBLAS backend (was Intel MKL there).
+CBLAS_INC = $(OPENBLAS_INC)
+CBLAS_LIB = $(OPENBLAS_LIB)
+
+#---------------------------------------
 # C / C++ compilers (configure-detected)
 #---------------------------------------
 CC_ONLY  = @CC@
@@ -92,8 +107,8 @@ OPENMP_NUM_THREADS = 4
 #---------------------------------------
 # Common include / link flags
 #---------------------------------------
-COMMON_INC = $(QD_INC) $(MPC_INC) -DUSE_TD_BF -DUSE_QD_BF -DUSE_TS_BF -DUSE_QS_BF
-COMMON_LIB = $(MPC_LIB) -lpthread $(QD_LIB) -lstdc++
+COMMON_INC = $(QD_INC) $(MPC_INC) $(OPENBLAS_INC) -DUSE_TD_BF -DUSE_QD_BF -DUSE_TS_BF -DUSE_QS_BF
+COMMON_LIB = $(MPC_LIB) -lpthread $(QD_LIB) $(OPENBLAS_LIB) -lstdc++
 
 #---------------------------------------
 # Install prefix (configure-controlled)

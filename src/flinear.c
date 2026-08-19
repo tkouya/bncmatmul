@@ -1853,7 +1853,7 @@ void mul_fmatrix(FMatrix c, FMatrix a, FMatrix b)
 	float tmp;
 
 	/* dimension check */
-	if((c->row_dim != a->row_dim) || (c->col_dim != b->row_dim) || (a->col_dim != b->row_dim))
+	if((c->row_dim != a->row_dim) || (c->col_dim != b->col_dim) || (a->col_dim != b->row_dim))
 	{
 		fprintf(stderr, "ERROR: mul_fmatrix\n");
 		return;

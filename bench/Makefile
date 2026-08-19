@@ -176,13 +176,13 @@ am__define_uniq_tagged_files = \
   done | $(am__uniquify_input)`
 am__DIST_COMMON = $(srcdir)/Makefile.in
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
-ACLOCAL = ${SHELL} '/home/tkouya/na/bncmatmul-0.24/build-aux/missing' aclocal-1.16
+ACLOCAL = ${SHELL} '/home/tkouya/na/bncmatmul/build-aux/missing' aclocal-1.16
 AMTAR = $${TAR-tar}
 AM_DEFAULT_VERBOSITY = 1
 AR = ar
-AUTOCONF = ${SHELL} '/home/tkouya/na/bncmatmul-0.24/build-aux/missing' autoconf
-AUTOHEADER = ${SHELL} '/home/tkouya/na/bncmatmul-0.24/build-aux/missing' autoheader
-AUTOMAKE = ${SHELL} '/home/tkouya/na/bncmatmul-0.24/build-aux/missing' automake-1.16
+AUTOCONF = ${SHELL} '/home/tkouya/na/bncmatmul/build-aux/missing' autoconf
+AUTOHEADER = ${SHELL} '/home/tkouya/na/bncmatmul/build-aux/missing' autoheader
+AUTOMAKE = ${SHELL} '/home/tkouya/na/bncmatmul/build-aux/missing' automake-1.16
 AVX2_CFLAGS = 
 AVX512_CFLAGS = 
 AWK = gawk
@@ -195,12 +195,12 @@ CFLAGS = -g -O2
 CPPFLAGS = 
 CSCOPE = cscope
 CTAGS = ctags
-CUDA_ARCH = sm_121
-CUDA_CPPFLAGS = -I/usr/local/cuda/include
-CUDA_DIR = /usr/local/cuda
-CUDA_LDFLAGS = -L/usr/local/cuda/lib64
-CUDA_LIBDIR = /usr/local/cuda/lib64
-CUDA_LIBS = -lcuda -lcudart -lcublas
+CUDA_ARCH = 
+CUDA_CPPFLAGS = 
+CUDA_DIR = 
+CUDA_LDFLAGS = 
+CUDA_LIBDIR = 
+CUDA_LIBS = 
 CUDA_SDK_HOME = 
 CUDA_SDK_INCLUDE = 
 CUDA_SDK_LDFLAGS = 
@@ -219,15 +219,16 @@ ECHO_T =
 EGREP = /usr/bin/grep -E
 ENABLE_AVX2 = no
 ENABLE_AVX512 = no
-ENABLE_CUDA = yes
+ENABLE_CUDA = no
 ENABLE_NEON = yes
-ENABLE_OMP = no
+ENABLE_OMP = yes
+ENABLE_OPENBLAS = yes
 ENABLE_SVE2 = yes
 ETAGS = etags
 EXEEXT = 
 FGREP = /usr/bin/grep -F
 FILECMD = file
-GDTQ_CPPFLAGS = -I/usr/local/include/gdtq
+GDTQ_CPPFLAGS = 
 GDTQ_PREFIX = /usr/local
 GMP_CPPFLAGS = 
 GMP_LDFLAGS = 
@@ -249,12 +250,12 @@ LN_S = ln -s
 LTLIBOBJS = 
 LT_SYS_LIBRARY_PATH = 
 MAINT = 
-MAKEINFO = ${SHELL} '/home/tkouya/na/bncmatmul-0.24/build-aux/missing' makeinfo
+MAKEINFO = ${SHELL} '/home/tkouya/na/bncmatmul/build-aux/missing' makeinfo
 MANIFEST_TOOL = :
 MKDIR_P = /usr/bin/mkdir -p
 MPC_CPPFLAGS = 
-MPC_CUDA_CPPFLAGS = -I/home/tkouya/na/cuda/mpc_cuda-0.0.1/include
-MPC_CUDA_PREFIX = /home/tkouya/na/cuda/mpc_cuda-0.0.1
+MPC_CUDA_CPPFLAGS = 
+MPC_CUDA_PREFIX = 
 MPC_LDFLAGS = 
 MPC_LIBS = -lmpc
 MPFR_CPPFLAGS = 
@@ -265,11 +266,14 @@ MPLAPACK_LIB_PATH = /usr/local/lib
 NEON_CFLAGS = -mcpu=cortex-a76 -DBNC_ENABLE_NEON
 NM = /usr/bin/nm -B
 NMEDIT = 
-NVCC = /usr/local/cuda/bin/nvcc
-NVCC_FLAGS = -fmad=false -D__NV_NO_VECTOR_DEPRECATION_DIAG -O3 
+NVCC = 
+NVCC_FLAGS = 
 NVCC_PATH = 
 OBJDUMP = objdump
 OBJEXT = o
+OPENBLAS_CPPFLAGS = -I/opt/OpenBLAS/include -DUSE_OPENBLAS
+OPENBLAS_LDFLAGS = -L/opt/OpenBLAS/lib -Wl,-rpath,/opt/OpenBLAS/lib
+OPENBLAS_LIBS = -lopenblas
 OPENMP_CFLAGS = -fopenmp
 OPENMP_LIBS = -fopenmp
 OTOOL = 
@@ -292,10 +296,10 @@ SHELL = /bin/bash
 STRIP = strip
 SVE2_CFLAGS = -mcpu=neoverse-v2 -DBNC_ENABLE_SVE2 -DBNC_ENABLE_NEON
 VERSION = 0.24
-abs_builddir = /home/tkouya/na/bncmatmul-0.24/bench
-abs_srcdir = /home/tkouya/na/bncmatmul-0.24/bench
-abs_top_builddir = /home/tkouya/na/bncmatmul-0.24
-abs_top_srcdir = /home/tkouya/na/bncmatmul-0.24
+abs_builddir = /home/tkouya/na/bncmatmul/bench
+abs_srcdir = /home/tkouya/na/bncmatmul/bench
+abs_top_builddir = /home/tkouya/na/bncmatmul
+abs_top_srcdir = /home/tkouya/na/bncmatmul
 ac_ct_AR = ar
 ac_ct_CC = gcc
 ac_ct_CXX = g++
@@ -323,7 +327,7 @@ host_vendor = unknown
 htmldir = ${docdir}
 includedir = ${prefix}/include
 infodir = ${datarootdir}/info
-install_sh = ${SHELL} /home/tkouya/na/bncmatmul-0.24/build-aux/install-sh
+install_sh = ${SHELL} /home/tkouya/na/bncmatmul/build-aux/install-sh
 libdir = ${exec_prefix}/lib
 libexecdir = ${exec_prefix}/libexec
 localedir = ${datarootdir}/locale
@@ -350,7 +354,8 @@ AM_CPPFLAGS = \
 	\
 	-DUSE_TD_BF -DUSE_QD_BF \
 	-DUSE_GMP -DUSE_MPFR \
-	   
+	    \
+	-I/opt/OpenBLAS/include -DUSE_OPENBLAS
 
 AM_CFLAGS = $(BNCMM_OPT_CFLAGS)
 AM_CXXFLAGS = $(BNCMM_OPT_CXXFLAGS)
@@ -361,6 +366,7 @@ LDADD = \
 	 -lmpfr \
 	 -lgmp \
 	 -lqd \
+	-L/opt/OpenBLAS/lib -Wl,-rpath,/opt/OpenBLAS/lib -lopenblas \
 	-lpthread -lm -lstdc++
 
 lu_bench_SOURCES = lu_bench.c

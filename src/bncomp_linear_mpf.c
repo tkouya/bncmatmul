@@ -635,186 +635,39 @@ void _bncomp_mul_mpfmatrixt_mpfvec(MPFVector v, MPFMatrix a, MPFVector vb)
 }
 
 // Matrix multiplication based on Ozaki scheme
+/*------------------------------------------------------------------------------*/
+/* Matrix  multiplication based on Ozaki scheme                          */
+/*                                                                               */
+/* mul_mpfmatrix_oz() is OpenMP-parallel itself: it cuts the rows of   */
+/* ret into blocks and gives one block at a time to a thread, which runs every   */
+/* slice product for it with a single-threaded BLAS call and accumulates in      */
+/* mpf_t on the spot.  That parallelizes the splitting and the accumulation as   */
+/* well, whereas the code that used to stand here parallelized only the outer    */
+/* slice loop and pushed every accumulation through an omp critical -- which     */
+/* serialized the expensive half and made the sum order depend on the thread     */
+/* interleaving.  Delegating is both faster and reproducible.                    */
+/*------------------------------------------------------------------------------*/
 void _bncomp_mul_mpfmatrix_oz(MPFMatrix ret, MPFMatrix a, int max_num_div_a, MPFMatrix b, int max_num_div_b)
 {
-    int i, j;
-    long int row_dim = ret->row_dim, col_dim = ret->col_dim, mid_dim = a->col_dim;
-    long int real_total_dim;
-    int real_num_div_a, real_num_div_b;
-    DMatrix *div_a, *div_b, *div_ret;
-    MPFMatrix tmp_ret;
-
-    if(mid_dim != b->row_dim)
-    {
-        fprintf(stderr, "ERROR: mul_mpfmatrix_oz mid_dim(a, b) = (%ld, %ld)!\n", mid_dim, b->row_dim);
-        return;
-    }
-
-    //tmp_ret = init2_mpfmatrix(row_dim, col_dim, ret->prec);
-
-    div_a = (DMatrix *)calloc(max_num_div_a, sizeof(DMatrix));
-    div_b = (DMatrix *)calloc(max_num_div_b, sizeof(DMatrix));
-    div_ret = (DMatrix *)calloc(max_num_div_a, sizeof(DMatrix));
-
-    #pragma omp parallel for
-    for(i = 0; i < max_num_div_a; i++)
-    {
-        div_a[i] = init_dmatrix(row_dim, mid_dim);
-        div_ret[i] = init_dmatrix(row_dim, col_dim);
-    }
-
-    #pragma omp parallel for
-    for(i = 0; i < max_num_div_b; i++)
-        div_b[i] = init_dmatrix(mid_dim, col_dim);
-
-    //div_ret = init_dmatrix(row_dim, col_dim);
-
-    #pragma omp parallel sections
-    {
-        #pragma omp section
-        real_num_div_a = split_mpfmatrix_dmat(div_a, max_num_div_a, a);
-
-        #pragma omp section
-        real_num_div_b = split_mpfmatrix_t_dmat(div_b, max_num_div_b, b);
-    }
-
-    set0_mpfmatrix(ret);
-    #pragma omp parallel for private(i, j) 
-    for(i = 0; i < real_num_div_a; i++)
-    {
-        //for(j = 0; j < real_num_div_b; j++)
-        for(j = 0; j < real_num_div_b - i; j++)
-        {
-#ifdef USE_IMKL
-            set0_dmatrix(div_ret[i]);
-            cblas_dgemm(
-                CblasRowMajor,
-                CblasNoTrans,
-                CblasNoTrans,
-                div_a[i]->real_row_dim, // m
-                div_b[j]->real_col_dim, // n
-                div_a[i]->real_col_dim, // k
-                1.0,
-                div_a[i]->element,
-                div_a[i]->real_col_dim, // k
-                div_b[j]->element,
-                div_b[j]->real_col_dim, // n
-                1.0,
-                div_ret[i]->element,
-                div_ret[i]->real_col_dim   // n
-              );
-#else // USE_IMKL
-            mul_dmatrix(div_ret[i], div_a[i], div_b[j]);
-#endif // USE_IMKL
-
-            #pragma omp critical
-                add_mpfmatrix_dmat(ret, ret, div_ret[i]);
-       }
-    }
-
-    //free_dmatrix(div_ret);
-    #pragma omp parallel for
-    for(i = 0; i < max_num_div_a; i++)
-    {
-        free_dmatrix(div_a[i]);
-        free_dmatrix(div_ret[i]);
-    }
-
-    #pragma omp parallel for
-    for(i = 0; i < max_num_div_b; i++)
-        free_dmatrix(div_b[i]);
-
-    free(div_a);
-    free(div_b);
-    free(div_ret);
-
-    //free_mpfmatrix(tmp_ret);
-
+    mul_mpfmatrix_oz(ret, a, max_num_div_a, b, max_num_div_b);
 }
 
 // Matrix-Vector multiplication based on Ozaki scheme
-void _bncomp_mul_mpfmatrix_mpfvec_oz(MPFVector ret, MPFMatrix a, int max_num_div_a, MPFVector vb, int max_num_div_vb) //, int num_digits)
+/*------------------------------------------------------------------------------*/
+/* Matrix -Vector multiplication based on Ozaki scheme                          */
+/*                                                                               */
+/* mul_mpfmatrix_mpfvec_oz() is OpenMP-parallel itself: it cuts the rows of   */
+/* ret into blocks and gives one block at a time to a thread, which runs every   */
+/* slice product for it with a single-threaded BLAS call and accumulates in      */
+/* mpf_t on the spot.  That parallelizes the splitting and the accumulation as   */
+/* well, whereas the code that used to stand here parallelized only the outer    */
+/* slice loop and pushed every accumulation through an omp critical -- which     */
+/* serialized the expensive half and made the sum order depend on the thread     */
+/* interleaving.  Delegating is both faster and reproducible.                    */
+/*------------------------------------------------------------------------------*/
+void _bncomp_mul_mpfmatrix_mpfvec_oz(MPFVector ret, MPFMatrix a, int max_num_div_a, MPFVector vb, int max_num_div_vb)
 {
-    int i, j;
-    int real_num_div_a, real_num_div_vb;
-    long int vec_dim = ret->dim, row_dim = a->row_dim, col_dim = a->col_dim;
-    DMatrix *div_a;
-    DVector *div_vb, *div_ret;
-
-    div_a = (DMatrix *)calloc(max_num_div_a, sizeof(DMatrix));
-    div_vb = (DVector *)calloc(max_num_div_vb, sizeof(DVector));
-    div_ret = (DVector *)calloc(max_num_div_a, sizeof(DMatrix));
-
-    #pragma omp parallel for
-    for(i = 0; i < max_num_div_a; i++)
-    {
-        div_a[i] = init_dmatrix(row_dim, col_dim);
-        div_ret[i] = init_dvector(vec_dim);
-    }
-
-    for(i = 0; i < max_num_div_vb; i++)
-        div_vb[i] = init_dvector(vec_dim);
-
-    //div_ret = init_dvector(vec_dim);
-
-    #pragma omp parallel sections
-    {
-        #pragma omp section
-            real_num_div_a = split_mpfmatrix_dmat(div_a, max_num_div_a, a);
-        
-        #pragma omp section
-            real_num_div_vb = split_mpfvector_dvec(div_vb, max_num_div_vb, vb);
-    }
-
-    set0_mpfvector(ret);
-    #pragma omp parallel for private(j)
-    for(i = 0; i < real_num_div_a; i++)
-    {
-        for(j = 0; j < real_num_div_vb; j++)
-        {
-
-#ifdef USE_IMKL
-            set0_dvector(div_ret[i]);
-            cblas_dgemv(
-                CblasRowMajor,
-                CblasNoTrans,
-                div_a[i]->real_row_dim,
-                div_a[i]->real_col_dim,
-                1.0,
-                div_a[i]->element,
-                div_a[i]->real_row_dim,
-                div_vb[j]->element,
-                1,
-                1.0,
-                div_ret[i]->element,
-                1
-            );
-#else // USE_IMKL
-            //mul_dmatrix(div_ret[i], div_a[i], div_vb[j]);
-            mul_dmatrix_dvec(div_ret[i], div_a[i], div_vb[j]); // 2025-07-09 fixed!
-#endif // USE_IMKL
-            #pragma omp critical
-                add_mpfvector_dvec(ret, ret, div_ret[i]);
-       }
-    }
-
-    //free_dvector(div_ret);
-
-    #pragma omp parallel for
-    for(i = 0; i < max_num_div_a; i++)
-    {
-        free_dmatrix(div_a[i]);
-        free_dvector(div_ret[i]);
-    }
-
-    #pragma omp parallel for
-    for(i = 0; i < max_num_div_vb; i++)
-        free_dvector(div_vb[i]);
-
-    free(div_a);
-    free(div_vb);
-    free(div_ret);
-
+    mul_mpfmatrix_mpfvec_oz(ret, a, max_num_div_a, vb, max_num_div_vb);
 }
 
 #if 0

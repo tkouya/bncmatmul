@@ -14,10 +14,10 @@ library_names='libbncmatmul-0.24.so.0.0.0 libbncmatmul-0.24.so.0 libbncmatmul.so
 old_library='libbncmatmul.a'
 
 # Linker flags that cannot go in dependency_libs.
-inherited_linker_flags=''
+inherited_linker_flags=' -fopenmp'
 
 # Libraries that this one depends upon.
-dependency_libs=' -lmpc -lmpfr -lgmp -lqd -lpthread -lm -lstdc++ -L/usr/local/cuda/lib64 -lcuda -lcudart -lcublas'
+dependency_libs=' -lmpc -lmpfr -lgmp -lqd -L/opt/OpenBLAS/lib -lopenblas -lpthread -lm -lstdc++'
 
 # Names of additional weak libraries provided by this library
 weak_library_names=''

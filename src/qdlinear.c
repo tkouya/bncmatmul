@@ -3831,7 +3831,7 @@ void subst_dmatrix_qdmat(DMatrix c, QDMatrix a)
 	{
 		for(j = 0; j < a->col_dim; j++)
 		{
-			ij_index = i * (c->col_dim) + j;
+			ij_index = i * (c->real_col_dim) + j;
 			c->element[ij_index] = rqd_get_d(get_qdmatrix_ij(a, i, j));
 		}
 	}

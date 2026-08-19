@@ -1782,7 +1782,7 @@ void mul_dmatrix(DMatrix c, DMatrix a, DMatrix b)
 	double tmp;
 
 	/* dimension check */
-	if((c->row_dim != a->row_dim) || (c->col_dim != b->row_dim) || (a->col_dim != b->row_dim))
+	if((c->row_dim != a->row_dim) || (c->col_dim != b->col_dim) || (a->col_dim != b->row_dim))
 	{
 		fprintf(stderr, "ERROR: mul_dmatrix\n");
 		return;

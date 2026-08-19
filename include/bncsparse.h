@@ -214,15 +214,33 @@ void split_drsmatrix(DRSMatrix ret_high_mat, DRSMatrix ret_low_mat, DRSMatrix or
 
 // 2024-08-05 (Mon) T.Kouya
 // SplitMat_A
+// row_shift holds num_div * row_dim exponents (may be NULL); see oz_scheme.h
+int split_drsmatrix_drsmat_ex(DRSMatrix ret_mat[], long int row_shift[], int num_div, DRSMatrix org_mat);
 int split_drsmatrix_drsmat(DRSMatrix ret_mat[], int num_div, DRSMatrix org_mat);
 
 // 2024-08-04 (Sun) T.Kouya
 // SplitMat_B
 // return real_num_div
+// col_shift holds num_div * col_dim exponents (may be NULL); see oz_scheme.h
+int split_drsmatrix_t_drsmat_ex(DRSMatrix ret_mat[], long int col_shift[], int num_div, DRSMatrix org_mat);
 int split_drsmatrix_t_drsmat(DRSMatrix ret_mat[], int num_div, DRSMatrix org_mat);
 
 // Matrix-Vector multiplication based on Ozaki scheme
+/*----------------------------------------------------------------*/
+/* Blocked kernels shared by the sparse Ozaki-scheme routines      */
+/*----------------------------------------------------------------*/
+// offsets of each row into DRSMatrix::element[]; caller frees
+long int *bnc_oz_sp_row_start(const long int *real_nzero_col_dim, long int row_dim);
+// ret_block[0 .. num_rows) := a[first_row ...] * b
+void bnc_oz_sp_dcsr_block(double *ret_block, DRSMatrix a, const long int *row_start, long int first_row, long int num_rows, DVector b);
+// ret_block[0 .. num_rows) x b->col_dim := a[first_row ...] * b (dense b)
+void bnc_oz_sp_dcsr_dmat_block(double *ret_block, long int ld_ret_block, DRSMatrix a, const long int *row_start, long int first_row, long int num_rows, DMatrix b);
+// ret_block[0 .. col_dim) += a[first_row ...]^T * b
+void bnc_oz_sp_dcsrt_block(double *ret_block, DRSMatrix a, const long int *row_start, long int first_row, long int num_rows, DVector b);
+
 void mul_drsmatrix_dvec_oz(DVector ret, DRSMatrix a, int max_num_div_a, DVector vb, int max_num_div_vb);
+// C := A(sparse) * B(dense) based on Ozaki scheme
+void mul_drsmatrix_dmat_oz(DMatrix ret, DRSMatrix a, int max_num_div_a, DMatrix b, int max_num_div_b);
 
 // 2024-08-02(Fri) T.Kouya
 // Transposed Matrix-Vector multiplication based on Ozaki scheme
@@ -427,15 +445,21 @@ void sub_ddrsmatrix_drsmat(DDRSMatrix c, DDRSMatrix a, DRSMatrix b);
 // 2024-07-31(Wed) T.Kouya
 // SplitMat_A
 // return real_num_div
+// row_shift holds num_div * row_dim exponents (may be NULL); see oz_scheme.h
+int split_ddrsmatrix_drsmat_ex(DRSMatrix ret_mat[], long int row_shift[], int num_div, DDRSMatrix org_mat);
 int split_ddrsmatrix_drsmat(DRSMatrix ret_mat[], int num_div, DDRSMatrix org_mat);
 
 // 2024-08-04 (Sun) T.Kouya
 // SplitMat_B
 // return real_num_div
+// col_shift holds num_div * col_dim exponents (may be NULL); see oz_scheme.h
+int split_ddrsmatrix_t_drsmat_ex(DRSMatrix ret_mat[], long int col_shift[], int num_div, DDRSMatrix org_mat);
 int split_ddrsmatrix_t_drsmat(DRSMatrix ret_mat[], int num_div, DDRSMatrix org_mat);
 
 // Matrix-Vector multiplication based on Ozaki scheme
 void mul_ddrsmatrix_ddvec_oz(DDVector ret, DDRSMatrix a, int max_num_div_a, DDVector vb, int max_num_div_vb); 
+// C := A(sparse) * B(dense) based on Ozaki scheme
+void mul_ddrsmatrix_ddmat_oz(DDMatrix ret, DDRSMatrix a, int max_num_div_a, DDMatrix b, int max_num_div_b);
 
 // 2024-08-02(Fri) T.Kouya
 // Transposed Matrix-Vector multiplication based on Ozaki scheme
@@ -646,15 +670,21 @@ void sub_tdrsmatrix_drsmat(TDRSMatrix c, TDRSMatrix a, DRSMatrix b);
 // 2024-07-31(Wed) T.Kouya
 // SplitMat_A
 // return real_num_div
+// row_shift holds num_div * row_dim exponents (may be NULL); see oz_scheme.h
+int split_tdrsmatrix_drsmat_ex(DRSMatrix ret_mat[], long int row_shift[], int num_div, TDRSMatrix org_mat);
 int split_tdrsmatrix_drsmat(DRSMatrix ret_mat[], int num_div, TDRSMatrix org_mat);
 
 // 2024-08-04 (Sun) T.Kouya
 // SplitMat_B
 // return real_num_div
+// col_shift holds num_div * col_dim exponents (may be NULL); see oz_scheme.h
+int split_tdrsmatrix_t_drsmat_ex(DRSMatrix ret_mat[], long int col_shift[], int num_div, TDRSMatrix org_mat);
 int split_tdrsmatrix_t_drsmat(DRSMatrix ret_mat[], int num_div, TDRSMatrix org_mat);
 
 // Matrix-Vector multiplication based on Ozaki scheme
 void mul_tdrsmatrix_tdvec_oz(TDVector ret, TDRSMatrix a, int max_num_div_a, TDVector vb, int max_num_div_vb);
+// C := A(sparse) * B(dense) based on Ozaki scheme
+void mul_tdrsmatrix_tdmat_oz(TDMatrix ret, TDRSMatrix a, int max_num_div_a, TDMatrix b, int max_num_div_b);
 
 // 2024-08-02(Fri) T.Kouya
 // Transposed Matrix-Vector multiplication based on Ozaki scheme
@@ -867,15 +897,21 @@ void sub_qdrsmatrix_drsmat(QDRSMatrix c, QDRSMatrix a, DRSMatrix b);
 // 2024-07-31(Wed) T.Kouya
 // SplitMat_A
 // return real_num_div
+// row_shift holds num_div * row_dim exponents (may be NULL); see oz_scheme.h
+int split_qdrsmatrix_drsmat_ex(DRSMatrix ret_mat[], long int row_shift[], int num_div, QDRSMatrix org_mat);
 int split_qdrsmatrix_drsmat(DRSMatrix ret_mat[], int num_div, QDRSMatrix org_mat);
 
 // 2024-08-04 (Sun) T.Kouya
 // SplitMat_B
 // return real_num_div
+// col_shift holds num_div * col_dim exponents (may be NULL); see oz_scheme.h
+int split_qdrsmatrix_t_drsmat_ex(DRSMatrix ret_mat[], long int col_shift[], int num_div, QDRSMatrix org_mat);
 int split_qdrsmatrix_t_drsmat(DRSMatrix ret_mat[], int num_div, QDRSMatrix org_mat);
 
 // Matrix-Vector multiplication based on Ozaki scheme
 void mul_qdrsmatrix_qdvec_oz(QDVector ret, QDRSMatrix a, int max_num_div_a, QDVector vb, int max_num_div_vb);
+// C := A(sparse) * B(dense) based on Ozaki scheme
+void mul_qdrsmatrix_qdmat_oz(QDMatrix ret, QDRSMatrix a, int max_num_div_a, QDMatrix b, int max_num_div_b);
 
 // 2024-08-02(Fri) T.Kouya
 // Transposed Matrix-Vector multiplication based on Ozaki scheme
@@ -1053,6 +1089,24 @@ int mul_mpfrsmatrix_mpfvec(MPFVector, MPFRSMatrix, MPFVector);
 
 /* Multiply MPFRSMatrix^T * MPFVector */
 int mul_mpfrsmatrixt_mpfvec(MPFVector, MPFRSMatrix, MPFVector);
+
+/*----------------------------------------------------------------*/
+/* Ozaki-scheme routines for sparse mpf_t matrices                 */
+/* The *_ex forms hand back the power of two each row (SplitMat_A) */
+/* or column (SplitMat_B) was scaled by; see oz_scheme.h.          */
+/*----------------------------------------------------------------*/
+// SplitMat_A; row_shift holds num_div * row_dim exponents (may be NULL)
+int split_mpfrsmatrix_drsmat_ex(DRSMatrix ret_mat[], long int row_shift[], int num_div, MPFRSMatrix org_mat);
+int split_mpfrsmatrix_drsmat(DRSMatrix ret_mat[], int num_div, MPFRSMatrix org_mat);
+// SplitMat_B; col_shift holds num_div * col_dim exponents (may be NULL)
+int split_mpfrsmatrix_t_drsmat_ex(DRSMatrix ret_mat[], long int col_shift[], int num_div, MPFRSMatrix org_mat);
+int split_mpfrsmatrix_t_drsmat(DRSMatrix ret_mat[], int num_div, MPFRSMatrix org_mat);
+// Matrix-Vector multiplication based on Ozaki scheme
+void mul_mpfrsmatrix_mpfvec_oz(MPFVector ret, MPFRSMatrix a, int max_num_div_a, MPFVector vb, int max_num_div_vb);
+// Transposed Matrix-Vector multiplication based on Ozaki scheme
+void mul_mpfrsmatrixt_mpfvec_oz(MPFVector ret, MPFRSMatrix a, int max_num_div_a, MPFVector vb, int max_num_div_vb);
+// C := A(sparse) * B(dense) based on Ozaki scheme
+void mul_mpfrsmatrix_mpfmat_oz(MPFMatrix ret, MPFRSMatrix a, int max_num_div_a, MPFMatrix b, int max_num_div_b);
 
 /* Multiply DRSMatrix * MPFVector */
 int mul_drsmatrix_mpfvec(MPFVector ret, DRSMatrix mat, MPFVector vec);

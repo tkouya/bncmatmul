@@ -650,8 +650,48 @@
     \funcitem{void}{mul\_ddmatrix\_ddvec\_oz}{\varname{DDVector}{ret}, \varname{DDMatrix}{a}, \varname{int}{max\_num\_div\_a}, \varname{DDVector} {vb}, \varname{int}{max\_num\_div\_vb}} $\cdots$ \bi{Matrix-Vector multiplication based on Ozaki scheme}{尾崎スキームに基づく行列ベクトル乗算です。}
     \funcitem{void}{mul\_tdmatrix\_tdvec\_oz}{\varname{TDVector}{ret}, \varname{TDMatrix}{a}, \varname{int}{max\_num\_div\_a}, \varname{TDVector}{vb}, \varname{int}{max\_num\_div\_vb}}
     \funcitem{void}{mul\_qdmatrix\_qdvec\_oz}{\varname{QDVector}{ret}, \varname{QDMatrix}{a}, \varname{int}{max\_num\_div\_a}, \varnameqdvec{vb}, \varname{int}{max\_num\_div\_vb}}
-    \funcitem{void}{mul\_mpfmatrix\_dvec\_oz}{\varname{MPFVector}{ret}, \varname{MPFMatrix}{a}, \varname{int}{max\_num\_div\_a}, \varname{MPFVector}{vb}, \varname{int}{max\_num\_div\_vb}}
-    
+    \funcitem{void}{mul\_mpfmatrix\_mpfvec\_oz}{\varname{MPFVector}{ret}, \varname{MPFMatrix}{a}, \varname{int}{max\_num\_div\_a}, \varname{MPFVector}{vb}, \varname{int}{max\_num\_div\_vb}}
+
+    \funcitem{void}{mul\_dmatrix\_oz}{\varname{DMatrix}{ret}, \varname{DMatrix}{a}, \varname{int}{max\_num\_div\_a}, \varname{DMatrix}{b}, \varname{int}{max\_num\_div\_b}} $\cdots$ \bi{The double-precision member of the family; it obeys \texttt{max\_num\_div\_*} exactly as the others do.}{本ファミリの倍精度版です。他と同様に \texttt{max\_num\_div\_*} に従います。}
+
+\end{itemize}
+
+\subsection{\bi{Parallel execution and tuning}{並列実行とチューニング}}
+
+\bi{All the routines above are parallelized with OpenMP. They spend their time in three places --- splitting the operands into double-precision slices, multiplying the slices, and accumulating the slice products back in multi-component or \texttt{mpf\_t} arithmetic --- and all three are parallel. The rows of the result are cut into blocks; one thread takes a block at a time, runs every slice product for it with a \emph{single-threaded} BLAS call and accumulates on the spot. The block loop is dynamically scheduled, which keeps cores of unequal speed busy.}{上記の関数はすべてOpenMPで並列化されています。処理時間は、オペランドを倍精度スライスに分割する部分、スライス同士を乗算する部分、そしてスライス積を多倍長演算で再集約する部分の3箇所に分かれますが、その3つすべてが並列化されています。結果行列の行をブロックに分割し、1スレッドが1ブロックを担当して、そのブロックに対する全スライス積を\emph{シングルスレッドの}BLAS呼び出しで計算し、その場で集約します。ブロックループは動的スケジューリングのため、性能の異なるコアが混在していても待ちが生じません。}
+
+\bi{The row blocks are disjoint and every element of the result still sums its slice products in the original order, so the result does not depend on the number of threads.}{行ブロックは互いに素であり、結果の各要素は従来と同じ順序でスライス積を加算するため、結果はスレッド数に依存しません。}
+
+\bi{Everything is tunable at run time, so a build never has to be repeated just to try another setting:}{すべて実行時に設定できるため、設定を変えるためにビルドし直す必要はありません。}
+
+\begin{itemize}
+    \item \texttt{BNC\_OZ\_NUM\_THREADS} $\cdots$ \bi{threads used by the kernels (default: the OpenMP maximum). \texttt{1} disables the kernels' own parallelism and hands the products back to the BLAS.}{関数が使用するスレッド数（既定値：OpenMPの最大値）。\texttt{1} にすると関数自身の並列化を無効にし、乗算をBLASに任せます。}
+    \item \texttt{BNC\_OZ\_BLAS\_THREADS} $\cdots$ \bi{threads left to the CBLAS backend while a kernel runs its own parallel loop (default \texttt{1}).}{関数が自前の並列ループを実行している間にCBLASバックエンドへ許すスレッド数（既定値 \texttt{1}）。}
+    \item \texttt{BNC\_OZ\_BLOCK\_ROWS} $\cdots$ \bi{rows of the result per block (default: automatic).}{ブロックあたりの結果行数（既定値：自動）。}
+    \item \texttt{BNC\_OZ\_BLOCKS\_PER\_THREAD} $\cdots$ \bi{blocks per thread when the block size is automatic (default \texttt{2}).}{ブロックサイズが自動のときのスレッドあたりブロック数（既定値 \texttt{2}）。}
+    \item \texttt{BNC\_OZ\_GEMM\_MODE} $\cdots$ \bi{\texttt{own} (parallel block loop with a serial BLAS) or \texttt{blas} (serial block loop with a threaded BLAS); default \texttt{own}.}{\texttt{own}（並列ブロックループ＋直列BLAS）または \texttt{blas}（直列ブロックループ＋並列BLAS）。既定値は \texttt{own} です。}
+\end{itemize}
+
+\bi{The same settings are reachable from C as \texttt{bnc\_oz\_set\_num\_threads()}, \texttt{bnc\_oz\_set\_blas\_threads()}, \texttt{bnc\_oz\_set\_block\_rows()} and \texttt{bnc\_oz\_set\_gemm\_mode()}, declared in \texttt{oz\_scheme.h}. Binding the threads with \texttt{OMP\_PROC\_BIND=close OMP\_PLACES=cores} is worth 10--20\%; it is also what makes a BLAS-threaded fallback unusable, because OpenBLAS's pthread pool inherits the affinity mask of the thread that creates it.}{同じ設定はCからも \texttt{bnc\_oz\_set\_num\_threads()}、\texttt{bnc\_oz\_set\_blas\_threads()}、\texttt{bnc\_oz\_set\_block\_rows()}、\texttt{bnc\_oz\_set\_gemm\_mode()} で行えます（\texttt{oz\_scheme.h} で宣言）。\texttt{OMP\_PROC\_BIND=close OMP\_PLACES=cores} によるスレッド固定は10〜20\%の効果があります。一方で、これはBLAS並列に頼るフォールバックを使い物にならなくする要因でもあります。OpenBLASのpthreadプールは生成元スレッドのアフィニティマスクを継承するためです。}
+
+\subsection{\bi{Exponent range}{指数部の範囲}}
+
+\bi{The slices are plain \texttt{double} matrices, but the operands need not fit in the \texttt{double} exponent range: \texttt{mpf\_t} reaches $2^{\pm 2^{30}}$, and even a DD matrix may hold entries near \texttt{DBL\_MAX}. Each row of $A$ and each column of $B$ is therefore scaled by a power of two before it is split, and the exponent is carried along with the slice:}{スライスは通常の \texttt{double} 行列ですが、オペランドが \texttt{double} の指数範囲に収まるとは限りません。\texttt{mpf\_t} は $2^{\pm 2^{30}}$ に達し、DD行列でも \texttt{DBL\_MAX} 近傍の要素を持ち得ます。そこで、分割前に $A$ の各行と $B$ の各列を2の冪でスケーリングし、その指数をスライスとともに保持します。}
+\begin{equation*}
+C_{ij} = \sum_{p,q} 2^{\,\sigma^A_{p,i} + \sigma^B_{q,j}}\;\bigl(A^{(p)} B^{(q)}\bigr)_{ij}
+\end{equation*}
+\bi{The exponent is constant along the contracted index, so it factors straight out of the inner product and the error-free property of the slice products is untouched; scaling by a power of two is exact in both \texttt{double} and \texttt{mpf\_t}. A fresh exponent is taken for every slice, so the dynamic range a single row may span is bounded by \texttt{max\_num\_div} alone.}{指数は縮約される添字について定数なので、内積の外に完全に括り出され、スライス積の誤差なし性は損なわれません。2の冪倍は \texttt{double} でも \texttt{mpf\_t} でも厳密です。スライスごとに指数を取り直すため、1つの行が跨げるダイナミックレンジは \texttt{max\_num\_div} のみで決まります。}
+
+\bi{The split functions hand the exponents back through \texttt{\_ex} entry points, each taking a \texttt{long int} array of \texttt{num\_div} $\times$ (row or column count). The names without \texttt{\_ex} remain and forward with a \texttt{NULL} array, which asks for the unscaled split.}{分割関数は \texttt{\_ex} 版で指数を返します。引数は \texttt{num\_div} $\times$（行数または列数）の \texttt{long int} 配列です。\texttt{\_ex} の付かない従来名も残っており、\texttt{NULL} を渡してスケーリングなしの分割を行います。}
+
+\begin{itemize}
+    \funcitem{int}{split\_dmatrix\_dmat\_ex}{\varname{DMatrix}{ret\_mat[]}, \varname{long int}{row\_shift[]}, \varname{int}{num\_div}, \varname{DMatrix}{org\_mat}}
+    \funcitem{int}{split\_ddmatrix\_dmat\_ex}{\varname{DMatrix}{ret\_mat[]}, \varname{long int}{row\_shift[]}, \varname{int}{num\_div}, \varname{DDMatrix}{org\_mat}}
+    \funcitem{int}{split\_tdmatrix\_dmat\_ex}{\varname{DMatrix}{ret\_mat[]}, \varname{long int}{row\_shift[]}, \varname{int}{num\_div}, \varname{TDMatrix}{org\_mat}}
+    \funcitem{int}{split\_qdmatrix\_dmat\_ex}{\varname{DMatrix}{ret\_mat[]}, \varname{long int}{row\_shift[]}, \varname{int}{num\_div}, \varname{QDMatrix}{org\_mat}}
+    \funcitem{int}{split\_mpfmatrix\_dmat\_ex}{\varname{DMatrix}{ret\_mat[]}, \varname{long int}{row\_shift[]}, \varname{int}{num\_div}, \varname{MPFMatrix}{org\_mat}}
+    \funcitem{int}{split\_dmatrix\_t\_dmat\_ex}{\varname{DMatrix}{ret\_mat[]}, \varname{long int}{col\_shift[]}, \varname{int}{num\_div}, \varname{DMatrix}{org\_mat}} $\cdots$ \bi{and the \texttt{dd}, \texttt{td}, \texttt{qd}, \texttt{mpf} counterparts}{および \texttt{dd}、\texttt{td}、\texttt{qd}、\texttt{mpf} の各版}
+    \funcitem{int}{split\_dvector\_dvec\_ex}{\varname{DVector}{ret\_vec[]}, \varname{long int}{shift[]}, \varname{int}{num\_div}, \varname{DVector}{org\_vec}} $\cdots$ \bi{and the \texttt{dd}, \texttt{td}, \texttt{qd}, \texttt{mpf} counterparts; a vector carries one exponent per slice}{および \texttt{dd}、\texttt{td}、\texttt{qd}、\texttt{mpf} の各版。ベクトルはスライスごとに1つの指数を持ちます。}
 \end{itemize}
 
 %------------------------------------------------%

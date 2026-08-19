@@ -102,12 +102,12 @@ host_triplet = aarch64-unknown-linux-gnu
 # --enable-omp: compile everything with OpenMP + USE_OMP so the parallel
 # Strassen / _bncomp_* routines (added to BNCMM_BASE_SOURCES below) are
 # built, and the existing #pragma omp paths are activated.
-#am__append_1 = $(OPENMP_CFLAGS) -DUSE_OMP
-#am__append_2 = $(OPENMP_CFLAGS) -DUSE_OMP
-#am__append_3 = $(OMP_STRASSEN_SOURCES)
-#am__append_4 = $(OPENMP_LIBS)
-am__append_5 = $(top_builddir)/src/cuda/libbncmm_cuda.a \
-                         -L/usr/local/cuda/lib64 -lcuda -lcudart -lcublas
+am__append_1 = $(OPENMP_CFLAGS) -DUSE_OMP
+am__append_2 = $(OPENMP_CFLAGS) -DUSE_OMP
+am__append_3 = $(OMP_STRASSEN_SOURCES)
+am__append_4 = $(OPENMP_LIBS)
+#am__append_5 = $(top_builddir)/src/cuda/libbncmm_cuda.a \
+#                          
 
 subdir = src
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -151,9 +151,9 @@ am__uninstall_files_from_dir = { \
 am__installdirs = "$(DESTDIR)$(libdir)"
 LTLIBRARIES = $(lib_LTLIBRARIES) $(noinst_LTLIBRARIES)
 am__DEPENDENCIES_1 =
-#am__DEPENDENCIES_2 = $(am__DEPENDENCIES_1)
-am__DEPENDENCIES_3 =  \
-	$(top_builddir)/src/cuda/libbncmm_cuda.a
+am__DEPENDENCIES_2 = $(am__DEPENDENCIES_1)
+#am__DEPENDENCIES_3 =  \
+#	$(top_builddir)/src/cuda/libbncmm_cuda.a
 libbncmatmul_la_DEPENDENCIES = libbncmm_base.la libbncmm_sp.la \
 	libbncmm_sp_d.la libbncmm_sp_precond.la \
 	libbncmm_sp_d_precond.la $(am__DEPENDENCIES_2) \
@@ -325,7 +325,7 @@ am__objects_2 = libbncmm_base_la-matmul_strassen_general_mpf_omp.lo \
 	libbncmm_base_la-bncomp_linear_ctd.lo \
 	libbncmm_base_la-bncomp_linear_cqd.lo \
 	libbncmm_base_la-bncomp_sparse.lo
-#am__objects_3 = $(am__objects_2)
+am__objects_3 = $(am__objects_2)
 am_libbncmm_base_la_OBJECTS = $(am__objects_1) $(am__objects_3)
 libbncmm_base_la_OBJECTS = $(am_libbncmm_base_la_OBJECTS)
 libbncmm_sp_la_LIBADD =
@@ -476,13 +476,13 @@ am__relativize = \
     dir1=`echo "$$dir1" | sed -e "$$sed_rest"`; \
   done; \
   reldir="$$dir2"
-ACLOCAL = ${SHELL} '/home/tkouya/na/bncmatmul-0.24/build-aux/missing' aclocal-1.16
+ACLOCAL = ${SHELL} '/home/tkouya/na/bncmatmul/build-aux/missing' aclocal-1.16
 AMTAR = $${TAR-tar}
 AM_DEFAULT_VERBOSITY = 1
 AR = ar
-AUTOCONF = ${SHELL} '/home/tkouya/na/bncmatmul-0.24/build-aux/missing' autoconf
-AUTOHEADER = ${SHELL} '/home/tkouya/na/bncmatmul-0.24/build-aux/missing' autoheader
-AUTOMAKE = ${SHELL} '/home/tkouya/na/bncmatmul-0.24/build-aux/missing' automake-1.16
+AUTOCONF = ${SHELL} '/home/tkouya/na/bncmatmul/build-aux/missing' autoconf
+AUTOHEADER = ${SHELL} '/home/tkouya/na/bncmatmul/build-aux/missing' autoheader
+AUTOMAKE = ${SHELL} '/home/tkouya/na/bncmatmul/build-aux/missing' automake-1.16
 AVX2_CFLAGS = 
 AVX512_CFLAGS = 
 AWK = gawk
@@ -495,12 +495,12 @@ CFLAGS = -g -O2
 CPPFLAGS = 
 CSCOPE = cscope
 CTAGS = ctags
-CUDA_ARCH = sm_121
-CUDA_CPPFLAGS = -I/usr/local/cuda/include
-CUDA_DIR = /usr/local/cuda
-CUDA_LDFLAGS = -L/usr/local/cuda/lib64
-CUDA_LIBDIR = /usr/local/cuda/lib64
-CUDA_LIBS = -lcuda -lcudart -lcublas
+CUDA_ARCH = 
+CUDA_CPPFLAGS = 
+CUDA_DIR = 
+CUDA_LDFLAGS = 
+CUDA_LIBDIR = 
+CUDA_LIBS = 
 CUDA_SDK_HOME = 
 CUDA_SDK_INCLUDE = 
 CUDA_SDK_LDFLAGS = 
@@ -519,15 +519,16 @@ ECHO_T =
 EGREP = /usr/bin/grep -E
 ENABLE_AVX2 = no
 ENABLE_AVX512 = no
-ENABLE_CUDA = yes
+ENABLE_CUDA = no
 ENABLE_NEON = yes
-ENABLE_OMP = no
+ENABLE_OMP = yes
+ENABLE_OPENBLAS = yes
 ENABLE_SVE2 = yes
 ETAGS = etags
 EXEEXT = 
 FGREP = /usr/bin/grep -F
 FILECMD = file
-GDTQ_CPPFLAGS = -I/usr/local/include/gdtq
+GDTQ_CPPFLAGS = 
 GDTQ_PREFIX = /usr/local
 GMP_CPPFLAGS = 
 GMP_LDFLAGS = 
@@ -549,12 +550,12 @@ LN_S = ln -s
 LTLIBOBJS = 
 LT_SYS_LIBRARY_PATH = 
 MAINT = 
-MAKEINFO = ${SHELL} '/home/tkouya/na/bncmatmul-0.24/build-aux/missing' makeinfo
+MAKEINFO = ${SHELL} '/home/tkouya/na/bncmatmul/build-aux/missing' makeinfo
 MANIFEST_TOOL = :
 MKDIR_P = /usr/bin/mkdir -p
 MPC_CPPFLAGS = 
-MPC_CUDA_CPPFLAGS = -I/home/tkouya/na/cuda/mpc_cuda-0.0.1/include
-MPC_CUDA_PREFIX = /home/tkouya/na/cuda/mpc_cuda-0.0.1
+MPC_CUDA_CPPFLAGS = 
+MPC_CUDA_PREFIX = 
 MPC_LDFLAGS = 
 MPC_LIBS = -lmpc
 MPFR_CPPFLAGS = 
@@ -565,11 +566,14 @@ MPLAPACK_LIB_PATH = /usr/local/lib
 NEON_CFLAGS = -mcpu=cortex-a76 -DBNC_ENABLE_NEON
 NM = /usr/bin/nm -B
 NMEDIT = 
-NVCC = /usr/local/cuda/bin/nvcc
-NVCC_FLAGS = -fmad=false -D__NV_NO_VECTOR_DEPRECATION_DIAG -O3 
+NVCC = 
+NVCC_FLAGS = 
 NVCC_PATH = 
 OBJDUMP = objdump
 OBJEXT = o
+OPENBLAS_CPPFLAGS = -I/opt/OpenBLAS/include -DUSE_OPENBLAS
+OPENBLAS_LDFLAGS = -L/opt/OpenBLAS/lib -Wl,-rpath,/opt/OpenBLAS/lib
+OPENBLAS_LIBS = -lopenblas
 OPENMP_CFLAGS = -fopenmp
 OPENMP_LIBS = -fopenmp
 OTOOL = 
@@ -592,10 +596,10 @@ SHELL = /bin/bash
 STRIP = strip
 SVE2_CFLAGS = -mcpu=neoverse-v2 -DBNC_ENABLE_SVE2 -DBNC_ENABLE_NEON
 VERSION = 0.24
-abs_builddir = /home/tkouya/na/bncmatmul-0.24/src
-abs_srcdir = /home/tkouya/na/bncmatmul-0.24/src
-abs_top_builddir = /home/tkouya/na/bncmatmul-0.24
-abs_top_srcdir = /home/tkouya/na/bncmatmul-0.24
+abs_builddir = /home/tkouya/na/bncmatmul/src
+abs_srcdir = /home/tkouya/na/bncmatmul/src
+abs_top_builddir = /home/tkouya/na/bncmatmul
+abs_top_srcdir = /home/tkouya/na/bncmatmul
 ac_ct_AR = ar
 ac_ct_CC = gcc
 ac_ct_CXX = g++
@@ -623,7 +627,7 @@ host_vendor = unknown
 htmldir = ${docdir}
 includedir = ${prefix}/include
 infodir = ${datarootdir}/info
-install_sh = ${SHELL} /home/tkouya/na/bncmatmul-0.24/build-aux/install-sh
+install_sh = ${SHELL} /home/tkouya/na/bncmatmul/build-aux/install-sh
 libdir = ${exec_prefix}/lib
 libexecdir = ${exec_prefix}/libexec
 localedir = ${datarootdir}/locale
@@ -650,7 +654,8 @@ AM_CPPFLAGS = \
 	-DUSE_TD_BF -DUSE_QD_BF \
 	-DUSE_TS_BF -DUSE_QS_BF \
 	-DUSE_GMP -DUSE_MPFR \
-	   
+	    \
+	-I/opt/OpenBLAS/include -DUSE_OPENBLAS
 
 AM_CFLAGS = $(BNCMM_OPT_CFLAGS) $(am__append_1)
 AM_CXXFLAGS = $(BNCMM_OPT_CXXFLAGS) $(am__append_2)
@@ -796,8 +801,8 @@ libbncmatmul_la_LIBADD = libbncmm_base.la libbncmm_sp.la \
 	libbncmm_sp_d.la libbncmm_sp_precond.la \
 	libbncmm_sp_d_precond.la  -lmpc \
 	 -lmpfr  -lgmp \
-	 -lqd -lpthread -lm -lstdc++ $(am__append_4) \
-	$(am__append_5)
+	 -lqd -L/opt/OpenBLAS/lib -Wl,-rpath,/opt/OpenBLAS/lib -lopenblas \
+	-lpthread -lm -lstdc++ $(am__append_4) $(am__append_5)
 libbncmatmul_la_LDFLAGS = \
 	-release $(PACKAGE_VERSION) \
 	-version-info 0:0:0 \
@@ -816,8 +821,8 @@ libbncmatmul_la_LDFLAGS = \
 # bncuda_linear*.c) physically stay in src/; src/cuda/Makefile finds
 # them via VPATH.
 #---------------------------------------
-SUBDIRS = cuda
-EXTRA_libbncmatmul_la_DEPENDENCIES = $(top_builddir)/src/cuda/libbncmm_cuda.a
+#SUBDIRS = cuda
+#EXTRA_libbncmatmul_la_DEPENDENCIES = $(top_builddir)/src/cuda/libbncmm_cuda.a
 
 #---------------------------------------
 # Extra files distributed but not built by Automake.
@@ -1746,9 +1751,6 @@ install-exec: install-exec-recursive
 install-data: install-data-recursive
 uninstall: uninstall-recursive
 
-install-am: all-am
-	@$(MAKE) $(AM_MAKEFLAGS) install-exec-am install-data-am
-
 installcheck: installcheck-recursive
 install-strip:
 	if test -z '$(STRIP)'; then \
@@ -1860,6 +1862,48 @@ uninstall-am: uninstall-libLTLIBRARIES
 
 .PRECIOUS: Makefile
 
+
+#---------------------------------------
+# Never compile on behalf of a user who does not own the build tree.
+#
+# Automake's stock rule is
+#
+#     install-am: all-am
+#
+# so `sudo make install` happily rebuilds whatever is out of date -- as
+# root.  Every object, every .libs/ entry and every relinked library it
+# writes then belongs to root inside the developer's build tree, and the
+# next ordinary `make` stops with "Permission denied" until someone
+# chowns the whole tree back.  src/ is the only directory that compiles
+# anything at `all` time, so the guard belongs here.
+#
+# The replacement below keeps `./configure && make install` working
+# exactly as before for whoever owns the tree, and refuses only in the
+# case that does the damage: a rebuild that would be carried out by a
+# different user.  `make -q` answers "would anything be rebuilt?"
+# without building it, and the -O test is skipped entirely for the
+# owner, so the common path costs nothing.
+#---------------------------------------
+install-am:
+	@if test ! -O . && ! $(MAKE) $(AM_MAKEFLAGS) -q all-am >/dev/null 2>&1; then \
+	  echo "" >&2; \
+	  echo "ERROR: 'make install' would have to compile, but it is running as" >&2; \
+	  echo "       `id -un`, who does not own $(abs_builddir)." >&2; \
+	  echo "       Compiling now would leave objects owned by `id -un` behind and" >&2; \
+	  echo "       break the next plain 'make' with 'Permission denied'." >&2; \
+	  echo "" >&2; \
+	  echo "       Build first, then install:" >&2; \
+	  echo "" >&2; \
+	  echo "           make                 # as the owner of the build tree" >&2; \
+	  echo "           sudo make install" >&2; \
+	  echo "" >&2; \
+	  echo "       ('make install-libs' only copies already-built libraries and" >&2; \
+	  echo "        headers; it never compiles.)" >&2; \
+	  echo "" >&2; \
+	  exit 1; \
+	fi
+	@$(MAKE) $(AM_MAKEFLAGS) all-am
+	@$(MAKE) $(AM_MAKEFLAGS) install-exec-am install-data-am
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

@@ -706,6 +706,10 @@ SVE2_CFLAGS
 NEON_CFLAGS
 AVX512_CFLAGS
 AVX2_CFLAGS
+ENABLE_OPENBLAS
+OPENBLAS_LIBS
+OPENBLAS_LDFLAGS
+OPENBLAS_CPPFLAGS
 QD_LIBS
 QD_LDFLAGS
 QD_CPPFLAGS
@@ -858,6 +862,7 @@ with_gmp
 with_mpfr
 with_mpc
 with_qd
+with_openblas
 enable_avx2
 enable_avx512
 enable_neon
@@ -1548,6 +1553,8 @@ Optional Packages:
   --with-mpfr=DIR         MPFR install prefix
   --with-mpc=DIR          MPC install prefix
   --with-qd=DIR           Bailey's QD install prefix
+  --with-openblas[=DIR]   use OpenBLAS cblas_dgemm/cblas_dgemv inside the
+                          Ozaki-scheme routines [default=no]
   --with-gdtq=DIR         gdtq install prefix; headers expected under
                           DIR/include/gdtq [default=/usr/local]
   --with-cuda=PATH        CUDA toolkit install prefix
@@ -17320,6 +17327,190 @@ LIBS="$saved_LIBS"
 
 
 #---------------------------------------
+# Optional CBLAS backend: OpenBLAS
+#
+# The Ozaki-scheme routines (src/{,dd_,td_,qd_,mpf_}oz_scheme.c) split the
+# multi-precision operands into error-free double-precision slices and then
+# multiply the slices in plain double precision.  That inner product is a
+# straight DGEMM, so it can be handed to an optimized BLAS.  Historically
+# only Intel MKL (-DUSE_IMKL) was wired up; --with-openblas does the same
+# with OpenBLAS by compiling the library with -DUSE_OPENBLAS.
+#
+# Opt-in on purpose: it adds a link-time dependency and changes which kernel
+# the oz benchmarks measure, so a plain ./configure keeps the built-in
+# mul_dmatrix() exactly as before.
+#---------------------------------------
+
+# Check whether --with-openblas was given.
+if test ${with_openblas+y}
+then :
+  withval=$with_openblas;
+else $as_nop
+  with_openblas=no
+fi
+
+
+OPENBLAS_CPPFLAGS=""
+OPENBLAS_LDFLAGS=""
+OPENBLAS_LIBS=""
+have_openblas=no
+
+if test "x$with_openblas" != "xno"
+then :
+
+  ob_prefix=""
+  if test "x$with_openblas" != "xyes" && test "x$with_openblas" != "xauto"
+then :
+  ob_prefix="$with_openblas"
+fi
+
+  ob_saved_CPPFLAGS="$CPPFLAGS"
+  ob_saved_LDFLAGS="$LDFLAGS"
+  ob_saved_LIBS="$LIBS"
+
+  # cblas.h sits in a different directory on nearly every distribution, so
+  # probe the usual suspects instead of hard-coding one.  "NONE" means "try
+  # the default search path with no extra -I/-L".
+  if test "x$ob_prefix" != "x"
+then :
+  ob_inc_dirs="$ob_prefix/include/openblas $ob_prefix/include"
+     ob_lib_dirs="$ob_prefix/lib64 $ob_prefix/lib"
+else $as_nop
+  ob_inc_dirs="NONE /usr/include/openblas /usr/local/include/openblas /usr/include/x86_64-linux-gnu /usr/include/aarch64-linux-gnu"
+     ob_lib_dirs="NONE"
+fi
+
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for OpenBLAS cblas.h" >&5
+printf %s "checking for OpenBLAS cblas.h... " >&6; }
+  ob_inc_found=no
+  ob_inc_where=""
+  for ob_d in $ob_inc_dirs; do
+    if test "x$ob_d" = "xNONE"
+then :
+  ob_try=""
+else $as_nop
+  ob_try="-I$ob_d"
+fi
+    CPPFLAGS="$ob_saved_CPPFLAGS $ob_try"
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <cblas.h>
+int
+main (void)
+{
+int o = (int)CblasRowMajor; (void)o;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+  OPENBLAS_CPPFLAGS="$ob_try"
+       ob_inc_found=yes
+       if test "x$ob_d" = "xNONE"
+then :
+  ob_inc_where="(default include path)"
+else $as_nop
+  ob_inc_where="$ob_d"
+fi
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+    test "x$ob_inc_found" = "xyes" && break
+  done
+  if test "x$ob_inc_found" = "xyes"
+then :
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ob_inc_where" >&5
+printf "%s\n" "$ob_inc_where" >&6; }
+else $as_nop
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+  if test "x$ob_inc_found" = "xyes"
+then :
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for cblas_dgemm in OpenBLAS" >&5
+printf %s "checking for cblas_dgemm in OpenBLAS... " >&6; }
+    CPPFLAGS="$ob_saved_CPPFLAGS $OPENBLAS_CPPFLAGS"
+    for ob_ld in $ob_lib_dirs; do
+      if test "x$ob_ld" = "xNONE"
+then :
+  ob_L=""
+else $as_nop
+  ob_L="-L$ob_ld"
+fi
+      for ob_l in "-lopenblas" "-lopenblas -lpthread" "-lopenblas -lpthread -lgfortran" "-lcblas -lopenblas"; do
+        LDFLAGS="$ob_saved_LDFLAGS $ob_L"
+        LIBS="$ob_l $ob_saved_LIBS"
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <cblas.h>
+int
+main (void)
+{
+double a[1] = {1.0}, b[1] = {1.0}, c[1] = {0.0};
+              cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans,
+                          1, 1, 1, 1.0, a, 1, b, 1, 1.0, c, 1);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  OPENBLAS_LDFLAGS="$ob_L"
+           OPENBLAS_LIBS="$ob_l"
+           ob_rpath_dir="$ob_ld"
+           have_openblas=yes
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+        test "x$have_openblas" = "xyes" && break
+      done
+      test "x$have_openblas" = "xyes" && break
+    done
+    # A prefix such as /opt/OpenBLAS is usually not on the runtime loader's
+    # search path, so record it as an rpath too; otherwise every program that
+    # links the library needs LD_LIBRARY_PATH set by hand.  Nothing is added
+    # when OpenBLAS was found on the default path ("NONE").
+    if test "x$have_openblas" = "xyes" && test "x$ob_rpath_dir" != "xNONE"
+then :
+  OPENBLAS_LDFLAGS="$OPENBLAS_LDFLAGS -Wl,-rpath,$ob_rpath_dir"
+fi
+
+    if test "x$have_openblas" = "xyes"
+then :
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $OPENBLAS_LDFLAGS $OPENBLAS_LIBS" >&5
+printf "%s\n" "$OPENBLAS_LDFLAGS $OPENBLAS_LIBS" >&6; }
+else $as_nop
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+fi
+
+  CPPFLAGS="$ob_saved_CPPFLAGS"
+  LDFLAGS="$ob_saved_LDFLAGS"
+  LIBS="$ob_saved_LIBS"
+
+fi
+
+if test "x$have_openblas" = "xyes"
+then :
+  OPENBLAS_CPPFLAGS="$OPENBLAS_CPPFLAGS -DUSE_OPENBLAS"
+else $as_nop
+  if test "x$with_openblas" != "xno" && test "x$with_openblas" != "xauto"
+then :
+  as_fn_error $? "OpenBLAS requested but cblas.h / libopenblas not usable; try --with-openblas=PREFIX" "$LINENO" 5
+fi
+fi
+
+
+
+
+ENABLE_OPENBLAS=$have_openblas
+
+
+#---------------------------------------
 # SIMD / NEON variants (enable based on host CPU; user can override)
 #---------------------------------------
 # Check whether --enable-avx2 was given.
@@ -20215,6 +20406,7 @@ echo "  GMP                 : $GMP_CPPFLAGS $GMP_LDFLAGS $GMP_LIBS"
 echo "  MPFR                : $MPFR_CPPFLAGS $MPFR_LDFLAGS $MPFR_LIBS"
 echo "  MPC                 : $MPC_CPPFLAGS $MPC_LDFLAGS $MPC_LIBS"
 echo "  QD                  : $QD_CPPFLAGS $QD_LDFLAGS $QD_LIBS"
+echo "  OpenBLAS (Ozaki GEMM): $have_openblas $OPENBLAS_CPPFLAGS $OPENBLAS_LDFLAGS $OPENBLAS_LIBS"
 echo "  AVX2 variants       : $enable_avx2 ($AVX2_CFLAGS)"
 echo "  AVX-512 variants    : $enable_avx512 ($AVX512_CFLAGS)"
 echo "  NEON variants       : $enable_neon ($NEON_CFLAGS)"

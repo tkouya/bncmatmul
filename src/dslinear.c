@@ -4083,7 +4083,7 @@ void subst_fmatrix_dsmat(FMatrix c, DSMatrix a)
 	{
 		for(j = 0; j < a->col_dim; j++)
 		{
-			ij_index = i * (c->col_dim) + j;
+			ij_index = i * (c->real_col_dim) + j;
 			c->element[ij_index] = rds_get_f(get_dsmatrix_ij(a, i, j));
 		}
 	}

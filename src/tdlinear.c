@@ -4025,7 +4025,7 @@ void subst_dmatrix_tdmat(DMatrix c, TDMatrix a)
 	{
 		for(j = 0; j < a->col_dim; j++)
 		{
-			ij_index = i * (c->col_dim) + j;
+			ij_index = i * (c->real_col_dim) + j;
 			c->element[ij_index] = rtd_get_d(get_tdmatrix_ij(a, i, j));
 		}
 	}
